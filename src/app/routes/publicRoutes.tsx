@@ -32,6 +32,7 @@ const BrandDirectory = lazy(() => import("@/pages/BrandDirectory"));
 const RateCalculator = lazy(() => import("@/pages/RateCalculator"));
 const RateCalculatorDynamic = lazy(() => import("@/pages/RateCalculatorDynamic"));
 const PatnaInfluencers = lazy(() => import("@/pages/PatnaInfluencers"));
+const LocalInfluencers = lazy(() => import("@/pages/LocalInfluencers"));
 const CollabLinkLanding = lazy(() => import("@/pages/CollabLinkLanding"));
 const ROICalculator = lazy(() => import("@/pages/ROICalculator"));
 const InvestorPitchPage = lazy(() => import("@/pages/InvestorPitchPage"));
@@ -83,6 +84,14 @@ export const PublicRoutes = () => (
     <Route path="/patna-influencers" element={<LazyRoute><PatnaInfluencers /></LazyRoute>} />
     <Route path="/discover/patna" element={<Navigate to="/patna-influencers" replace />} />
     <Route path="/local-creators/patna" element={<Navigate to="/patna-influencers" replace />} />
+    <Route path="/local-creators/:city" element={<LazyRoute><LocalInfluencers /></LazyRoute>} />
+    <Route path="/delhi-influencers" element={<Navigate to="/local-creators/delhi" replace />} />
+    <Route path="/mumbai-influencers" element={<Navigate to="/local-creators/mumbai" replace />} />
+    <Route path="/bangalore-influencers" element={<Navigate to="/local-creators/bangalore" replace />} />
+    <Route path="/pune-influencers" element={<Navigate to="/local-creators/pune" replace />} />
+    <Route path="/lucknow-influencers" element={<Navigate to="/local-creators/lucknow" replace />} />
+    <Route path="/dehradun-influencers" element={<Navigate to="/local-creators/dehradun" replace />} />
+    <Route path="/noida-influencers" element={<Navigate to="/local-creators/noida" replace />} />
     <Route path="/discover" element={<Navigate to="/signup" replace />} />
     <Route path="/discover/:category" element={<Navigate to="/signup" replace />} />
     <Route path="/creators-list" element={<Navigate to="/signup" replace />} />

@@ -45,6 +45,21 @@
     "updated_at": "2026-05-23T17:14:44.029973+00:00"
   },
   {
+    "id": "0327cc03-9093-4b58-b97f-e823665102b0",
+    "brand_name": "Looks Salon Patna",
+    "website": "https://www.lookssalon.in",
+    "instagram_handle": null,
+    "email": "info@lookssalon.in",
+    "category": "Salons",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:21.769+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (SALON): Premium Looks Salon Dakbunglow Road Patna branch.",
+    "created_at": "2026-05-25T09:11:22.207015+00:00",
+    "updated_at": "2026-05-25T09:11:22.207015+00:00"
+  },
+  {
     "id": "03fa2967-9a48-429a-9a15-6527b4bc338d",
     "brand_name": "Nourish Veda",
     "website": "https://nourishveda.fit",
@@ -150,6 +165,36 @@
     "updated_at": "2026-05-22T20:24:49.914604+00:00"
   },
   {
+    "id": "0601d312-4008-4340-83a9-e82ffa4cdede",
+    "brand_name": "truhabit.in",
+    "website": "https://truhabit.in",
+    "instagram_handle": null,
+    "email": "care@truhabit.in",
+    "category": "Wellness & Nutrition",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:30:15.876+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:30:16.003197+00:00",
+    "updated_at": "2026-05-24T15:30:16.003197+00:00"
+  },
+  {
+    "id": "0781540d-26f7-4058-8d07-1adede5fd9c7",
+    "brand_name": "Steadfast Nutrition",
+    "website": "https://steadfastnutrition.in",
+    "instagram_handle": null,
+    "email": "info@steadfastnutrition.in",
+    "category": "Sports Nutrition & Wellness",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:30:18.1+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:30:18.205304+00:00",
+    "updated_at": "2026-05-24T15:30:18.205304+00:00"
+  },
+  {
     "id": "08212eb6-c030-4122-b4c1-10538c85f0bd",
     "brand_name": "Tripole Gears",
     "website": "https://tripole.in",
@@ -193,6 +238,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "0a241f59-e3ff-4d2d-93cc-da61c4b1b46d",
+    "brand_name": "Wakefit (Media)",
+    "website": "https://www.wakefit.co",
+    "instagram_handle": null,
+    "email": "media@wakefit.co",
+    "category": "Home, Sleep & Lifestyle",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T07:54:56.395+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T07:54:56.647938+00:00",
+    "updated_at": "2026-05-25T07:54:56.647938+00:00"
   },
   {
     "id": "0ab1f3f4-a8e6-4b8d-bb03-657cac25d8af",
@@ -255,6 +315,21 @@
     "updated_at": "2026-05-22T20:26:36.826664+00:00"
   },
   {
+    "id": "0d3e3ca6-5628-4f9c-b10b-2ba730997593",
+    "brand_name": "1:9 Perfumery",
+    "website": "https://thehouseoferaya.store",
+    "instagram_handle": null,
+    "email": "hello@thehouseoferaya.store",
+    "category": "Luxury Fragrances",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:32.316+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:32.493976+00:00",
+    "updated_at": "2026-05-25T08:07:32.493976+00:00"
+  },
+  {
     "id": "0dbb5009-7ae1-41b0-bb38-bc3b953c4ba0",
     "brand_name": "Smile Dental Clinic",
     "website": "",
@@ -307,12 +382,27 @@
     "email": "angelhomesalon@gmail.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-23T17:43:53.803+00:00",
+    "outreach_count": 2,
+    "last_contacted_at": "2026-05-25T08:55:30.492+00:00",
     "replied_at": null,
-    "notes": "Noida salon ad outreach: Angel Home Salon is a local doorstep professional beauty services provider running ads.",
+    "notes": "Noida salon ad outreach: Angel Home Salon is a local doorstep professional beauty services provider running ads. | Follow-up with PDF deck on 2026-05-25T08:55:30.492Z",
     "created_at": "2026-05-23T17:43:53.914329+00:00",
-    "updated_at": "2026-05-23T17:43:53.914329+00:00"
+    "updated_at": "2026-05-25T08:55:30.608689+00:00"
+  },
+  {
+    "id": "0fe128d5-66e6-4d19-a0a6-b37fefef1e7e",
+    "brand_name": "Bevygood",
+    "website": "https://bevygood.com",
+    "instagram_handle": null,
+    "email": "care@bevygood.com",
+    "category": "Food, Snacks & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:13:30.311+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:13:30.422453+00:00",
+    "updated_at": "2026-05-24T16:13:30.422453+00:00"
   },
   {
     "id": "10804eb3-b93a-44d9-acd0-b4d0e5934c30",
@@ -360,6 +450,81 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "120ad1af-8d23-410c-8f75-e872a400963a",
+    "brand_name": "Oliva Skin & Hair Clinic",
+    "website": "https://olivaclinic.com",
+    "instagram_handle": null,
+    "email": "feedback@olivaclinic.com",
+    "category": "Dermatology Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:16.038+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DERMO): Oliva high-end dermatology skin & hair clinic network.",
+    "created_at": "2026-05-25T09:02:16.149043+00:00",
+    "updated_at": "2026-05-25T09:02:16.149043+00:00"
+  },
+  {
+    "id": "12d7f532-cfb7-4a81-ac10-78b0384e37bd",
+    "brand_name": "Alpino Health Foods (Marketing)",
+    "website": "https://alpino.store",
+    "instagram_handle": null,
+    "email": "marketing@alpinohealthfoods.com",
+    "category": "Healthy Snacks & Pet Care",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T07:54:50.984+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T07:54:51.233778+00:00",
+    "updated_at": "2026-05-25T07:54:51.233778+00:00"
+  },
+  {
+    "id": "12ece682-7e01-4f1a-9db2-af8c7c45ec3b",
+    "brand_name": "SatRas",
+    "website": "https://satras.in",
+    "instagram_handle": null,
+    "email": "care@satras.in",
+    "category": "Food & Health Foods",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:14.426+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:14.528681+00:00",
+    "updated_at": "2026-05-24T16:34:14.528681+00:00"
+  },
+  {
+    "id": "12f9ebc4-4fd4-4f6e-b928-01bf260619d2",
+    "brand_name": "Jawed Habib Corporate Alt",
+    "website": "https://jawedhabib.com",
+    "instagram_handle": null,
+    "email": "cs@jawedhabib.co.in",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:16.808+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Company secretary / corporate administration inbox for Jawed Habib.",
+    "created_at": "2026-05-25T08:51:16.92853+00:00",
+    "updated_at": "2026-05-25T08:51:16.92853+00:00"
+  },
+  {
+    "id": "14a40c8f-a025-45bf-9c3d-e70f31180b51",
+    "brand_name": "Kaya Skin Clinic Alt",
+    "website": "https://kaya.in",
+    "instagram_handle": null,
+    "email": "care@kayaclinic.com",
+    "category": "Dermatology Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:26.658+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DERMO): Kaya Skin Clinic corporate care email.",
+    "created_at": "2026-05-25T09:02:26.795579+00:00",
+    "updated_at": "2026-05-25T09:02:26.795579+00:00"
+  },
+  {
     "id": "151d5bb0-6901-47a3-97d9-b65b587d2925",
     "brand_name": "Dot & Key",
     "website": "https://dotandkey.com",
@@ -373,6 +538,21 @@
     "notes": null,
     "created_at": "2026-05-23T09:41:28.534998+00:00",
     "updated_at": "2026-05-23T09:41:28.534998+00:00"
+  },
+  {
+    "id": "156781a9-b705-4143-b2d4-883b00bf6968",
+    "brand_name": "Whole Nutrition",
+    "website": "https://wholenutrition.in",
+    "instagram_handle": null,
+    "email": "contact@wholenutrition.in",
+    "category": "Wellness & Nutrition",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:08.758+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:08.861414+00:00",
+    "updated_at": "2026-05-24T16:34:08.861414+00:00"
   },
   {
     "id": "15e8f728-f015-4e3b-ac53-cea5b64fd8dc",
@@ -390,6 +570,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "1713a5a8-5899-4a8d-b7d7-05a875bc71bd",
+    "brand_name": "Oliva Skin Clinic Patna",
+    "website": "https://olivaclinic.com",
+    "instagram_handle": null,
+    "email": "feedback@olivaclinic.com",
+    "category": "Dermatology Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:45.736+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (DERMO): Oliva Skin & Hair Clinic Boring Road Patna branch.",
+    "created_at": "2026-05-25T09:11:45.843474+00:00",
+    "updated_at": "2026-05-25T09:11:45.843474+00:00"
+  },
+  {
     "id": "176f5e68-5cfd-414d-bf13-94699424f667",
     "brand_name": "Earthy Sapo",
     "website": "https://earthysapo.com",
@@ -403,6 +598,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "17bd2e20-04cb-47ea-8663-e1a35da1c40d",
+    "brand_name": "True Grain Foods",
+    "website": "https://truegrainstore.com",
+    "instagram_handle": null,
+    "email": "info@truegrainstore.com",
+    "category": "Food, Snacks & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:24:11.422+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:24:11.810512+00:00",
+    "updated_at": "2026-05-24T16:24:11.810512+00:00"
   },
   {
     "id": "1817d7a6-62e8-47ca-8a84-caa8a914c9ae",
@@ -512,17 +722,17 @@
   {
     "id": "1b413671-345d-4120-8fbb-ac312bfec717",
     "brand_name": "Geetanjali Salon",
-    "website": "",
+    "website": "https://www.geetanjalisalon.com",
     "instagram_handle": null,
     "email": "customercare@geetanjalisalon.com",
-    "category": "Salon",
+    "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-22T20:26:06.037+00:00",
+    "outreach_count": 2,
+    "last_contacted_at": "2026-05-25T08:55:16.623+00:00",
     "replied_at": null,
-    "notes": "Contact: Manager | Location: Boring Road & Kankarbagh",
+    "notes": "Contact: Manager | Location: Boring Road & Kankarbagh | Follow-up with PDF deck on 2026-05-25T08:55:16.623Z",
     "created_at": "2026-05-22T20:26:06.131355+00:00",
-    "updated_at": "2026-05-22T20:26:06.131355+00:00"
+    "updated_at": "2026-05-25T08:55:16.756942+00:00"
   },
   {
     "id": "1b8cdd60-09e5-47b5-9b60-81d6883ce1b6",
@@ -825,6 +1035,21 @@
     "updated_at": "2026-05-22T19:45:59.707637+00:00"
   },
   {
+    "id": "29d33d9e-c8d5-4cb3-a2d8-f8b3d5e76ea7",
+    "brand_name": "Zyog Nutrition (Marketing - Kamal)",
+    "website": "https://zyog.in",
+    "instagram_handle": null,
+    "email": "kamal@zyog.in",
+    "category": "Wellness & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:32.407+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:32.517734+00:00",
+    "updated_at": "2026-05-24T16:10:32.517734+00:00"
+  },
+  {
     "id": "2a980cd5-92b0-421f-a72f-679e087511af",
     "brand_name": "The Good Leaf",
     "website": "https://thegoodleaf.in",
@@ -900,6 +1125,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "2ef8217d-c0cc-47e2-829a-c30cc4c7469d",
+    "brand_name": "Chewbells Healthcare",
+    "website": "https://chewbellshealthcare.com",
+    "instagram_handle": null,
+    "email": "contactus@chewbellshealthcare.com",
+    "category": "Wellness & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:29:01.856+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:29:02.010277+00:00",
+    "updated_at": "2026-05-24T16:29:02.010277+00:00"
+  },
+  {
     "id": "2f61f48f-e2b5-4b93-aa9f-8dda803163c8",
     "brand_name": "Monsoon Salon & Spa",
     "website": "https://www.monsoonsalon.com",
@@ -907,12 +1147,12 @@
     "email": "info@monsoonsalon.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-23T17:43:51.618+00:00",
+    "outreach_count": 2,
+    "last_contacted_at": "2026-05-25T08:55:23.618+00:00",
     "replied_at": null,
-    "notes": "Noida salon ad outreach: Monsoon Salon represents professional hair design & luxury spa therapy flagship chain.",
+    "notes": "Noida salon ad outreach: Monsoon Salon represents professional hair design & luxury spa therapy flagship chain. | Follow-up with PDF deck on 2026-05-25T08:55:23.618Z",
     "created_at": "2026-05-23T17:43:51.730382+00:00",
-    "updated_at": "2026-05-23T17:43:51.730382+00:00"
+    "updated_at": "2026-05-25T08:55:23.744677+00:00"
   },
   {
     "id": "32fbc0e5-538c-4df5-bac8-6d87ccd3e781",
@@ -960,6 +1200,21 @@
     "updated_at": "2026-05-22T21:00:55.992629+00:00"
   },
   {
+    "id": "34eb4592-35fd-43fb-8a6b-86acac4a7c6a",
+    "brand_name": "Clove Dental",
+    "website": "https://clovedental.in",
+    "instagram_handle": null,
+    "email": "patientcare@clovedental.in",
+    "category": "Dental Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:03.443+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DENTAL): Flagship patient care inbox for Clove Dental.",
+    "created_at": "2026-05-25T09:02:03.843246+00:00",
+    "updated_at": "2026-05-25T09:02:03.843246+00:00"
+  },
+  {
     "id": "34f21d3c-fda4-4fbe-8827-4ea880d64f91",
     "brand_name": "Avataa Tea",
     "website": "https://avataatea.com",
@@ -988,6 +1243,21 @@
     "notes": null,
     "created_at": "2026-05-23T18:30:40.848713+00:00",
     "updated_at": "2026-05-23T18:30:40.848713+00:00"
+  },
+  {
+    "id": "3636e397-f6b8-494a-8225-f46a5e7b73a6",
+    "brand_name": "Seoul Ceuticals India",
+    "website": "https://seoulceuticals.in",
+    "instagram_handle": null,
+    "email": "team@seoulceuticals.com",
+    "category": "Beauty & Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:39:16.192+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:39:16.340649+00:00",
+    "updated_at": "2026-05-24T18:39:16.340649+00:00"
   },
   {
     "id": "36a083bc-2b69-41f5-b25c-ecf0939a5cc8",
@@ -1065,6 +1335,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "3b3f2887-9ceb-4f42-9219-810bea1b4d66",
+    "brand_name": "Ozone Ayurvedics",
+    "website": "https://ozoneayurvedics.com",
+    "instagram_handle": null,
+    "email": "info@ozoneayurvedics.com",
+    "category": "Ayurvedic Skincare & Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:39:19.167+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:39:19.516453+00:00",
+    "updated_at": "2026-05-24T15:39:19.516453+00:00"
+  },
+  {
     "id": "3e2f235a-c53a-4a78-a00c-4055e2c64cac",
     "brand_name": "Woof Treats",
     "website": "https://wooftreats.in",
@@ -1125,6 +1410,21 @@
     "updated_at": "2026-05-22T19:46:00.408235+00:00"
   },
   {
+    "id": "41bf2417-7379-4eb2-9260-0917810e7275",
+    "brand_name": "Kaya Skin Clinic",
+    "website": "https://kaya.in",
+    "instagram_handle": null,
+    "email": "info@kayaclinic.com",
+    "category": "Dermatology Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:22.362+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DERMO): Pioneer clinical aesthetic chain in India.",
+    "created_at": "2026-05-25T09:02:22.485045+00:00",
+    "updated_at": "2026-05-25T09:02:22.485045+00:00"
+  },
+  {
     "id": "41c4f132-629e-407e-af55-c8ea727fa451",
     "brand_name": "Facio Dental Centre",
     "website": "",
@@ -1140,6 +1440,21 @@
     "updated_at": "2026-05-22T19:45:57.961697+00:00"
   },
   {
+    "id": "42003a44-647f-46a9-a76a-8851d207120d",
+    "brand_name": "Clove Dental Patna",
+    "website": "https://clovedental.in",
+    "instagram_handle": null,
+    "email": "patientcare@clovedental.in",
+    "category": "Dental Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:39.596+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (DENTAL): Clove Dental Boring Road & Kankarbagh Patna branches.",
+    "created_at": "2026-05-25T09:11:39.733688+00:00",
+    "updated_at": "2026-05-25T09:11:39.733688+00:00"
+  },
+  {
     "id": "42791eb2-be85-4cf0-b14a-569b59e345a5",
     "brand_name": "Anveshan",
     "website": "https://anveshan.farm",
@@ -1153,6 +1468,21 @@
     "notes": null,
     "created_at": "2026-05-22T21:01:00.779888+00:00",
     "updated_at": "2026-05-22T21:01:00.779888+00:00"
+  },
+  {
+    "id": "43b3c9df-b6a0-43f7-b39e-320602cc708e",
+    "brand_name": "Geetanjali Salon Corporate",
+    "website": "https://www.geetanjalisalon.com",
+    "instagram_handle": null,
+    "email": "accounts@geetanjalisalon.com",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:21.448+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Duplicate check placeholder for Geetanjali Accounts.",
+    "created_at": "2026-05-25T08:51:21.563472+00:00",
+    "updated_at": "2026-05-25T08:51:21.563472+00:00"
   },
   {
     "id": "441afa82-d2ed-45d4-9544-fdb5857bc7a7",
@@ -1198,6 +1528,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "4645c6cb-7edd-4d0b-8a60-289439698a1a",
+    "brand_name": "Honey Bunny Care",
+    "website": "https://honeybunny.care",
+    "instagram_handle": null,
+    "email": "care@vihanahealthcare.com",
+    "category": "Baby Care & Wellness",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:31:09.277+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:31:09.597647+00:00",
+    "updated_at": "2026-05-24T16:31:09.597647+00:00"
   },
   {
     "id": "4655dcb3-c6e9-41b1-879c-90e06c5eae37",
@@ -1273,6 +1618,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "47d6c06f-922d-420d-871d-ad96d602b7f6",
+    "brand_name": "Boldpurity (Founder - Khatija)",
+    "website": "https://boldpurity.com",
+    "instagram_handle": null,
+    "email": "khatija@boldpurity.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:29.797+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:29.966234+00:00",
+    "updated_at": "2026-05-24T16:10:29.966234+00:00"
   },
   {
     "id": "4817c00a-b692-44c6-b886-67b27661b816",
@@ -1425,6 +1785,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "4f5844ad-ca9d-4425-a76e-e574627f5acc",
+    "brand_name": "Zyog Nutrition",
+    "website": "https://zyog.in",
+    "instagram_handle": null,
+    "email": "info@zyog.in",
+    "category": "Wellness & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:56:44.35+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:56:44.516947+00:00",
+    "updated_at": "2026-05-24T15:56:44.516947+00:00"
+  },
+  {
     "id": "4f9d5bb2-e274-4eaa-90be-78c0f1296509",
     "brand_name": "Vilvah Store",
     "website": "https://vilvahstore.com",
@@ -1485,6 +1860,36 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "51e41a3d-d97c-435c-99f4-f7561fd06dab",
+    "brand_name": "Honey Bunny Care",
+    "website": "https://honeybunny.care",
+    "instagram_handle": null,
+    "email": "help@vihanahealthcare.com",
+    "category": "Baby Care & Wellness",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:31:10.625+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:31:10.727091+00:00",
+    "updated_at": "2026-05-24T16:31:10.727091+00:00"
+  },
+  {
+    "id": "51eae20d-04ef-46af-b725-8203d730dd32",
+    "brand_name": "Nature's Nectar",
+    "website": "https://www.natures-nectar.com",
+    "instagram_handle": null,
+    "email": "care@natures-nectar.com",
+    "category": "Food & Health Foods",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:06.554+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:06.659567+00:00",
+    "updated_at": "2026-05-24T16:34:06.659567+00:00"
+  },
+  {
     "id": "522284b9-44eb-4079-94fe-6839a87141c2",
     "brand_name": "OZiva",
     "website": "https://oziva.in",
@@ -1498,6 +1903,21 @@
     "notes": null,
     "created_at": "2026-05-23T09:42:01.518022+00:00",
     "updated_at": "2026-05-23T09:42:01.518022+00:00"
+  },
+  {
+    "id": "52b623e0-04eb-45a5-8fb4-78f177e6f6d5",
+    "brand_name": "Truedune",
+    "website": "https://truedune.com",
+    "instagram_handle": null,
+    "email": "contact@truedune.com",
+    "category": "Beauty & Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:04.299+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:04.40595+00:00",
+    "updated_at": "2026-05-24T16:34:04.40595+00:00"
   },
   {
     "id": "53d062d6-ff78-43c0-a79e-3a47fd101c9f",
@@ -1530,6 +1950,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "53fd4843-212d-42c5-9266-d5778712121c",
+    "brand_name": "SkinQ",
+    "website": "https://www.skinq.com",
+    "instagram_handle": null,
+    "email": "hello@skinq.com",
+    "category": "Dermatologist Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:29.982+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:30.161809+00:00",
+    "updated_at": "2026-05-25T08:07:30.161809+00:00"
+  },
+  {
     "id": "552fce63-58b3-4593-97d1-36c6fea2a7b2",
     "brand_name": "Magadh Oro Dental",
     "website": "",
@@ -1560,6 +1995,21 @@
     "updated_at": "2026-05-22T21:00:35.207316+00:00"
   },
   {
+    "id": "56de24d3-c4df-477a-ad01-d7b65676210b",
+    "brand_name": "Jawed Habib Patna",
+    "website": "https://thejawedhabibsalon.com",
+    "instagram_handle": null,
+    "email": "info@thejawedhabibsalon.com",
+    "category": "Salons",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:32.007+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (SALON): Jawed Habib Kankarbagh Patna flagship branch.",
+    "created_at": "2026-05-25T09:11:32.148795+00:00",
+    "updated_at": "2026-05-25T09:11:32.148795+00:00"
+  },
+  {
     "id": "57711189-e388-4622-b2ed-c36f9d9d7cb9",
     "brand_name": "Dhaaga Life",
     "website": "https://dhaagalife.com",
@@ -1573,6 +2023,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "5828207e-27e4-43cd-95d0-8c6231765074",
+    "brand_name": "Cut & Style Salon",
+    "website": "https://cutandstyle.in",
+    "instagram_handle": null,
+    "email": "info@cutandstyle.in",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:06.287+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Premium NCR salon chain with extensive presence in Noida and Gurgaon.",
+    "created_at": "2026-05-25T08:51:06.650537+00:00",
+    "updated_at": "2026-05-25T08:51:06.650537+00:00"
   },
   {
     "id": "58d46de6-1788-4382-af86-a63046d61b82",
@@ -1845,6 +2310,36 @@
     "updated_at": "2026-05-23T18:30:38.629642+00:00"
   },
   {
+    "id": "6286d9cb-c42a-4fcc-bd63-74e7a2264a7a",
+    "brand_name": "Kohl & Spice (Founder - Kashish)",
+    "website": "https://kohlspice.com",
+    "instagram_handle": null,
+    "email": "kashish.mittal@kohlspice.in",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:33.103+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:33.21162+00:00",
+    "updated_at": "2026-05-24T16:10:33.21162+00:00"
+  },
+  {
+    "id": "6368505e-a627-4606-a2d5-949e441856cf",
+    "brand_name": "Puffli Snacks",
+    "website": "https://pufflisnacks.com",
+    "instagram_handle": null,
+    "email": "puffdesk@pufflisnacks.com",
+    "category": "Food, Snacks & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:15:15.702+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:15:15.854693+00:00",
+    "updated_at": "2026-05-24T16:15:15.854693+00:00"
+  },
+  {
     "id": "63b32e4c-0fe2-436a-aec3-3979f25186b3",
     "brand_name": "TrueBrowns",
     "website": "https://truebrowns.com",
@@ -1858,6 +2353,21 @@
     "notes": null,
     "created_at": "2026-05-23T09:41:11.15939+00:00",
     "updated_at": "2026-05-23T09:41:11.15939+00:00"
+  },
+  {
+    "id": "63da49ef-ce98-4570-b068-cd2c1fdcac5d",
+    "brand_name": "Kosmoderma Patna",
+    "website": "https://kosmoderma.com",
+    "instagram_handle": null,
+    "email": "centralenquiry@kosmoderma.com",
+    "category": "Dermatology Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:48.653+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (DERMO): Kosmoderma Patna clinics.",
+    "created_at": "2026-05-25T09:11:48.759385+00:00",
+    "updated_at": "2026-05-25T09:11:48.759385+00:00"
   },
   {
     "id": "6635908c-91b8-4121-8628-ebfa02bec82d",
@@ -1890,6 +2400,21 @@
     "updated_at": "2026-05-23T18:30:25.441225+00:00"
   },
   {
+    "id": "69d78f8d-f1ad-4f2d-8db5-f056a10c966b",
+    "brand_name": "Atulya",
+    "website": "https://www.myatulya.com",
+    "instagram_handle": null,
+    "email": "helpdesk@myatulya.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:28:03.135+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:28:03.31125+00:00",
+    "updated_at": "2026-05-24T16:28:03.31125+00:00"
+  },
+  {
     "id": "6a927a94-66a2-4e9f-9932-e2f7f4a72161",
     "brand_name": "Santerra Hygiene",
     "website": "https://santerrahygiene.com",
@@ -1903,6 +2428,21 @@
     "notes": null,
     "created_at": "2026-05-24T11:09:08.795584+00:00",
     "updated_at": "2026-05-24T11:09:08.795584+00:00"
+  },
+  {
+    "id": "6df142e6-38a1-48c3-8d74-edefd2038316",
+    "brand_name": "KPG Masale",
+    "website": "https://www.marveltea.com",
+    "instagram_handle": null,
+    "email": "info@marveltea.com",
+    "category": "Spices, Food & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:47:37.115+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:47:37.279575+00:00",
+    "updated_at": "2026-05-24T18:47:37.279575+00:00"
   },
   {
     "id": "6e9d2558-4610-434a-9426-44e9f8b7982f",
@@ -1935,6 +2475,51 @@
     "updated_at": "2026-05-23T17:49:44.501692+00:00"
   },
   {
+    "id": "71927045-5662-4230-93a9-dc077dd7e0ab",
+    "brand_name": "Moiz Skincare (Corporate Sales)",
+    "website": "https://www.moizskincare.com",
+    "instagram_handle": null,
+    "email": "cs@glowderma.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:33.778+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:33.884518+00:00",
+    "updated_at": "2026-05-24T16:10:33.884518+00:00"
+  },
+  {
+    "id": "7243363d-1af1-4b8e-8a3a-14b0f0d755a6",
+    "brand_name": "Earthraga Skincare",
+    "website": "https://earthraga.com",
+    "instagram_handle": null,
+    "email": "info@earthraga.com",
+    "category": "Ayurvedic Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:27.616+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:27.795115+00:00",
+    "updated_at": "2026-05-25T08:07:27.795115+00:00"
+  },
+  {
+    "id": "72d2bc29-a9d6-4ea5-815e-e7b654fad31f",
+    "brand_name": "Awshad Wellness",
+    "website": "https://awshad.com",
+    "instagram_handle": null,
+    "email": "faizan@awshad.com",
+    "category": "Hemp & Cannabis-based Wellness",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:09:31.947+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:09:32.170165+00:00",
+    "updated_at": "2026-05-25T08:09:32.170165+00:00"
+  },
+  {
     "id": "7358b898-6eca-4c54-92e2-cd5bba3935bb",
     "brand_name": "Looks Salon",
     "website": "https://www.lookssalon.in",
@@ -1942,12 +2527,12 @@
     "email": "customercare@lookssalon.in",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-23T17:43:45.204+00:00",
+    "outreach_count": 2,
+    "last_contacted_at": "2026-05-25T08:55:10.283+00:00",
     "replied_at": null,
-    "notes": "Noida salon ad outreach: Looks Salon GIP Mall & Sector 50 Noida running active Mother's Day & summer pamper ads.",
+    "notes": "Noida salon ad outreach: Looks Salon GIP Mall & Sector 50 Noida running active Mother's Day & summer pamper ads. | Follow-up with PDF deck on 2026-05-25T08:55:10.283Z",
     "created_at": "2026-05-23T17:43:45.643027+00:00",
-    "updated_at": "2026-05-23T17:43:45.643027+00:00"
+    "updated_at": "2026-05-25T08:55:10.421169+00:00"
   },
   {
     "id": "7368784a-9e07-4853-ad6f-b18a352de455",
@@ -1963,6 +2548,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "73f0e2be-d6a0-4b76-b0ee-afdbcff5889f",
+    "brand_name": "Not Rocket Science",
+    "website": "https://notrocketscience.in",
+    "instagram_handle": null,
+    "email": "nutrifuturesolutions@gmail.com",
+    "category": "Food, Snacks & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:18:01.845+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:18:02.557315+00:00",
+    "updated_at": "2026-05-24T16:18:02.557315+00:00"
   },
   {
     "id": "7429fbc5-031e-4107-9b82-c36fbedeef84",
@@ -1995,6 +2595,81 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "74fadd02-5e6f-4dc6-af43-019ee2409b80",
+    "brand_name": "Nourriture Skincare",
+    "website": "https://nourritureskin.in",
+    "instagram_handle": null,
+    "email": "support@nourritureskin.net",
+    "category": "Scientific Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:20.491+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:20.665932+00:00",
+    "updated_at": "2026-05-25T08:07:20.665932+00:00"
+  },
+  {
+    "id": "7545e55a-0ca9-49fd-a377-ef838da523d6",
+    "brand_name": "Seven Seas Cosmetics (Accounts Exec)",
+    "website": "https://www.sevenseascosmetics.com",
+    "instagram_handle": null,
+    "email": "accounts@sevenseascosmetics.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:34.452+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:34.55872+00:00",
+    "updated_at": "2026-05-24T16:10:34.55872+00:00"
+  },
+  {
+    "id": "7764f259-9646-4757-9aa3-0479a797cf0e",
+    "brand_name": "KPG Masale",
+    "website": "https://www.marveltea.com",
+    "instagram_handle": null,
+    "email": "cs@marveltea.com",
+    "category": "Spices, Food & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:47:39.952+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:47:40.052429+00:00",
+    "updated_at": "2026-05-24T18:47:40.052429+00:00"
+  },
+  {
+    "id": "78966798-5646-4b6c-93b2-f8bc0403c053",
+    "brand_name": "Jawed Habib Corporate",
+    "website": "https://jawedhabib.com",
+    "instagram_handle": null,
+    "email": "customercare@jawedhabib.com",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:14.609+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Official corporate care inbox for the iconic Jawed Habib chain.",
+    "created_at": "2026-05-25T08:51:14.72815+00:00",
+    "updated_at": "2026-05-25T08:51:14.72815+00:00"
+  },
+  {
+    "id": "789bda36-5a57-4873-83c7-06baa766b037",
+    "brand_name": "Kühl Teen",
+    "website": "https://kuhlteen.in",
+    "instagram_handle": null,
+    "email": "support@kuhlteen.com",
+    "category": "Teen Personal Care & Hygiene",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T07:54:45.815+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T07:54:46.075784+00:00",
+    "updated_at": "2026-05-25T07:54:46.075784+00:00"
+  },
+  {
     "id": "78b9f41d-4be7-45f0-8cfd-c8cd3aa96f0a",
     "brand_name": "Flitch",
     "website": "https://flitch.in",
@@ -2023,6 +2698,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "7971ad7a-54ba-4f3b-bda5-2bc49610fb5d",
+    "brand_name": "Patna Dental Clinic",
+    "website": "http://www.dentalclinicpro.com",
+    "instagram_handle": null,
+    "email": "riteshvatsa2003@gmail.com",
+    "category": "Dental Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:42.561+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (DENTAL): Patna Dental Clinic & Implant Center.",
+    "created_at": "2026-05-25T09:11:42.66567+00:00",
+    "updated_at": "2026-05-25T09:11:42.66567+00:00"
   },
   {
     "id": "79a5e9a6-1e0a-42cd-bcff-175577f55f26",
@@ -2098,6 +2788,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "7dde85d2-e18a-45bd-ac66-c0e651d89fba",
+    "brand_name": "Sommer Beauty",
+    "website": "https://sommerbeauty.in",
+    "instagram_handle": null,
+    "email": "support@sommerbeauty.in",
+    "category": "Beauty & Cosmetics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:43:07.39+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:43:08.01211+00:00",
+    "updated_at": "2026-05-24T18:43:08.01211+00:00"
   },
   {
     "id": "7df5eac1-0ab1-4394-8c08-2db892b70bd0",
@@ -2280,6 +2985,21 @@
     "updated_at": "2026-05-22T21:00:18.611298+00:00"
   },
   {
+    "id": "834b662b-d535-4d84-af7f-b2ec21beb01a",
+    "brand_name": "Yes Skincare",
+    "website": "https://www.yesskincare.in",
+    "instagram_handle": null,
+    "email": "info@yesskincare.in",
+    "category": "Clean Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:17.898+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:18.298249+00:00",
+    "updated_at": "2026-05-25T08:07:18.298249+00:00"
+  },
+  {
     "id": "83f7eb6d-1fb9-4d7c-9cf8-e9567ee9bbc2",
     "brand_name": "Derma Essentia",
     "website": "https://dermaessentia.com",
@@ -2323,6 +3043,21 @@
     "notes": null,
     "created_at": "2026-05-24T12:20:31.124344+00:00",
     "updated_at": "2026-05-24T12:20:31.124344+00:00"
+  },
+  {
+    "id": "888d5cf6-3e1c-408a-bf54-553b88425eda",
+    "brand_name": "Whole Nutrition",
+    "website": "https://wholenutrition.in",
+    "instagram_handle": null,
+    "email": "support@wholenutrition.in",
+    "category": "Wellness & Nutrition",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:11.765+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:11.874945+00:00",
+    "updated_at": "2026-05-24T16:34:11.874945+00:00"
   },
   {
     "id": "8b1580c6-e162-4323-94dd-dbb7edcd9944",
@@ -2430,6 +3165,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "906f3f7e-a5f1-431c-96b1-8254332bdae1",
+    "brand_name": "The Beauty BAE",
+    "website": "https://thebeautybae.com",
+    "instagram_handle": null,
+    "email": "support@thebeautybae.com",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:19.081+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Premium niche nail art, lash, and beauty salon brand.",
+    "created_at": "2026-05-25T08:51:19.203779+00:00",
+    "updated_at": "2026-05-25T08:51:19.203779+00:00"
+  },
+  {
     "id": "924ab171-a9b2-4b6d-8882-c1ac31c1af10",
     "brand_name": "The Quirky Naari",
     "website": "https://thequirkynaari.com",
@@ -2505,6 +3255,36 @@
     "updated_at": "2026-05-22T19:46:00.056035+00:00"
   },
   {
+    "id": "94027e7f-ee69-4cb0-ace5-2ad9fb33eb2b",
+    "brand_name": "Geetanjali Salon Patna",
+    "website": "https://www.geetanjalisalon.com",
+    "instagram_handle": null,
+    "email": "customercare@geetanjalisalon.com",
+    "category": "Salons",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:27.346+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (SALON): Geetanjali Salon Boring Road & Kankarbagh Patna branches.",
+    "created_at": "2026-05-25T09:11:27.501539+00:00",
+    "updated_at": "2026-05-25T09:11:27.501539+00:00"
+  },
+  {
+    "id": "946e101a-07da-49a2-b460-2ba4f178e345",
+    "brand_name": "Uzvi Eco Store",
+    "website": "https://uzviecostore.com",
+    "instagram_handle": null,
+    "email": "ecostoreuzvi@gmail.com",
+    "category": "Organic/Natural Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:22.825+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:23.012223+00:00",
+    "updated_at": "2026-05-25T08:07:23.012223+00:00"
+  },
+  {
     "id": "957594b6-df67-4962-857e-ecd0268a8df7",
     "brand_name": "Krishna Dental Hospital & Research Center",
     "website": "",
@@ -2548,6 +3328,21 @@
     "notes": "Dentist ad outreach: MyOrl-Care represents D2C innovative dentist-designed oral care accessories.",
     "created_at": "2026-05-23T17:35:39.897155+00:00",
     "updated_at": "2026-05-23T17:35:39.897155+00:00"
+  },
+  {
+    "id": "9a4ebe07-f0da-46e7-80e7-34e528cdb38a",
+    "brand_name": "Gentle Beast",
+    "website": "https://www.gentlebeast.in",
+    "instagram_handle": null,
+    "email": "support@gentlebeast.in",
+    "category": "Men's Grooming & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:44:19.249+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:44:19.344607+00:00",
+    "updated_at": "2026-05-24T18:44:19.344607+00:00"
   },
   {
     "id": "9a9b7503-d44a-47bd-8ed8-c2eb7bc08a93",
@@ -2617,12 +3412,12 @@
     "email": "support@beautyglad.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-23T17:43:49.116+00:00",
+    "outreach_count": 2,
+    "last_contacted_at": "2026-05-25T08:55:27.205+00:00",
     "replied_at": null,
-    "notes": "Noida salon ad outreach: BeautyGlad is an established home beauty service platform running active home salon ads.",
+    "notes": "Noida salon ad outreach: BeautyGlad is an established home beauty service platform running active home salon ads. | Follow-up with PDF deck on 2026-05-25T08:55:27.205Z",
     "created_at": "2026-05-23T17:43:49.226342+00:00",
-    "updated_at": "2026-05-23T17:43:49.226342+00:00"
+    "updated_at": "2026-05-25T08:55:27.32186+00:00"
   },
   {
     "id": "9cd0d71e-8071-4e15-a3f5-ebe0e92eb8e5",
@@ -2685,6 +3480,21 @@
     "updated_at": "2026-05-24T12:20:27.379891+00:00"
   },
   {
+    "id": "a16e6ecf-e7c2-4981-8d05-72c4ccaafc1c",
+    "brand_name": "Gentle Beast",
+    "website": "https://www.gentlebeast.in",
+    "instagram_handle": null,
+    "email": "care@gentlebeast.in",
+    "category": "Men's Grooming & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:44:16.932+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:44:17.085333+00:00",
+    "updated_at": "2026-05-24T18:44:17.085333+00:00"
+  },
+  {
     "id": "a18988d2-3e60-4734-a087-afc61af7bd74",
     "brand_name": "Arata",
     "website": "https://arata.in",
@@ -2713,6 +3523,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "a19f5bb3-316f-410f-98a5-0364897fe8e7",
+    "brand_name": "Toothsi (makeO)",
+    "website": "https://makeo.app",
+    "instagram_handle": null,
+    "email": "customersupport@toothsi.in",
+    "category": "Dental Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:08.182+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DENTAL): Toothsi clear aligners doorstep modern platform.",
+    "created_at": "2026-05-25T09:02:08.334738+00:00",
+    "updated_at": "2026-05-25T09:02:08.334738+00:00"
   },
   {
     "id": "a4cc1f68-d5c8-4625-a0d1-bbab1548d332",
@@ -2790,6 +3615,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "a8262bdc-2f2d-41b9-88c2-bb59b065ea70",
+    "brand_name": "Prustlr",
+    "website": "https://prustlr.com",
+    "instagram_handle": null,
+    "email": "info@prustlr.com",
+    "category": "Wellness & Nutrition",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:16.619+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:16.722786+00:00",
+    "updated_at": "2026-05-24T16:34:16.722786+00:00"
+  },
+  {
     "id": "a8be3c53-5633-402d-a8f3-4dc952b7281f",
     "brand_name": "Barks & Wags",
     "website": "https://barksandwags.in",
@@ -2850,6 +3690,21 @@
     "updated_at": "2026-05-24T12:20:33.407504+00:00"
   },
   {
+    "id": "ada4351b-f4f3-4820-968d-582786847a42",
+    "brand_name": "Clinic Dermatech",
+    "website": "https://clinicdermatech.com",
+    "instagram_handle": null,
+    "email": "info@clinicdermatech.com",
+    "category": "Dermatology Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:19.029+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DERMO): Aesthetic clinics chain for advanced skin care.",
+    "created_at": "2026-05-25T09:02:19.143217+00:00",
+    "updated_at": "2026-05-25T09:02:19.143217+00:00"
+  },
+  {
     "id": "af5fc9e7-d803-491b-b855-44c7d40b409a",
     "brand_name": "Om Dental Braces & Implant Clinic",
     "website": "",
@@ -2863,6 +3718,36 @@
     "notes": "Contact: Doctor | Location: Patna",
     "created_at": "2026-05-22T20:25:05.617277+00:00",
     "updated_at": "2026-05-22T20:25:05.617277+00:00"
+  },
+  {
+    "id": "b039055d-29aa-47c3-821c-2dd20143117e",
+    "brand_name": "Dunamis Cosmetics",
+    "website": "https://dunamiss.in",
+    "instagram_handle": null,
+    "email": "care@dunamiss.in",
+    "category": "Cosmetics & Makeup",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:07:25.244+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-25T08:07:25.4407+00:00",
+    "updated_at": "2026-05-25T08:07:25.4407+00:00"
+  },
+  {
+    "id": "b20694f9-7368-4bb5-99cf-16821e43869e",
+    "brand_name": "Toothsi Alternate",
+    "website": "https://makeo.app",
+    "instagram_handle": null,
+    "email": "info@toothsi.in",
+    "category": "Dental Clinics",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:02:12.702+00:00",
+    "replied_at": null,
+    "notes": "Clinical Campaign (DENTAL): Alternate Toothsi corporate email.",
+    "created_at": "2026-05-25T09:02:12.907628+00:00",
+    "updated_at": "2026-05-25T09:02:12.907628+00:00"
   },
   {
     "id": "b25c5ee1-b3e7-4d4d-addb-d8f0d71ce770",
@@ -3015,6 +3900,21 @@
     "updated_at": "2026-05-23T17:35:32.221435+00:00"
   },
   {
+    "id": "b9eb4451-54cf-42d9-88e0-394cb9a1b377",
+    "brand_name": "Triple Care",
+    "website": "https://triplecare.in",
+    "instagram_handle": null,
+    "email": "triplecare00@gmail.com",
+    "category": "Hair & Personal Care",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:30:52.073+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:30:52.29283+00:00",
+    "updated_at": "2026-05-24T15:30:52.29283+00:00"
+  },
+  {
     "id": "ba595d6e-2f75-4879-b424-c7f4d328da8f",
     "brand_name": "Rahul Dental Clinic",
     "website": "",
@@ -3028,6 +3928,21 @@
     "notes": "Contact Doctor: Dr. Rahul",
     "created_at": "2026-05-22T19:45:58.659892+00:00",
     "updated_at": "2026-05-22T19:45:58.659892+00:00"
+  },
+  {
+    "id": "bcad8cf8-21ac-416b-a5f2-2b4b1a600b2a",
+    "brand_name": "Cureveda",
+    "website": "https://www.cureveda.com",
+    "instagram_handle": null,
+    "email": "info@cureveda.com",
+    "category": "Wellness & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:41:50.117+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:41:50.448266+00:00",
+    "updated_at": "2026-05-24T18:41:50.448266+00:00"
   },
   {
     "id": "bd6761aa-a11c-472b-bc93-cfbfcc045a55",
@@ -3058,6 +3973,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "be11fde7-e3eb-40d6-a7b3-5e3973253a30",
+    "brand_name": "Herb Island",
+    "website": "https://herbisland.in",
+    "instagram_handle": null,
+    "email": "info@herbelementz.com",
+    "category": "Beauty & Skincare",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:34:02.047+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:34:02.199701+00:00",
+    "updated_at": "2026-05-24T16:34:02.199701+00:00"
   },
   {
     "id": "be8c0ca4-e063-47df-9fb2-0d8156313fa8",
@@ -3180,6 +4110,36 @@
     "updated_at": "2026-05-22T20:24:36.942903+00:00"
   },
   {
+    "id": "c2a92d35-4040-4163-bd13-6198590cab6a",
+    "brand_name": "Moiz Skincare",
+    "website": "https://www.moizskincare.com",
+    "instagram_handle": null,
+    "email": "support@moizskincare.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:58:53.035+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:58:53.530592+00:00",
+    "updated_at": "2026-05-24T15:58:53.530592+00:00"
+  },
+  {
+    "id": "c346da61-52bb-411a-9645-44c1dbcacdfe",
+    "brand_name": "Affinity Luxe",
+    "website": "https://affinityluxe.salon",
+    "instagram_handle": null,
+    "email": "Affinityluxe14@gmail.com",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:11.942+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Super-premium luxury extension of the Affinity brand.",
+    "created_at": "2026-05-25T08:51:12.070489+00:00",
+    "updated_at": "2026-05-25T08:51:12.070489+00:00"
+  },
+  {
     "id": "c4909afa-228c-4580-b50a-1a1dee747030",
     "brand_name": "Good Monk",
     "website": "https://goodmonk.in",
@@ -3262,12 +4222,12 @@
     "email": "cartfireindia@gmail.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-22T21:00:14.067+00:00",
+    "outreach_count": 3,
+    "last_contacted_at": "2026-05-24T18:39:13.961+00:00",
     "replied_at": null,
     "notes": null,
     "created_at": "2026-05-22T21:00:14.162389+00:00",
-    "updated_at": "2026-05-22T21:00:14.162389+00:00"
+    "updated_at": "2026-05-24T18:39:14.071697+00:00"
   },
   {
     "id": "c906e167-7b54-45f0-b0b8-0439d069068a",
@@ -3585,6 +4545,36 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "deb8d533-bfbc-47e6-8015-3dab1f542dbd",
+    "brand_name": "Affinity Salon",
+    "website": "https://affinity.salon",
+    "instagram_handle": null,
+    "email": "admin@theaffinitysalon.com",
+    "category": "Beauty, Skincare & Grooming",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:09.665+00:00",
+    "replied_at": null,
+    "notes": "NCR Salon Campaign: Prestigious premium salon brand in South Delhi.",
+    "created_at": "2026-05-25T08:51:09.785077+00:00",
+    "updated_at": "2026-05-25T08:51:09.785077+00:00"
+  },
+  {
+    "id": "dfe6e906-05bc-4b0c-8f4a-3a5064f1db30",
+    "brand_name": "Boldpurity",
+    "website": "https://boldpurity.com",
+    "instagram_handle": null,
+    "email": "care@boldpurity.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:55:28.954+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:55:29.284706+00:00",
+    "updated_at": "2026-05-24T15:55:29.284706+00:00"
+  },
+  {
     "id": "e1659a89-b0ee-40c0-84ca-6ab59723cf14",
     "brand_name": "Slurrp Farm",
     "website": "https://slurrpfarm.com",
@@ -3660,6 +4650,21 @@
     "updated_at": "2026-05-23T09:41:44.108636+00:00"
   },
   {
+    "id": "e340270b-0305-46a5-87de-7a7eccdd5460",
+    "brand_name": "Snitch",
+    "website": "https://snitch.co.in",
+    "instagram_handle": null,
+    "email": "influencer.reach@snitch.co.in",
+    "category": "Fashion & Apparel",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:47:10.438+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:47:10.832768+00:00",
+    "updated_at": "2026-05-24T15:47:10.832768+00:00"
+  },
+  {
     "id": "e4941933-2bed-4bcd-8b52-4bec3fe42a18",
     "brand_name": "Naturally Yours",
     "website": "https://naturallyyours.in",
@@ -3673,6 +4678,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "e4948e20-225f-47a3-9e9f-f97f7937bd34",
+    "brand_name": "cosmapose",
+    "website": "https://cosmapose.com",
+    "instagram_handle": null,
+    "email": "info@cosmapose.com",
+    "category": "Skincare & Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:30:13.666+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:30:13.797606+00:00",
+    "updated_at": "2026-05-24T15:30:13.797606+00:00"
   },
   {
     "id": "e6ecb7f0-dd95-4bed-8061-a34c3ccb88a3",
@@ -3703,6 +4723,36 @@
     "notes": null,
     "created_at": "2026-05-23T10:25:29.921656+00:00",
     "updated_at": "2026-05-23T10:25:29.921656+00:00"
+  },
+  {
+    "id": "e7fef496-146a-47f5-a0bc-6f4c12783145",
+    "brand_name": "Boldpurity (Founder - Fouzan)",
+    "website": "https://boldpurity.com",
+    "instagram_handle": null,
+    "email": "fouzan@boldpurity.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:31.026+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:31.133788+00:00",
+    "updated_at": "2026-05-24T16:10:31.133788+00:00"
+  },
+  {
+    "id": "e8598270-324e-4675-b5ad-bb7974cc031b",
+    "brand_name": "Wakefit",
+    "website": "https://www.wakefit.co",
+    "instagram_handle": null,
+    "email": "support@wakefit.co",
+    "category": "Home, Sleep & Lifestyle",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T18:52:06.125+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T18:52:06.773925+00:00",
+    "updated_at": "2026-05-24T18:52:06.773925+00:00"
   },
   {
     "id": "ea06976e-42b1-46a1-822f-44281d538034",
@@ -3765,6 +4815,36 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "eb94bafe-7e02-4b76-9ada-d1a7232fde5e",
+    "brand_name": "Beyond The Sugar",
+    "website": "https://beyondthesugar.com",
+    "instagram_handle": null,
+    "email": "official@beyondthesugar.com",
+    "category": "Healthy Food & Sweeteners",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:30:11.214+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:30:11.578336+00:00",
+    "updated_at": "2026-05-24T15:30:11.578336+00:00"
+  },
+  {
+    "id": "ecf6db15-fdb6-42d4-8249-30b1f14c09d1",
+    "brand_name": "Jawed Habib Jagdeopath",
+    "website": "http://www.thejawedhabibpatna.com",
+    "instagram_handle": null,
+    "email": "jawedhabibjagdeopath@gmail.com",
+    "category": "Salons",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T09:11:35.011+00:00",
+    "replied_at": null,
+    "notes": "Patna regional campaign (SALON): Jawed Habib Jagdeopath Patna branch.",
+    "created_at": "2026-05-25T09:11:35.112633+00:00",
+    "updated_at": "2026-05-25T09:11:35.112633+00:00"
+  },
+  {
     "id": "ee012a89-87af-4518-a03d-56d127f9ec9c",
     "brand_name": "Rustic Art",
     "website": "https://rusticart.in",
@@ -3778,6 +4858,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "ee0768ca-f110-4aa1-8742-9012ec8f82c2",
+    "brand_name": "Kohl & Spice",
+    "website": "https://kohlspice.com",
+    "instagram_handle": null,
+    "email": "support@kohlspice.in",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T15:58:13.614+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T15:58:13.952991+00:00",
+    "updated_at": "2026-05-24T15:58:13.952991+00:00"
   },
   {
     "id": "ee70ba23-ebfa-470b-8253-b66cb98c25d9",
@@ -3853,6 +4948,21 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
+  },
+  {
+    "id": "f4fa2718-3bbe-4d4c-a391-2876182cbc87",
+    "brand_name": "Seven Seas Cosmetics",
+    "website": "https://www.sevenseascosmetics.com",
+    "instagram_handle": null,
+    "email": "care@sevenseascosmetics.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:00:46.465+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:00:46.638047+00:00",
+    "updated_at": "2026-05-24T16:00:46.638047+00:00"
   },
   {
     "id": "f52e15e2-2307-492a-bd43-1a12127e0164",
@@ -3975,6 +5085,21 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
+    "id": "fab3bcef-814d-4532-998c-604d4ca56819",
+    "brand_name": "Atulya",
+    "website": "https://www.myatulya.com",
+    "instagram_handle": null,
+    "email": "beaconbiolife@gmail.com",
+    "category": "Skincare & Clinical Beauty",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:28:03.888+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:28:03.995731+00:00",
+    "updated_at": "2026-05-24T16:28:03.995731+00:00"
+  },
+  {
     "id": "fba23b05-ca31-42fe-b5d9-1496372981e4",
     "brand_name": "getyuriskin",
     "website": "https://yuriskin.com",
@@ -3988,6 +5113,36 @@
     "notes": null,
     "created_at": "2026-05-22T21:00:16.377608+00:00",
     "updated_at": "2026-05-22T21:00:16.377608+00:00"
+  },
+  {
+    "id": "fdf16c42-49fb-417f-98b8-d21686f9d0e0",
+    "brand_name": "Zyog Nutrition (CEO - Bhavin)",
+    "website": "https://zyog.in",
+    "instagram_handle": null,
+    "email": "bhavin@zyog.in",
+    "category": "Wellness & Supplements",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:10:31.706+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:10:31.822449+00:00",
+    "updated_at": "2026-05-24T16:10:31.822449+00:00"
+  },
+  {
+    "id": "fe0703c2-2bc5-4d55-a2fb-66b57d013475",
+    "brand_name": "Bevygood",
+    "website": "https://bevygood.com",
+    "instagram_handle": null,
+    "email": "connect@bevygood.com",
+    "category": "Food, Snacks & Beverages",
+    "status": "contacted",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-24T16:13:29.188+00:00",
+    "replied_at": null,
+    "notes": null,
+    "created_at": "2026-05-24T16:13:29.53902+00:00",
+    "updated_at": "2026-05-24T16:13:29.53902+00:00"
   },
   {
     "id": "fe22dec7-b261-4839-959e-6c913309af1c",

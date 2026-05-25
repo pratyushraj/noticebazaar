@@ -402,7 +402,7 @@ const SalonProposalDeck = () => {
   const realBarterCost = Math.round(treatmentValue * (ingredientCostPercent / 100));
 
   return (
-    <div className="min-h-screen bg-[#030712] text-white flex flex-col font-sans select-none overflow-hidden relative">
+    <div className="min-h-screen bg-[#f8f3ea] text-[#111111] flex flex-col select-none overflow-hidden relative" style={{ fontFamily: "'Sora', sans-serif" }}>
       <SEOHead
         title="Creator Armour | Salon Chair Monetization Engine"
         description="We turn your empty salon chairs into paying clients using beauty creators within 5km. Zero-managed barter campaigns."
@@ -499,14 +499,14 @@ const SalonProposalDeck = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={isExporting ? false : { opacity: 0, scale: 0.98, y: -10 }}
               transition={isExporting ? { duration: 0 } : { duration: 0.3, ease: 'easeOut' }}
-              className={`w-full max-w-[1100px] min-h-[560px] md:min-h-[620px] rounded-[32px] p-6 md:p-9 flex flex-col justify-between shadow-2xl relative overflow-hidden ${
+              className={`w-full max-w-[1100px] min-h-[560px] md:min-h-[620px] rounded-[32px] p-6 md:p-9 flex flex-col justify-between shadow-[0_24px_80px_rgba(120,90,30,0.12)] relative overflow-hidden ${
                 isExporting ? '' : 'transition-all duration-300'
               } ${
                 theme === 'luxury-dark' 
-                  ? 'bg-gradient-to-br from-[#090909] via-[#050505] to-[#000000] border border-amber-500/10 text-white shadow-amber-950/5' 
+                  ? 'bg-gradient-to-br from-[#fffaf2] via-[#fffdf8] to-[#f7f0e5] border border-amber-100 text-[#111111] shadow-[0_24px_80px_rgba(120,90,30,0.12)]' 
                   : theme === 'gold-accent'
-                  ? 'bg-gradient-to-br from-[#0d0903] via-[#050401] to-[#000000] border border-amber-400/20 text-white shadow-slate-950/10'
-                  : 'bg-[#090909] border border-amber-500/10 text-white'
+                  ? 'bg-gradient-to-br from-[#fff8ec] via-[#fffdf9] to-[#f8f0e5] border border-amber-200 text-[#111111] shadow-[0_18px_50px_rgba(120,90,30,0.1)]'
+                  : 'bg-[#fffdf8] border border-black/5 text-[#111111]'
               }`}
               id="salon-pitch-deck-slide-card"
             >
@@ -516,22 +516,22 @@ const SalonProposalDeck = () => {
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10 my-auto h-full">
                   
                   {/* Atmospheric Obsidian Gold mesh gradient instead of stock images */}
-                  <div className="absolute inset-0 z-0 pointer-events-none rounded-[32px] overflow-hidden bg-gradient-to-b from-amber-500/[0.03] via-transparent to-transparent">
-                    <div className="absolute top-12 right-1/4 w-[300px] h-[300px] bg-amber-500/[0.04] rounded-full blur-[100px]" />
-                    <div className="absolute bottom-12 left-1/4 w-[300px] h-[300px] bg-amber-500/[0.02] rounded-full blur-[120px]" />
+                  <div className="absolute inset-0 z-0 pointer-events-none rounded-[32px] overflow-hidden bg-gradient-to-b from-amber-500/[0.05] via-transparent to-transparent">
+                    <div className="absolute top-12 right-1/4 w-[300px] h-[300px] bg-amber-300/[0.10] rounded-full blur-[100px]" />
+                    <div className="absolute bottom-12 left-1/4 w-[300px] h-[300px] bg-rose-200/[0.10] rounded-full blur-[120px]" />
                   </div>
  
                   <div className="lg:col-span-7 space-y-6 relative z-10">
-                    <div className="h-8 px-4 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 flex items-center justify-center text-[10px] font-black uppercase tracking-widest w-fit animate-pulse">
+                    <div className="h-8 px-4 rounded-full bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.22em] w-fit animate-pulse" style={{ fontFamily: "'DM Mono', monospace" }}>
                       💆‍♀️ Unused-Chair Monetization Engine
                     </div>
-                    <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter leading-tight text-white">
+                    <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-[0.92] text-[#111111]" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
                       YOUR NEXT 20 CLIENTS ARE ALREADY <br/>
-                      WATCHING <span className="text-amber-400">INSTAGRAM REELS.</span>
+                      WATCHING <span className="text-amber-600">INSTAGRAM REELS.</span>
                     </h1>
-                    <p className="text-base md:text-lg text-slate-300 font-medium leading-relaxed max-w-xl">
+                    <p className="text-base md:text-lg text-neutral-700 font-medium leading-relaxed max-w-xl">
                       Turn quiet weekday hours into confirmed bookings with local creator matching.
-                      <span className="text-amber-400 block mt-2 font-bold italic">
+                      <span className="text-amber-600 block mt-2 font-bold italic">
                         Instagram pushes geotagged Reels directly to women within 5km of your salon.
                       </span>
                     </p>
@@ -547,7 +547,7 @@ const SalonProposalDeck = () => {
 
                   {/* High-Fidelity Creator Filming Viewfinder Mockup */}
                   <div className="lg:col-span-5 hidden lg:block h-full max-h-[340px] relative z-10">
-                    <div className="bg-neutral-950 border border-amber-500/25 rounded-3xl p-3 backdrop-blur-md relative overflow-hidden shadow-2xl h-full flex flex-col justify-between aspect-[9/16] max-w-[280px] mx-auto group">
+                    <div className="bg-[#111111] border border-amber-200 rounded-3xl p-3 backdrop-blur-md relative overflow-hidden shadow-2xl h-full flex flex-col justify-between aspect-[9/16] max-w-[280px] mx-auto group">
                       {/* Viewfinder borders */}
                       <div className="absolute inset-2.5 border border-white/10 rounded-2xl pointer-events-none z-10" />
                       {/* Corner crop marks */}
@@ -559,26 +559,26 @@ const SalonProposalDeck = () => {
                       {/* Abstract Gold-Obsidian Gradient viewport instead of stock photo */}
                       <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-950 to-black z-0 flex flex-col items-center justify-center border border-white/5 rounded-3xl relative">
                         <div className="w-12 h-12 rounded-full border border-amber-500/20 bg-amber-500/5 flex items-center justify-center mb-2 animate-pulse">
-                          <Video className="h-6 w-6 text-amber-400" />
+                          <Video className="h-6 w-6 text-amber-500" />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 font-mono">Camera view active</span>
-                        <span className="text-[8px] text-neutral-600 font-mono mt-1">GK-2 Delhi coordinates</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.22em] text-neutral-400" style={{ fontFamily: "'DM Mono', monospace" }}>Camera view active</span>
+                        <span className="text-[8px] text-neutral-600 mt-1" style={{ fontFamily: "'DM Mono', monospace" }}>GK-2 Delhi coordinates</span>
                       </div>
                       
                       {/* Vetted badge */}
                       <div className="z-10 flex justify-between items-start">
-                        <span className="px-2 py-0.5 rounded-full bg-black/80 border border-amber-500/30 text-[8px] font-black uppercase tracking-widest text-amber-400 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full bg-black/80 border border-amber-500/30 text-[8px] font-black uppercase tracking-[0.18em] text-amber-300 flex items-center gap-1" style={{ fontFamily: "'DM Mono', monospace" }}>
                           <Sparkles className="h-2.5 w-2.5 animate-pulse" /> 5km Radius
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[8px] font-black uppercase tracking-widest animate-bounce">
+                        <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[8px] font-black uppercase tracking-[0.18em] animate-bounce" style={{ fontFamily: "'DM Mono', monospace" }}>
                           +14 Bookings
                         </span>
                       </div>
 
                       {/* Overlaid WhatsApp verified client message */}
                       <div className="z-10 bg-black/95 border border-white/10 rounded-2xl p-2.5 font-mono text-[8px] space-y-1 shadow-2xl relative mt-auto">
-                        <p className="text-amber-400 font-bold uppercase text-[7px] tracking-wider flex items-center gap-1">
-                          <MessageSquare className="h-3 w-3 fill-amber-400 text-amber-400" /> Real-time Intake Proof
+                        <p className="text-amber-300 font-bold uppercase text-[7px] tracking-wider flex items-center gap-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+                          <MessageSquare className="h-3 w-3 fill-amber-300 text-amber-300" /> Real-time Intake Proof
                         </p>
                         <p className="text-neutral-300">
                           <span className="text-white font-bold">Client:</span> "Saw the local hydrafacial transformation. Do you have a slot open tomorrow?"
@@ -600,34 +600,34 @@ const SalonProposalDeck = () => {
                       The Cost of an <span className="text-red-400">Empty Salon Chair.</span>
                     </h2>
                     <p className="text-xs text-neutral-400 max-w-2xl font-medium">
-                      Every premium salon has hidden leaks draining its monthly profits. Let's look at the operational reality:
+                      Empty chairs, idle staff, wasted ads, and random barter spend all hit the same profit line.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-5 gap-4 py-4 my-auto">
                     {[
                       {
-                        title: 'Khali Kursi (Idle Chairs)',
+                        title: 'Khali Kursi',
                         label: 'Idle Inventory',
-                        desc: 'Weekday chairs (Mon-Thu) sit completely empty. Rent, lights, and AC are still paid 100%.',
+                        desc: 'Weekday chairs sit empty, but rent and staff keep running.',
                         icon: '💺'
                       },
                       {
                         title: 'Unused Staff Hours',
                         label: 'Sunk Payroll',
-                        desc: 'Stylists and therapists are on fixed monthly salaries, sitting idle during slow weekday mornings.',
+                        desc: 'Team time gets wasted during slow weekday mornings.',
                         icon: '⏳'
                       },
                       {
                         title: 'Expensive Meta Ads',
                         label: 'Cash Burn',
-                        desc: 'Burning thousands on Instagram ads that attract casual profile clicks and zero local foot traffic.',
+                        desc: 'Ad spend attracts attention, not local foot traffic.',
                         icon: '💸'
                       },
                       {
                         title: 'Wasted Barters',
                         label: 'Influencer Leak',
-                        desc: 'Giving free ₹5,000 treatments to random creators who have followers in other states and who never post.',
+                        desc: 'Free treatments go to creators who never post or drive bookings.',
                         icon: '❌'
                       },
                       {
@@ -653,7 +653,7 @@ const SalonProposalDeck = () => {
                   <div className="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-3.5 text-center flex items-center justify-center gap-2">
                     <Sparkles className="h-4 w-4 text-amber-400 animate-pulse shrink-0" />
                     <p className="text-xs text-neutral-300 font-bold">
-                      <span className="text-amber-400 uppercase font-black">Creator Armour Fixes This:</span> We convert your empty slot capacity into geolocated local distribution.
+                      <span className="text-amber-400 uppercase font-black">Creator Armour fixes this:</span> we convert empty slots into local demand.
                     </p>
                   </div>
                 </div>
@@ -664,13 +664,13 @@ const SalonProposalDeck = () => {
                 <div className="flex-1 flex flex-col justify-between z-10 relative">
                   <div className="space-y-2">
                     <div className="h-5 w-fit px-3 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-[9px] font-black uppercase tracking-wider">
-                      Hyperlocal Distribution
+                      Local women within 5km
                     </div>
                     <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-white">
                       Targeting Local Women <span className="text-amber-400">Within 5km.</span>
                     </h2>
                     <p className="text-xs text-neutral-400 max-w-2xl font-medium">
-                      Instagram’s geotag pushes Reels to local women nearby. We match you with vetted creators who live within 5km.
+                      Instagram’s geotag pushes Reels nearby. We match you with vetted creators already in your radius.
                     </p>
                   </div>
 
@@ -678,10 +678,10 @@ const SalonProposalDeck = () => {
                     
                     {/* Concentric 5km Map Mockup */}
                     <div className="lg:col-span-6 flex justify-center">
-                      <div className="w-full max-w-[340px] aspect-square bg-[#050505] border border-amber-500/20 rounded-3xl relative overflow-hidden flex items-center justify-center shadow-xl">
+                      <div className="w-full max-w-[340px] aspect-square bg-[#fbf6ed] border border-amber-200 rounded-3xl relative overflow-hidden flex items-center justify-center shadow-xl">
                         
                         {/* Map Grid Background */}
-                        <div className="absolute inset-0 bg-[linear-gradient(rgba(245,158,11,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.02)_1px,transparent_1px)] bg-[size:20px_20px]" />
+                        <div className="absolute inset-0 bg-[linear-gradient(rgba(245,158,11,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.04)_1px,transparent_1px)] bg-[size:20px_20px]" />
                         
                         {/* Concentric rings */}
                         <div className="absolute w-[80%] h-[80%] border border-dashed border-amber-500/10 rounded-full flex items-center justify-center">
@@ -693,22 +693,22 @@ const SalonProposalDeck = () => {
 
                         {/* Central Salon Pin */}
                         <div className="relative z-10 w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500 flex items-center justify-center shadow-2xl animate-pulse">
-                          <MapPin className="h-4.5 w-4.5 text-amber-400 fill-amber-400/20" />
+                          <MapPin className="h-4.5 w-4.5 text-amber-500 fill-amber-400/20" />
                         </div>
                         <span className="absolute z-10 translate-y-7 text-[8px] font-black uppercase tracking-widest text-white bg-black/85 px-1.5 py-0.5 rounded border border-amber-500/20">Aesthetic Salon</span>
 
                         {/* Nearby Matched Creators */}
                         <div className="absolute top-[22%] left-[18%] z-10 bg-black/90 border border-white/10 rounded-xl p-1 flex items-center gap-1 text-[7px] font-mono shadow-2xl">
                           <div className="w-3.5 h-3.5 rounded-full bg-amber-500/30 flex items-center justify-center font-bold">C</div>
-                          <span className="text-amber-400">@lajpat.beauty (1.2km)</span>
+                          <span className="text-amber-600">@lajpat.beauty (1.2km)</span>
                         </div>
                         <div className="absolute bottom-[28%] right-[12%] z-10 bg-black/90 border border-white/10 rounded-xl p-1 flex items-center gap-1 text-[7px] font-mono shadow-2xl">
                           <div className="w-3.5 h-3.5 rounded-full bg-amber-500/30 flex items-center justify-center font-bold">C</div>
-                          <span className="text-amber-400">@south.ex.style (2.8km)</span>
+                          <span className="text-amber-600">@south.ex.style (2.8km)</span>
                         </div>
                         <div className="absolute bottom-[65%] right-[22%] z-10 bg-black/90 border border-white/10 rounded-xl p-1 flex items-center gap-1 text-[7px] font-mono shadow-2xl">
                           <div className="w-3.5 h-3.5 rounded-full bg-amber-500/30 flex items-center justify-center font-bold">C</div>
-                          <span className="text-amber-400">@gk2.lifestyle (0.8km)</span>
+                          <span className="text-amber-600">@gk2.lifestyle (0.8km)</span>
                         </div>
                       </div>
                     </div>
@@ -716,10 +716,10 @@ const SalonProposalDeck = () => {
                     {/* Operational match timeline */}
                     <div className="lg:col-span-6 space-y-3.5 text-left">
                       {[
-                        { title: 'Local Creator Match', label: 'Hyperlocal Geotag', text: 'Vetted beauty creators living or working within 5km of your salon coordinates.' },
-                        { title: ' directed script guide', label: 'High Dopamine ASMR', text: 'We direct creator close-ups, satisfying treatments, transformation hooks. No front-desk effort.' },
-                        { title: 'Mon-Thu slot visits', label: 'Quiet Hour fill', text: 'Creators book slow weekday mornings. Empty chairs become booking machines.' },
-                        { title: 'WhatsApp tracking', label: 'ROI attribution', text: 'Booking inquiries land directly on WhatsApp with dynamic referral tags.' }
+                        { title: 'Local creator match', label: 'Hyperlocal geotag', text: 'Vetted beauty creators living or working within 5km.' },
+                        { title: 'Reel direction', label: 'High dopamine ASMR', text: 'We direct close-ups, satisfying treatments, and hooks.' },
+                        { title: 'Mon-Thu slot visits', label: 'Quiet hour fill', text: 'Creators book slow weekday mornings.' },
+                        { title: 'WhatsApp tracking', label: 'ROI attribution', text: 'Booking inquiries land directly on WhatsApp.' }
                       ].map((item, idx) => (
                         <div key={idx} className="flex gap-3 bg-white/[0.01] border border-white/5 p-3 rounded-2xl">
                           <span className="h-6 w-6 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-xs font-black text-amber-400 shrink-0 font-mono">
@@ -812,17 +812,17 @@ const SalonProposalDeck = () => {
 
                     {/* Right: Visual ROI chain flow */}
                     <div className="lg:col-span-6 space-y-4">
-                      <p className="text-amber-400 text-xs font-black uppercase tracking-wider text-left font-mono">
+                      <p className="text-amber-500 text-xs font-black uppercase tracking-wider text-left font-mono">
                         📈 Visual ROI chain
                       </p>
 
-                      <div className="bg-neutral-900/60 border border-white/5 rounded-3xl p-5 space-y-4 text-left">
+                      <div className="bg-[#fffaf2] border border-amber-100 rounded-3xl p-5 space-y-4 text-left">
                         {[
-                          { title: '1 Premium Treatment', label: `₹${realBarterCost} Raw Material Cost` },
-                          { title: '1 Directed Creator Reel', label: 'Macro satisfying video scripts' },
-                          { title: '82,000 geotargeted reach', label: 'Local women within 5km radius' },
-                          { title: '14 direct client bookings', label: 'Dynamic WhatsApp intake attribution' },
-                          { title: `₹${(treatmentValue * 14).toLocaleString('en-IN')} net bookings value`, label: 'Significant ROI leverage', highlight: true }
+                          { title: '1 premium treatment', label: `₹${realBarterCost} raw material cost` },
+                          { title: '1 creator reel', label: 'Clear hook + CTA' },
+                          { title: '82k local reach', label: 'Women within 5km' },
+                          { title: '14 bookings', label: 'Tracked on WhatsApp' },
+                          { title: `₹${(treatmentValue * 14).toLocaleString('en-IN')} revenue`, label: 'Transparent ROI leverage', highlight: true }
                         ].map((step, idx) => (
                           <div key={idx} className="relative flex items-start gap-3">
                             {/* Line connecting steps */}
@@ -831,13 +831,13 @@ const SalonProposalDeck = () => {
                             )}
                             <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 relative z-10 ${
                               step.highlight 
-                                ? 'bg-emerald-500 text-black animate-bounce' 
+                                ? 'bg-amber-400 text-black animate-bounce' 
                                 : 'bg-amber-500/10 border border-amber-500/20 text-amber-400 font-mono'
                             }`}>
                               {idx === 4 ? '₹' : idx + 1}
                             </span>
                             <div className="min-w-0">
-                              <p className={`text-xs font-black uppercase tracking-wide leading-none ${step.highlight ? 'text-emerald-400 font-black' : 'text-white'}`}>
+                              <p className={`text-xs font-black uppercase tracking-wide leading-none ${step.highlight ? 'text-amber-600 font-black' : 'text-[#111111]'}`}>
                                 {step.title}
                               </p>
                               <p className="text-[9px] text-neutral-500 font-medium font-mono mt-0.5">{step.label}</p>
@@ -871,24 +871,24 @@ const SalonProposalDeck = () => {
                     
                     {/* Left: Why Reels Work visual blocks */}
                     <div className="lg:col-span-5 flex flex-col gap-2.5 justify-center text-left">
-                      <p className="text-amber-400 text-xs font-black uppercase tracking-wider font-mono mb-1">
+                      <p className="text-amber-500 text-xs font-black uppercase tracking-wider font-mono mb-1">
                         ⚡ Why Reels outperform ads
                       </p>
                       {[
-                        { title: 'Pure ASMR Dopamine', desc: 'Satisfying sounds (hydro-vacuum clicks, basin washing) capture attention instantly.' },
-                        { title: 'Transformation-Driven', desc: 'Desi skin concerns (monsoon frizz, tan lines) transforming to perfect glowing skin tone.' },
-                        { title: 'High Save Psychology', desc: 'Indian women bookmark beauty transformation Reels to refer back before weddings and festivals.' },
-                        { title: 'organic Local push', desc: 'Instagram geotags organically serve locally shot Reels to nearby neighborhood residents.' }
+                        { title: 'Pure ASMR dopamine', desc: 'Satisfying sounds capture attention instantly.' },
+                        { title: 'Transformation driven', desc: 'Before/after content is inherently proof-rich.' },
+                        { title: 'High save psychology', desc: 'People bookmark beauty ideas before events.' },
+                        { title: 'Local intent', desc: 'Location tags convert curiosity into nearby visits.' }
                       ].map((item, keyIdx) => (
-                        <div key={keyIdx} className="bg-white/[0.01] border border-white/5 rounded-2xl p-3">
-                          <p className="text-xs font-black uppercase text-white tracking-wide">{item.title}</p>
-                          <p className="text-[9.5px] text-neutral-400 mt-0.5 leading-relaxed font-medium">{item.desc}</p>
+                        <div key={keyIdx} className="bg-[#fffaf2] border border-amber-100 rounded-2xl p-3">
+                          <p className="text-xs font-black uppercase text-[#111111] tracking-wide">{item.title}</p>
+                          <p className="text-[9.5px] text-neutral-600 mt-0.5 leading-relaxed font-medium">{item.desc}</p>
                         </div>
                       ))}
                     </div>
 
                     {/* Right: Niche Blueprints Tabs & Mock Video Preview */}
-                    <div className="lg:col-span-7 bg-neutral-900 border border-white/10 rounded-3xl p-5 flex flex-col justify-between">
+                    <div className="lg:col-span-7 bg-[#fffaf2] border border-amber-100 rounded-3xl p-5 flex flex-col justify-between">
                       
                       <div className="flex overflow-x-auto gap-1 border-b border-white/5 pb-2 scrollbar-none">
                         {salonNiches.map((niche, idx) => (
@@ -897,8 +897,8 @@ const SalonProposalDeck = () => {
                             onClick={() => setActiveNicheIndex(idx)}
                             className={`px-3 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-wider shrink-0 transition-all ${
                               activeNicheIndex === idx 
-                                ? 'bg-amber-400/10 border-amber-400/30 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.1)]'
-                                : 'bg-transparent border-transparent text-neutral-500 hover:text-neutral-300'
+                              ? 'bg-amber-100 border-amber-200 text-amber-700 shadow-[0_0_8px_rgba(245,158,11,0.08)]'
+                                : 'bg-transparent border-transparent text-neutral-500 hover:text-neutral-800'
                             }`}
                           >
                             {niche.title.split(' / ')[0]}
@@ -909,55 +909,66 @@ const SalonProposalDeck = () => {
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 flex-1 items-center mt-4">
                         <div className="md:col-span-7 space-y-3 text-left">
                           <div>
-                            <span className="text-[9px] font-black uppercase text-neutral-500 bg-neutral-950 px-2 py-0.5 rounded-md border border-white/5 font-mono">
+                            <span className="text-[9px] font-black uppercase text-neutral-500 bg-white px-2 py-0.5 rounded-md border border-amber-100 font-mono">
                               Barter Cost: {salonNiches[activeNicheIndex].barterCost} (Retail: {salonNiches[activeNicheIndex].retail})
                             </span>
-                            <p className="text-xs font-black text-amber-400 leading-none uppercase mt-2">{salonNiches[activeNicheIndex].hook}</p>
+                            <p className="text-xs font-black text-amber-600 leading-none uppercase mt-2">{salonNiches[activeNicheIndex].hook}</p>
                           </div>
                           
-                          <p className="text-[10px] text-neutral-400 leading-relaxed font-medium">
+                          <p className="text-[10px] text-neutral-600 leading-relaxed font-medium">
                             {salonNiches[activeNicheIndex].script}
                           </p>
 
-                          <div className="bg-black/20 rounded-xl p-2.5 border border-white/5 text-[9px] text-neutral-400 font-medium leading-relaxed font-sans">
+                          <div className="bg-white rounded-xl p-2.5 border border-amber-100 text-[9px] text-neutral-600 font-medium leading-relaxed font-sans">
                             {salonNiches[activeNicheIndex].dopamineDesc}
                           </div>
                         </div>
 
                         <div className="md:col-span-5 flex flex-col gap-2">
                           {/* Aesthetic Abstract Visual blueprint mockup (No photos) */}
-                          <div className="relative rounded-2xl border border-amber-500/15 overflow-hidden aspect-[4/3] max-h-[140px] flex flex-col justify-between p-4 bg-gradient-to-br from-neutral-900 to-black shadow-xl group">
+                          <div className="relative rounded-2xl border border-amber-100 overflow-hidden aspect-[4/3] max-h-[140px] flex flex-col justify-between p-4 bg-gradient-to-br from-[#fffaf2] to-[#f7efe1] shadow-xl group">
                             <div className="flex justify-between items-center text-[7px] font-mono text-neutral-400">
                               <span className="uppercase tracking-widest">Script blueprint active</span>
-                              <span className="text-amber-400">● Geotag Ready</span>
+                              <span className="text-amber-600">● Geotag Ready</span>
                             </div>
                             
                             <div className="flex flex-col items-center justify-center my-auto py-1">
-                              <Play className="h-7 w-7 text-amber-400 animate-pulse fill-amber-400/10 mb-1" />
-                              <span className="text-[9px] font-black uppercase tracking-widest text-white font-sans text-center leading-tight">
+                              <Play className="h-7 w-7 text-amber-500 animate-pulse fill-amber-400/10 mb-1" />
+                              <span className="text-[9px] font-black uppercase tracking-widest text-[#111111] font-sans text-center leading-tight">
                                 {salonNiches[activeNicheIndex].title.split(' / ')[0]}
                               </span>
                             </div>
 
-                            <div className="bg-black/45 px-2 py-0.5 rounded text-[7.5px] font-mono text-center text-amber-400 border border-white/5">
+                            <div className="bg-white/85 px-2 py-0.5 rounded text-[7.5px] font-mono text-center text-amber-600 border border-amber-100">
                               Satisfying ASMR sounds + Glow Transitions
                             </div>
                           </div>
 
-                          <div className="bg-black/50 rounded-xl p-2.5 space-y-1 font-mono text-[7.5px] text-left">
-                            <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
+                          <div className="bg-white rounded-xl p-2.5 space-y-1 font-mono text-[7.5px] text-left border border-amber-100">
+                            <div className="flex justify-between text-neutral-500 border-b border-amber-100 pb-0.5">
                               <span>Reel Reach:</span>
-                              <span className="text-white font-black">{salonNiches[activeNicheIndex].reelPreset.views}</span>
+                              <span className="text-[#111111] font-black">{salonNiches[activeNicheIndex].reelPreset.views}</span>
                             </div>
-                            <div className="flex justify-between text-neutral-400 border-b border-white/5 pb-0.5">
+                            <div className="flex justify-between text-neutral-500 border-b border-amber-100 pb-0.5">
                               <span>Saves (Bookmarks):</span>
-                              <span className="text-amber-400 font-black">{salonNiches[activeNicheIndex].reelPreset.shares}</span>
+                              <span className="text-amber-600 font-black">{salonNiches[activeNicheIndex].reelPreset.shares}</span>
                             </div>
-                            <div className="flex justify-between text-neutral-400">
+                            <div className="flex justify-between text-neutral-500">
                               <span>Direct Bookings:</span>
-                              <span className="text-emerald-400 font-black">{salonNiches[activeNicheIndex].reelPreset.directBookings}</span>
+                              <span className="text-amber-600 font-black">{salonNiches[activeNicheIndex].reelPreset.directBookings}</span>
                             </div>
                           </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        <div className="rounded-2xl overflow-hidden border border-amber-100 bg-white">
+                          <img src="/images/salon/before_after.png" alt="Before after" className="w-full h-24 object-cover" />
+                          <div className="p-2 text-[9px] text-neutral-600">Before / after proof</div>
+                        </div>
+                        <div className="rounded-2xl overflow-hidden border border-amber-100 bg-white">
+                          <img src="/images/salon/creator_filming.png" alt="Creator filming" className="w-full h-24 object-cover" />
+                          <div className="p-2 text-[9px] text-neutral-600">Reel screenshot preview</div>
                         </div>
                       </div>
 

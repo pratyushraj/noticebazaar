@@ -1582,32 +1582,32 @@
       "website": "https://www.lookssalon.in",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T17:43:45.204Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T08:55:10.283Z"
     },
     "BeautyGlad": {
       "email": "support@beautyglad.com",
       "website": "https://www.beautyglad.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T17:43:49.116Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T08:55:27.205Z"
     },
     "Monsoon Salon & Spa": {
       "email": "info@monsoonsalon.com",
       "website": "https://www.monsoonsalon.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T17:43:51.618Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T08:55:23.618Z"
     },
     "Angel Home Salon": {
       "email": "angelhomesalon@gmail.com",
       "website": "http://www.angelhomesalon.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-23T17:43:53.803Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T08:55:30.492Z"
     },
     "Comfort Smiles": {
       "email": "comfortsmilesdentistry@gmail.com",
@@ -2147,6 +2147,467 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-24T18:52:05.593Z"
+    },
+    "Kühl Teen": {
+      "email": "support@kuhlteen.com",
+      "category": "Teen Personal Care & Hygiene",
+      "website": "https://kuhlteen.in",
+      "handle": "@kuhl_teen",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T07:54:44.540Z"
+    },
+    "Alpino Health Foods (Marketing)": {
+      "email": "marketing@alpinohealthfoods.com",
+      "category": "Healthy Snacks & Pet Care",
+      "website": "https://alpino.store",
+      "handle": "@alpino.store",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T07:54:50.770Z"
+    },
+    "Wakefit (Media)": {
+      "email": "media@wakefit.co",
+      "category": "Home, Sleep & Lifestyle",
+      "website": "https://www.wakefit.co",
+      "handle": "@wakefit.co",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T07:54:55.769Z"
+    },
+    "Yes Skincare": {
+      "email": "info@yesskincare.in",
+      "category": "Clean Skincare",
+      "website": "https://www.yesskincare.in",
+      "handle": "@yesskincare.official",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:17.099Z"
+    },
+    "Nourriture Skincare": {
+      "email": "support@nourritureskin.net",
+      "category": "Scientific Skincare",
+      "website": "https://nourritureskin.in",
+      "handle": "@Nourritureskin",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:20.316Z"
+    },
+    "Uzvi Eco Store": {
+      "email": "ecostoreuzvi@gmail.com",
+      "category": "Organic/Natural Skincare",
+      "website": "https://uzviecostore.com",
+      "handle": "@uzvi_eco_store",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:22.639Z"
+    },
+    "Dunamis Cosmetics": {
+      "email": "care@dunamiss.in",
+      "category": "Cosmetics & Makeup",
+      "website": "https://dunamiss.in",
+      "handle": "@dunamisscosmetics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:25.065Z"
+    },
+    "Earthraga Skincare": {
+      "email": "info@earthraga.com",
+      "category": "Ayurvedic Skincare",
+      "website": "https://earthraga.com",
+      "handle": "@earthraga",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:27.444Z"
+    },
+    "SkinQ": {
+      "email": "hello@skinq.com",
+      "category": "Dermatologist Skincare",
+      "website": "https://www.skinq.com",
+      "handle": "@SKINQ",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:29.810Z"
+    },
+    "1:9 Perfumery": {
+      "email": "hello@thehouseoferaya.store",
+      "category": "Luxury Fragrances",
+      "website": "https://thehouseoferaya.store",
+      "handle": "@1isto9.Perfumery",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:07:32.147Z"
+    },
+    "Awshad Wellness": {
+      "email": "faizan@awshad.com",
+      "category": "Hemp & Cannabis-based Wellness",
+      "website": "https://awshad.com",
+      "handle": "@awshad.wellness",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:09:31.316Z"
+    },
+    "Cut & Style Salon": {
+      "email": "info@cutandstyle.in",
+      "website": "https://cutandstyle.in",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:06.287Z"
+    },
+    "Affinity Salon": {
+      "email": "admin@theaffinitysalon.com",
+      "website": "https://affinity.salon",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:09.665Z"
+    },
+    "Affinity Luxe": {
+      "email": "Affinityluxe14@gmail.com",
+      "website": "https://affinityluxe.salon",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:11.942Z"
+    },
+    "Jawed Habib Corporate": {
+      "email": "customercare@jawedhabib.com",
+      "website": "https://jawedhabib.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:14.609Z"
+    },
+    "Jawed Habib Corporate Alt": {
+      "email": "cs@jawedhabib.co.in",
+      "website": "https://jawedhabib.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:16.808Z"
+    },
+    "The Beauty BAE": {
+      "email": "support@thebeautybae.com",
+      "website": "https://thebeautybae.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:19.081Z"
+    },
+    "Geetanjali Salon Corporate": {
+      "email": "accounts@geetanjalisalon.com",
+      "website": "https://www.geetanjalisalon.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T08:51:21.448Z"
+    },
+    "Geetanjali Salon": {
+      "email": "customercare@geetanjalisalon.com",
+      "website": "https://www.geetanjalisalon.com",
+      "category": "Beauty, Skincare & Grooming",
+      "status": "contacted",
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T08:55:16.623Z"
+    },
+    "Clove Dental": {
+      "email": "patientcare@clovedental.in",
+      "website": "https://clovedental.in",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:03.443Z"
+    },
+    "Toothsi (makeO)": {
+      "email": "customersupport@toothsi.in",
+      "website": "https://makeo.app",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:08.182Z"
+    },
+    "Toothsi Alternate": {
+      "email": "info@toothsi.in",
+      "website": "https://makeo.app",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:12.702Z"
+    },
+    "Oliva Skin & Hair Clinic": {
+      "email": "feedback@olivaclinic.com",
+      "website": "https://olivaclinic.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:16.038Z"
+    },
+    "Clinic Dermatech": {
+      "email": "info@clinicdermatech.com",
+      "website": "https://clinicdermatech.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:19.029Z"
+    },
+    "Kaya Skin Clinic": {
+      "email": "info@kayaclinic.com",
+      "website": "https://kaya.in",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:22.362Z"
+    },
+    "Kaya Skin Clinic Alt": {
+      "email": "care@kayaclinic.com",
+      "website": "https://kaya.in",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:02:26.658Z"
+    },
+    "Looks Salon Patna": {
+      "email": "info@lookssalon.in",
+      "website": "https://www.lookssalon.in",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:21.769Z"
+    },
+    "Geetanjali Salon Patna": {
+      "email": "customercare@geetanjalisalon.com",
+      "website": "https://www.geetanjalisalon.com",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:27.346Z"
+    },
+    "Jawed Habib Patna": {
+      "email": "info@thejawedhabibsalon.com",
+      "website": "https://thejawedhabibsalon.com",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:32.007Z"
+    },
+    "Jawed Habib Jagdeopath": {
+      "email": "jawedhabibjagdeopath@gmail.com",
+      "website": "http://www.thejawedhabibpatna.com",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:35.011Z"
+    },
+    "Clove Dental Patna": {
+      "email": "patientcare@clovedental.in",
+      "website": "https://clovedental.in",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:39.596Z"
+    },
+    "Patna Dental Clinic": {
+      "email": "riteshvatsa2003@gmail.com",
+      "website": "http://www.dentalclinicpro.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:42.561Z"
+    },
+    "Oliva Skin Clinic Patna": {
+      "email": "feedback@olivaclinic.com",
+      "website": "https://olivaclinic.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:45.736Z"
+    },
+    "Kosmoderma Patna": {
+      "email": "centralenquiry@kosmoderma.com",
+      "website": "https://kosmoderma.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:11:48.653Z"
+    },
+    "Deccan Hospital & Aesthetics": {
+      "email": "contact@deccanhospital.in",
+      "website": "https://deccanhospital.in",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:46:02.969Z"
+    },
+    "Dr. Molly's Cochin Allergy & Skin Clinic": {
+      "email": "drmollysclinic@gmail.com",
+      "website": "https://cochinallergy.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T09:46:08.440Z"
+    },
+    "Berkowits Hair & Skin Clinic": {
+      "email": "inquiry@berkowits.in",
+      "website": "https://www.berkowits.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:00:52.808Z"
+    },
+    "Wellbeing Nutrition (Marketing)": {
+      "email": "nikita@wellbeingnutrition.com",
+      "category": "Wellness & Supplements",
+      "website": "https://wellbeingnutrition.com",
+      "handle": "@wellbeingnutrition",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:44:43.666Z"
+    },
+    "Skinfinity Gurgaon Clinic": {
+      "email": "skinfinitygurgaonclinic@gmail.com",
+      "website": "https://skinfinityderma.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:49:59.133Z"
+    },
+    "Clair Skin Clinic": {
+      "email": "info@clairskin.in",
+      "website": "https://clairskin.in",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:50:06.394Z"
+    },
+    "Skin Care World Clinic": {
+      "email": "skincareworld959@gmail.com",
+      "website": "https://skincareworld.in",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:50:10.972Z"
+    },
+    "ITS Prime Dental Clinic": {
+      "email": "care@itsprimeclinics.com",
+      "website": "https://itsprimeclinics.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:50:14.823Z"
+    },
+    "White Lily Dental": {
+      "email": "contact@whitelilydental.in",
+      "website": "https://whitelilydental.in",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:50:18.896Z"
+    },
+    "Jiva Water": {
+      "email": "support@jivawater.com",
+      "category": "Wellness Water Technology & Devices",
+      "website": "https://jivawater.com",
+      "handle": "@jiva.water",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:54:17.001Z"
+    },
+    "ISAAC Luxe": {
+      "email": "contact@drgeetika.info",
+      "website": "https://isaacluxe.co",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:56:55.934Z"
+    },
+    "Aesthetica360": {
+      "email": "care@aesthetica360.com",
+      "website": "https://aesthetica360.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:57:04.867Z"
+    },
+    "Cosmoholic Clinic": {
+      "email": "info@cosmoholicclinic.com",
+      "website": "https://cosmoholicclinic.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:57:09.429Z"
+    },
+    "Esthetica Aesthetic Clinic": {
+      "email": "care@estheticaclinics.com",
+      "website": "https://estheticaclinics.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:57:12.609Z"
+    },
+    "Rasa Aesthetic & Dental Clinic": {
+      "email": "info@rasaaesthetic.com",
+      "website": "https://rasaaesthetic.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:57:16.180Z"
+    },
+    "Skin International Aesthetic Laser Clinic": {
+      "email": "skininternationalclinic@gmail.com",
+      "website": "https://rasaaesthetic.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T10:57:19.856Z"
+    },
+    "Zental Dental Clinic": {
+      "email": "info@dentistinsouthdelhi.com",
+      "website": "https://dentistinsouthdelhi.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T11:02:31.279Z"
+    },
+    "Affinity Premium Dental Clinic": {
+      "email": "vasantvihar@affinitypremiumdental.com",
+      "website": "https://affinitypremiumdental.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T11:02:35.872Z"
+    },
+    "Dr. Khanna's Dental Clinic": {
+      "email": "info@drkhannasdentalclinic.com",
+      "website": "https://drkhannasdentalclinic.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T11:02:40.479Z"
+    },
+    "Niyama Care": {
+      "email": "info@niyamacare.com",
+      "website": "https://niyamacare.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T11:02:43.639Z"
+    },
+    "The Ethical Dental Clinic": {
+      "email": "opdental@hotmail.com",
+      "website": "https://dentalclinicnoida.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T11:02:46.711Z"
+    },
+    "The Auraa Care": {
+      "email": "drdivya@theauraacare.com",
+      "website": "https://theauraacare.com",
+      "category": "Dental Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T11:02:51.150Z"
     }
   },
   "dentists": {

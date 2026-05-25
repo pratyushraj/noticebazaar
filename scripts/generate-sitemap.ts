@@ -163,9 +163,16 @@ async function main() {
     }))
   );
 
+  const localCities = ['patna', 'delhi', 'mumbai', 'bangalore', 'pune', 'lucknow', 'dehradun', 'noida'];
+  const localCityPages = localCities.map(city => ({
+    loc: `/local-creators/${city}`,
+    priority: '0.8',
+    changefreq: 'weekly' as const,
+  }));
+
   const creatorPages = await getPublicCreatorPages();
 
-  const allPages = [...staticPages, ...blogPages, ...calculatorPages, ...creatorPages];
+  const allPages = [...staticPages, ...blogPages, ...calculatorPages, ...localCityPages, ...creatorPages];
   const xml = generateXml(allPages);
 
   const outPath = path.resolve(process.cwd(), 'public', 'sitemap.xml');
