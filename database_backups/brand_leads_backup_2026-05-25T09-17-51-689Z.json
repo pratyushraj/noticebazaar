@@ -1,35 +1,5 @@
 [
   {
-    "id": "0036d629-9e79-45dd-9033-21c55fd24a5d",
-    "brand_name": "Lets Hyphen",
-    "website": "https://letshyphen.com",
-    "instagram_handle": null,
-    "email": "care@letshyphen.com",
-    "category": "Seed-funded Skincare",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:01:20.376+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T19:01:20.479033+00:00",
-    "updated_at": "2026-05-25T19:01:20.479033+00:00"
-  },
-  {
-    "id": "0059b2be-4dcc-4e7b-8513-5db1becfb26c",
-    "brand_name": "Deccan Hospital & Aesthetics",
-    "website": "https://deccanhospital.in",
-    "instagram_handle": null,
-    "email": "contact@deccanhospital.in",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T09:46:02.969+00:00",
-    "replied_at": null,
-    "notes": "FB Scraped Outreach: Sourced from FB Ads Library keyword scan.",
-    "created_at": "2026-05-25T09:46:03.120958+00:00",
-    "updated_at": "2026-05-25T09:46:03.120958+00:00"
-  },
-  {
     "id": "009163a7-a73a-43b5-9d79-589e536334fd",
     "brand_name": "Bamboo India",
     "website": "https://bambooindia.com",
@@ -43,21 +13,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "00da6c3d-87e4-4181-a1c7-c1226715a70e",
-    "brand_name": "The Holistik",
-    "website": "https://theholistik.com",
-    "instagram_handle": null,
-    "email": "support@theholistik.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:11:10.312+00:00",
-    "replied_at": null,
-    "notes": "Emerging D2C Campaign: Clean beauty and sustainable lifestyle D2C. Sourced support.",
-    "created_at": "2026-05-25T19:11:10.427669+00:00",
-    "updated_at": "2026-05-25T19:11:10.427669+00:00"
   },
   {
     "id": "00eb2f18-baf5-4352-ae0a-89b0bb1242f0",
@@ -88,21 +43,6 @@
     "notes": "Dermatologist ad outreach: Beautywise represents dermatologist-designed nutricosmetics & collagen supplements.",
     "created_at": "2026-05-23T17:14:44.029973+00:00",
     "updated_at": "2026-05-23T17:14:44.029973+00:00"
-  },
-  {
-    "id": "026e37f6-b0c7-4dc9-a625-c22633d910fc",
-    "brand_name": "ISAAC Luxe",
-    "website": "https://isaacluxe.co",
-    "instagram_handle": null,
-    "email": "contact@drgeetika.info",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:56:55.934+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DERMO): Premium celebrity skincare clinic by Dr. Geetika Mittal Gupta.",
-    "created_at": "2026-05-25T10:56:56.045+00:00",
-    "updated_at": "2026-05-25T10:56:56.045+00:00"
   },
   {
     "id": "0327cc03-9093-4b58-b97f-e823665102b0",
@@ -208,21 +148,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "057657e7-2172-4596-bcd4-7c36950eb139",
-    "brand_name": "Shankara India",
-    "website": "https://shankara.in",
-    "instagram_handle": null,
-    "email": "customercare@shankara.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:37.106+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Premium natural skincare brand that integrates the wisdom of Ayurveda with modern scientific advancements, utilizing hand-processed cold-pressed oils and active herbs.",
-    "created_at": "2026-05-26T19:05:37.197313+00:00",
-    "updated_at": "2026-05-26T19:05:37.197313+00:00"
   },
   {
     "id": "05ffac9a-98f3-4792-b441-47ea1a1dddf5",
@@ -577,12 +502,12 @@
     "email": "cs@jawedhabib.co.in",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:21.398+00:00",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:16.808+00:00",
     "replied_at": null,
-    "notes": "NCR Salon Campaign: Company secretary / corporate administration inbox for Jawed Habib. | Follow-up with PDF deck on 2026-05-25T19:06:21.398Z",
+    "notes": "NCR Salon Campaign: Company secretary / corporate administration inbox for Jawed Habib.",
     "created_at": "2026-05-25T08:51:16.92853+00:00",
-    "updated_at": "2026-05-25T19:06:21.512516+00:00"
+    "updated_at": "2026-05-25T08:51:16.92853+00:00"
   },
   {
     "id": "14a40c8f-a025-45bf-9c3d-e70f31180b51",
@@ -643,21 +568,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "165bf579-c5de-4d2b-8b12-685449d6f7b7",
-    "brand_name": "Dr. Molly's Cochin Allergy & Skin Clinic",
-    "website": "https://cochinallergy.com",
-    "instagram_handle": null,
-    "email": "drmollysclinic@gmail.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T09:46:08.44+00:00",
-    "replied_at": null,
-    "notes": "FB Scraped Outreach: Sourced from FB Ads Library keyword scan.",
-    "created_at": "2026-05-25T09:46:08.589698+00:00",
-    "updated_at": "2026-05-25T09:46:08.589698+00:00"
   },
   {
     "id": "1713a5a8-5899-4a8d-b7d7-05a875bc71bd",
@@ -765,21 +675,6 @@
     "updated_at": "2026-05-23T09:41:50.608536+00:00"
   },
   {
-    "id": "19b30c3b-4b26-4db5-8eb8-3f848d5e7bd1",
-    "brand_name": "Zental Dental Clinic",
-    "website": "https://dentistinsouthdelhi.com",
-    "instagram_handle": null,
-    "email": "info@dentistinsouthdelhi.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T11:02:31.279+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DENTAL): Premium Zental Green Park cosmetic dental flagship.",
-    "created_at": "2026-05-25T11:02:31.426532+00:00",
-    "updated_at": "2026-05-25T11:02:31.426532+00:00"
-  },
-  {
     "id": "1ab2ed6c-e881-4c6d-844f-9b4f395ada39",
     "brand_name": "CUT&STYLE Salon",
     "website": "",
@@ -885,21 +780,6 @@
     "updated_at": "2026-05-23T09:41:15.491001+00:00"
   },
   {
-    "id": "1cdbb281-b0e0-43e0-9a88-c32a92fc38b8",
-    "brand_name": "Juicy Chemistry",
-    "website": "https://juicychemistry.com",
-    "instagram_handle": null,
-    "email": "hello@juicychemistry.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:22.76+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A pioneer in Ecocert-certified organic skincare. They formulate 100% natural, waterless facial oils, organic soaps, and botanical waters sourced directly from sustainable farms.",
-    "created_at": "2026-05-26T19:05:22.853058+00:00",
-    "updated_at": "2026-05-26T19:05:22.853058+00:00"
-  },
-  {
     "id": "1cfcdbb6-420c-4915-9db9-4c8cf506eb6a",
     "brand_name": "Biobloom",
     "website": "https://biobloomonline.com",
@@ -943,36 +823,6 @@
     "notes": null,
     "created_at": "2026-05-22T21:00:43.254542+00:00",
     "updated_at": "2026-05-22T21:00:43.254542+00:00"
-  },
-  {
-    "id": "1ff412db-0690-4c75-8b9f-bdea44d4279b",
-    "brand_name": "Wellbeing Nutrition (Marketing)",
-    "website": "https://wellbeingnutrition.com",
-    "instagram_handle": null,
-    "email": "nikita@wellbeingnutrition.com",
-    "category": "Wellness & Supplements",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:44:44.982+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T10:44:45.111866+00:00",
-    "updated_at": "2026-05-25T10:44:45.111866+00:00"
-  },
-  {
-    "id": "2074c47b-be9d-4074-ab9c-d8008b5e3e2f",
-    "brand_name": "Sereko",
-    "website": "https://serekobeauty.com",
-    "instagram_handle": null,
-    "email": "care@serekobeauty.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:41.267+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: India's first psychodermatology-focused brand. They address the connection between psychological stress and skin conditions like acne and eczema through stress-relieving active skincare.",
-    "created_at": "2026-05-26T19:05:41.363198+00:00",
-    "updated_at": "2026-05-26T19:05:41.363198+00:00"
   },
   {
     "id": "20faf5d6-e700-4e0f-b3d6-682d0010ca9b",
@@ -1065,21 +915,6 @@
     "updated_at": "2026-05-23T09:42:10.287776+00:00"
   },
   {
-    "id": "23c200a8-5ba6-428e-9b88-9ac57cb5c3b2",
-    "brand_name": "Qaadu",
-    "website": "https://qaadu.com",
-    "instagram_handle": null,
-    "email": "vcare@qaadu.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:05:50.979+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (D2C): Premium organic beauty & USFDA-approved wellness brand.",
-    "created_at": "2026-05-25T18:05:51.146174+00:00",
-    "updated_at": "2026-05-25T18:05:51.146174+00:00"
-  },
-  {
     "id": "241b8ce1-b779-4e1e-99ba-9435a42decfe",
     "brand_name": "C'nor",
     "website": "https://cnor.in",
@@ -1093,21 +928,6 @@
     "notes": null,
     "created_at": "2026-05-24T11:09:05.871211+00:00",
     "updated_at": "2026-05-24T11:09:05.871211+00:00"
-  },
-  {
-    "id": "2579c6ee-5d08-49cf-8c7d-2b8086223be0",
-    "brand_name": "Elemen",
-    "website": "https://elemen.co.in",
-    "instagram_handle": null,
-    "email": "contact@elemen.co.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:11:13.357+00:00",
-    "replied_at": null,
-    "notes": "Emerging D2C Campaign: Ingredient-led science D2C skincare. Sourced contact.",
-    "created_at": "2026-05-25T19:11:13.459623+00:00",
-    "updated_at": "2026-05-25T19:11:13.459623+00:00"
   },
   {
     "id": "26094364-ec75-4bd8-bc00-8d6d8376bcd7",
@@ -1335,21 +1155,6 @@
     "updated_at": "2026-05-25T08:55:23.744677+00:00"
   },
   {
-    "id": "300d03e9-f9a6-42d7-a251-2c54c10d33b2",
-    "brand_name": "Cava Athleisure",
-    "website": "https://cavaathleisure.com",
-    "instagram_handle": null,
-    "email": "contact@cavaathleisure.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:44.489+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Gen-Z and millennial focused fashion-forward activewear and athleisure wear. They blend style with sport utility, utilizing sustainable fabrics for hoodies, joggers, and tracksuits.",
-    "created_at": "2026-05-26T19:04:44.586614+00:00",
-    "updated_at": "2026-05-26T19:04:44.586614+00:00"
-  },
-  {
     "id": "32fbc0e5-538c-4df5-bac8-6d87ccd3e781",
     "brand_name": "modestouzeattires",
     "website": "https://modestouzeattires.com",
@@ -1363,21 +1168,6 @@
     "notes": null,
     "created_at": "2026-05-22T21:00:32.678717+00:00",
     "updated_at": "2026-05-24T11:09:26.457616+00:00"
-  },
-  {
-    "id": "33258727-ce63-433e-9711-05eb26e9719c",
-    "brand_name": "Ashpveda",
-    "website": "https://ashpveda.com",
-    "instagram_handle": null,
-    "email": "info@ashpveda.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:57:27.99+00:00",
-    "replied_at": null,
-    "notes": "Ashpveda Campaign: Instagram link lead. Sourced support.",
-    "created_at": "2026-05-26T18:57:28.559745+00:00",
-    "updated_at": "2026-05-26T18:57:28.559745+00:00"
   },
   {
     "id": "3381b0d2-1850-4f51-9017-2e21ea334a9f",
@@ -1453,21 +1243,6 @@
     "notes": null,
     "created_at": "2026-05-23T18:30:40.848713+00:00",
     "updated_at": "2026-05-23T18:30:40.848713+00:00"
-  },
-  {
-    "id": "3565cdb8-bbd2-4762-aec4-1af3a62ef327",
-    "brand_name": "Curl Up",
-    "website": "https://curlup.in",
-    "instagram_handle": null,
-    "email": "letstalk@curlup.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:08.605+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Customized, clean D2C haircare brand created specifically for naturally curly, wavy, and coily hair. They offer CG-friendly (Curly Girl method) shampoos, conditioners, and defining creams.",
-    "created_at": "2026-05-26T19:05:08.695414+00:00",
-    "updated_at": "2026-05-26T19:05:08.695414+00:00"
   },
   {
     "id": "3636e397-f6b8-494a-8225-f46a5e7b73a6",
@@ -1560,21 +1335,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "3a9fe6c3-49a0-41ae-9b2b-ff26330ff4e6",
-    "brand_name": "Fix My Curls",
-    "website": "https://fixmycurls.com",
-    "instagram_handle": null,
-    "email": "care@fixmycurls.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:12.435+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A highly popular, clean haircare brand focusing entirely on CG-friendly products for texture-rich hair. They offer travel-friendly bundles, defining gels, and hydrating creams.",
-    "created_at": "2026-05-26T19:05:12.530157+00:00",
-    "updated_at": "2026-05-26T19:05:12.530157+00:00"
-  },
-  {
     "id": "3b3f2887-9ceb-4f42-9219-810bea1b4d66",
     "brand_name": "Ozone Ayurvedics",
     "website": "https://ozoneayurvedics.com",
@@ -1590,21 +1350,6 @@
     "updated_at": "2026-05-24T15:39:19.516453+00:00"
   },
   {
-    "id": "3be218f0-e362-4a87-86b5-d47125651115",
-    "brand_name": "Dusky India",
-    "website": "https://www.duskyindia.in",
-    "instagram_handle": null,
-    "email": "care@duskyindia.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:11:03.341+00:00",
-    "replied_at": null,
-    "notes": "Emerging D2C Campaign: Emerging Ayurvedic D2C skincare brand. Sourced care.",
-    "created_at": "2026-05-25T19:11:03.633043+00:00",
-    "updated_at": "2026-05-25T19:11:03.633043+00:00"
-  },
-  {
     "id": "3e2f235a-c53a-4a78-a00c-4055e2c64cac",
     "brand_name": "Woof Treats",
     "website": "https://wooftreats.in",
@@ -1618,21 +1363,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "3e8d844a-872b-4193-a1e8-8467b184cef4",
-    "brand_name": "ITS Prime Dental Clinic",
-    "website": "https://itsprimeclinics.com",
-    "instagram_handle": null,
-    "email": "care@itsprimeclinics.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:50:14.823+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign Sourced: Sourced newly verified dental clinic Greater Noida.",
-    "created_at": "2026-05-25T10:50:14.914708+00:00",
-    "updated_at": "2026-05-25T10:50:14.914708+00:00"
   },
   {
     "id": "3f0ff464-927e-4b09-81ba-d5d4ac448cc2",
@@ -1678,21 +1408,6 @@
     "notes": "Contact Doctor: Dr. Raju Babu",
     "created_at": "2026-05-22T19:46:00.408235+00:00",
     "updated_at": "2026-05-22T19:46:00.408235+00:00"
-  },
-  {
-    "id": "407441bc-371c-481f-8c52-4d8866396b08",
-    "brand_name": "Hellmann's India",
-    "website": "https://www.unilever.com",
-    "instagram_handle": null,
-    "email": "Corporate.Communication-Hul@unilever.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:57:44.372+00:00",
-    "replied_at": null,
-    "notes": "Warm lead. Hellmann's Instagram (@hellmannsindia) requested pitch via Corporate.Communication-Hul@unilever.com.",
-    "created_at": "2026-05-26T18:57:44.514133+00:00",
-    "updated_at": "2026-05-26T18:57:44.514133+00:00"
   },
   {
     "id": "41bf2417-7379-4eb2-9260-0917810e7275",
@@ -1762,12 +1477,12 @@
     "email": "accounts@geetanjalisalon.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:30.657+00:00",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:21.448+00:00",
     "replied_at": null,
-    "notes": "NCR Salon Campaign: Duplicate check placeholder for Geetanjali Accounts. | Follow-up with PDF deck on 2026-05-25T19:06:30.657Z",
+    "notes": "NCR Salon Campaign: Duplicate check placeholder for Geetanjali Accounts.",
     "created_at": "2026-05-25T08:51:21.563472+00:00",
-    "updated_at": "2026-05-25T19:06:30.755128+00:00"
+    "updated_at": "2026-05-25T08:51:21.563472+00:00"
   },
   {
     "id": "441afa82-d2ed-45d4-9544-fdb5857bc7a7",
@@ -1783,21 +1498,6 @@
     "notes": "Contact: Manager | Location: P&M Mall, Patliputra",
     "created_at": "2026-05-22T20:26:30.204992+00:00",
     "updated_at": "2026-05-22T20:26:30.204992+00:00"
-  },
-  {
-    "id": "4486e6bd-6afc-4acf-8f1e-3951cc867f63",
-    "brand_name": "Savorworks Roasters",
-    "website": "https://savorworksroasters.com",
-    "instagram_handle": null,
-    "email": "hello@savorworksroasters.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:22.671+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: India's first artisanal coffee roastery that blends specialty coffee roasting with craft chocolate. They focus on organic coffee sourcing, experimental fermentation, and meticulous quality control.",
-    "created_at": "2026-05-26T19:04:22.76913+00:00",
-    "updated_at": "2026-05-26T19:04:22.76913+00:00"
   },
   {
     "id": "4519b889-6965-4682-98b0-7e01b1c87fc0",
@@ -1905,21 +1605,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "4705390f-862a-47e5-8374-aa7263631834",
-    "brand_name": "Omay Foods",
-    "website": "https://omayfoods.com",
-    "instagram_handle": null,
-    "email": "support@omayfoods.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:49.85+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Specializes in non-fried, roasted traditional Indian snacks, seed mixes, and nut trials. They use a hot-sand roasting method to preserve nutrition and eliminate oil.",
-    "created_at": "2026-05-26T19:05:49.940831+00:00",
-    "updated_at": "2026-05-26T19:05:49.940831+00:00"
-  },
-  {
     "id": "47968ef6-b0c0-442f-9513-146459141a59",
     "brand_name": "Dry Gravy",
     "website": "https://drygravy.in",
@@ -1965,21 +1650,6 @@
     "updated_at": "2026-05-23T17:49:46.705742+00:00"
   },
   {
-    "id": "4822d202-2344-4db5-9fdd-9084f10952e9",
-    "brand_name": "Nine Blush",
-    "website": "https://nineblush.com",
-    "instagram_handle": null,
-    "email": "care@nineblush.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:29:43.408+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 7 Campaign: Instagram link lead. Sourced care.",
-    "created_at": "2026-05-25T19:29:43.522294+00:00",
-    "updated_at": "2026-05-25T19:29:43.522294+00:00"
-  },
-  {
     "id": "484c9742-fa48-4e43-b757-b3586bd05b7f",
     "brand_name": "D'Elixir Salon",
     "website": "",
@@ -2008,21 +1678,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "4909742d-9478-4a53-a390-9764e309e4f0",
-    "brand_name": "The Ethical Dental Clinic",
-    "website": "https://dentalclinicnoida.com",
-    "instagram_handle": null,
-    "email": "opdental@hotmail.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T11:02:46.711+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DENTAL): Noida Sector 50 highly rated cosmetic dental clinic.",
-    "created_at": "2026-05-25T11:02:46.805659+00:00",
-    "updated_at": "2026-05-25T11:02:46.805659+00:00"
   },
   {
     "id": "493a6a57-455c-4807-8b30-ced05302cb13",
@@ -2128,36 +1783,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "4dbca272-3458-4690-b97a-b008b2d0e501",
-    "brand_name": "Affinity Premium Dental Clinic",
-    "website": "https://affinitypremiumdental.com",
-    "instagram_handle": null,
-    "email": "vasantvihar@affinitypremiumdental.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T11:02:35.872+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DENTAL): Ultra-luxury Affinity Premium Dental Clinic in Vasant Vihar.",
-    "created_at": "2026-05-25T11:02:36.014442+00:00",
-    "updated_at": "2026-05-25T11:02:36.014442+00:00"
-  },
-  {
-    "id": "4e1828d1-25cd-4db4-a66f-46af1b9c40f4",
-    "brand_name": "Hitayu Holistic Healthcare",
-    "website": "https://hitayuholistichealthcare.com",
-    "instagram_handle": null,
-    "email": "support@hitayuholistic.com",
-    "category": "Ayurvedic Wellness & Hair Care",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:03:44.633+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T19:03:44.73059+00:00",
-    "updated_at": "2026-05-25T19:03:44.73059+00:00"
   },
   {
     "id": "4f5844ad-ca9d-4425-a76e-e574627f5acc",
@@ -2280,21 +1905,6 @@
     "updated_at": "2026-05-23T09:42:01.518022+00:00"
   },
   {
-    "id": "527f8451-c353-447a-a3d1-bfdec2b9937f",
-    "brand_name": "Nua",
-    "website": "https://nuawoman.com",
-    "instagram_handle": null,
-    "email": "support@nuawoman.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:06.668+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Feminine wellness and menstrual care brand focused on toxin-free, customizable sanitary pads, period wellness nutrition, and holistic self-care products for women.",
-    "created_at": "2026-05-26T19:05:06.757552+00:00",
-    "updated_at": "2026-05-26T19:05:06.757552+00:00"
-  },
-  {
     "id": "52b623e0-04eb-45a5-8fb4-78f177e6f6d5",
     "brand_name": "Truedune",
     "website": "https://truedune.com",
@@ -2353,21 +1963,6 @@
     "notes": null,
     "created_at": "2026-05-25T08:07:30.161809+00:00",
     "updated_at": "2026-05-25T08:07:30.161809+00:00"
-  },
-  {
-    "id": "54d0d105-53d6-49cb-84c9-0384c1f5834f",
-    "brand_name": "Beauty Island Patna",
-    "website": "https://www.beautyisland.in",
-    "instagram_handle": null,
-    "email": "beautyislandpatna@gmail.com",
-    "category": "Salons",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:05:46.12+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (SALON): Loreal Professional multi-award winning salon chain in Patna.",
-    "created_at": "2026-05-25T18:05:46.238105+00:00",
-    "updated_at": "2026-05-25T18:05:46.238105+00:00"
   },
   {
     "id": "552fce63-58b3-4593-97d1-36c6fea2a7b2",
@@ -2430,21 +2025,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "5797ce97-7ecb-4c43-b327-bf47163fa426",
-    "brand_name": "Skin International Aesthetic Laser Clinic",
-    "website": "https://rasaaesthetic.com",
-    "instagram_handle": null,
-    "email": "skininternationalclinic@gmail.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:57:19.856+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DERMO): Specialized laser skin clinic in Noida.",
-    "created_at": "2026-05-25T10:57:19.943813+00:00",
-    "updated_at": "2026-05-25T10:57:19.943813+00:00"
-  },
-  {
     "id": "5828207e-27e4-43cd-95d0-8c6231765074",
     "brand_name": "Cut & Style Salon",
     "website": "https://cutandstyle.in",
@@ -2452,12 +2032,12 @@
     "email": "info@cutandstyle.in",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:02.406+00:00",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:06.287+00:00",
     "replied_at": null,
-    "notes": "NCR Salon Campaign: Premium NCR salon chain with extensive presence in Noida and Gurgaon. | Follow-up with PDF deck on 2026-05-25T19:06:02.406Z",
+    "notes": "NCR Salon Campaign: Premium NCR salon chain with extensive presence in Noida and Gurgaon.",
     "created_at": "2026-05-25T08:51:06.650537+00:00",
-    "updated_at": "2026-05-25T19:06:02.538745+00:00"
+    "updated_at": "2026-05-25T08:51:06.650537+00:00"
   },
   {
     "id": "58d46de6-1788-4382-af86-a63046d61b82",
@@ -2518,21 +2098,6 @@
     "notes": "Contact: Doctor | Location: Gardanibagh",
     "created_at": "2026-05-22T20:25:07.772076+00:00",
     "updated_at": "2026-05-22T20:25:07.772076+00:00"
-  },
-  {
-    "id": "5aa65550-8158-419d-becb-55f0a1cb0502",
-    "brand_name": "Zymrat",
-    "website": "https://zymrat.com",
-    "instagram_handle": null,
-    "email": "support@zymrat.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:40.461+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Performance-engineered activewear brand utilizing proprietary fabric technologies (e.g., odor-free SuperSilva and cooling fabrics) tailored for intense training and running.",
-    "created_at": "2026-05-26T19:04:40.552001+00:00",
-    "updated_at": "2026-05-26T19:04:40.552001+00:00"
   },
   {
     "id": "5b241646-8b66-4f53-a973-8b886cc800cf",
@@ -2700,36 +2265,6 @@
     "updated_at": "2026-05-22T20:25:42.32199+00:00"
   },
   {
-    "id": "5eb19ada-cf87-4b30-9ba7-acafca2da01e",
-    "brand_name": "Calme Beauty",
-    "website": "https://calmebeauty.com",
-    "instagram_handle": null,
-    "email": "support@calmebeauty.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:24:25.834+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 6 Campaign: Instagram link lead. Sourced support.",
-    "created_at": "2026-05-25T19:24:25.937032+00:00",
-    "updated_at": "2026-05-25T19:24:25.937032+00:00"
-  },
-  {
-    "id": "5eb7edf7-bff0-4122-9900-c1b68e085c6d",
-    "brand_name": "Neemli Naturals",
-    "website": "https://neemlinaturals.com",
-    "instagram_handle": null,
-    "email": "hello@neemlinaturals.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:33.243+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A 100% natural, vegan, cruelty-free artisanal skincare brand focusing on small-batch production and ancient plant-based remedies combined with safe modern actives.",
-    "created_at": "2026-05-26T19:05:33.333198+00:00",
-    "updated_at": "2026-05-26T19:05:33.333198+00:00"
-  },
-  {
     "id": "5f3284cf-ac0f-4147-8657-adb4a9b0a4f9",
     "brand_name": "Dr. Sachin's Dental",
     "website": "",
@@ -2805,21 +2340,6 @@
     "updated_at": "2026-05-24T16:15:15.854693+00:00"
   },
   {
-    "id": "63735d8b-5eb5-42f8-a360-abfaa6ab5453",
-    "brand_name": "Earth N Pure",
-    "website": "https://earthnpure.com",
-    "instagram_handle": null,
-    "email": "care@earthnpure.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:00.771+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A bootstrapped pure-wellness brand offering natural, chemical-free essential oils, carrier oils, and organic clays. They focus on traditional extraction methods to preserve purity.",
-    "created_at": "2026-05-26T19:05:00.865982+00:00",
-    "updated_at": "2026-05-26T19:05:00.865982+00:00"
-  },
-  {
     "id": "63b32e4c-0fe2-436a-aec3-3979f25186b3",
     "brand_name": "TrueBrowns",
     "website": "https://truebrowns.com",
@@ -2848,36 +2368,6 @@
     "notes": "Patna regional campaign (DERMO): Kosmoderma Patna clinics.",
     "created_at": "2026-05-25T09:11:48.759385+00:00",
     "updated_at": "2026-05-25T09:11:48.759385+00:00"
-  },
-  {
-    "id": "63f3da83-caa4-49ee-847e-ad61a67410ee",
-    "brand_name": "Kica Active",
-    "website": "https://kicaactive.com",
-    "instagram_handle": null,
-    "email": "support@kicaactive.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:50.256+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Encourages active living with comfortable, affordable, and high-quality workout clothing. They design stylish activewear basics for women that seamlessly move from workouts to daily chores.",
-    "created_at": "2026-05-26T19:04:50.347398+00:00",
-    "updated_at": "2026-05-26T19:04:50.347398+00:00"
-  },
-  {
-    "id": "64091796-7775-4149-bd51-f472e423c57a",
-    "brand_name": "Gopaisa (Ayush Khanna)",
-    "website": "https://gopaisa.in",
-    "instagram_handle": null,
-    "email": "Ayush.k@gopaisa.in",
-    "category": "Cashback & Supplement Barter Client",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:45:32.814+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T18:45:32.974359+00:00",
-    "updated_at": "2026-05-25T18:45:32.974359+00:00"
   },
   {
     "id": "6635908c-91b8-4121-8628-ebfa02bec82d",
@@ -2910,36 +2400,6 @@
     "updated_at": "2026-05-23T18:30:25.441225+00:00"
   },
   {
-    "id": "6745b73f-56fa-470d-9364-403cc69a9fe5",
-    "brand_name": "Ravel Care",
-    "website": "https://ravelcare.com",
-    "instagram_handle": null,
-    "email": "support@ravelcare.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:16.638+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A customized hair care brand that formulates personalized shampoos, conditioners, and hair oils based on a detailed online quiz analyzing hair type, lifestyle, and environment.",
-    "created_at": "2026-05-26T19:05:16.732442+00:00",
-    "updated_at": "2026-05-26T19:05:16.732442+00:00"
-  },
-  {
-    "id": "6894109d-22c6-425f-884b-54c83fdecdfc",
-    "brand_name": "Rare Chemistry",
-    "website": "https://rare-chemistry.com",
-    "instagram_handle": null,
-    "email": "info@rare-chemistry.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:29:45.626+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 7 Campaign: Instagram link lead. Sourced info.",
-    "created_at": "2026-05-25T19:29:45.740988+00:00",
-    "updated_at": "2026-05-25T19:29:45.740988+00:00"
-  },
-  {
     "id": "69d78f8d-f1ad-4f2d-8db5-f056a10c966b",
     "brand_name": "Atulya",
     "website": "https://www.myatulya.com",
@@ -2955,21 +2415,6 @@
     "updated_at": "2026-05-24T16:28:03.31125+00:00"
   },
   {
-    "id": "6a2a1b71-d19b-489a-b3e2-eda6ee807d9b",
-    "brand_name": "Sowaka Bharat",
-    "website": "https://sowakabharat.shop",
-    "instagram_handle": null,
-    "email": "sowakabharat@gmail.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:29:40.446+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 7 Campaign: Instagram link lead. Sourced support gmail.",
-    "created_at": "2026-05-25T19:29:40.612706+00:00",
-    "updated_at": "2026-05-25T19:29:40.612706+00:00"
-  },
-  {
     "id": "6a927a94-66a2-4e9f-9932-e2f7f4a72161",
     "brand_name": "Santerra Hygiene",
     "website": "https://santerrahygiene.com",
@@ -2983,36 +2428,6 @@
     "notes": null,
     "created_at": "2026-05-24T11:09:08.795584+00:00",
     "updated_at": "2026-05-24T11:09:08.795584+00:00"
-  },
-  {
-    "id": "6d151bea-b87a-4f51-bec3-5aab1261d456",
-    "brand_name": "To Be Honest (TBH)",
-    "website": "https://tobehonest.co.in",
-    "instagram_handle": null,
-    "email": "talktous@tobehonest.co.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:53.222+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Innovative vacuum-cooked vegetable and fruit chips. Their products retain the shape, color, and nutritional value of real veggies with 50% less oil.",
-    "created_at": "2026-05-26T19:05:53.316948+00:00",
-    "updated_at": "2026-05-26T19:05:53.316948+00:00"
-  },
-  {
-    "id": "6de806a7-af16-401b-b1c1-2e2c823a906a",
-    "brand_name": "White Lily Dental",
-    "website": "https://whitelilydental.in",
-    "instagram_handle": null,
-    "email": "contact@whitelilydental.in",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:50:18.896+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign Sourced: Sourced newly verified dental clinic Gurugram.",
-    "created_at": "2026-05-25T10:50:18.986451+00:00",
-    "updated_at": "2026-05-25T10:50:18.986451+00:00"
   },
   {
     "id": "6df142e6-38a1-48c3-8d74-edefd2038316",
@@ -3060,21 +2475,6 @@
     "updated_at": "2026-05-23T17:49:44.501692+00:00"
   },
   {
-    "id": "6eedabb9-9723-406c-9686-be8f23415b87",
-    "brand_name": "Unik Naturals",
-    "website": "https://uniknaturals.com",
-    "instagram_handle": null,
-    "email": "uniknaturals1@gmail.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:24:16.628+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 6 Campaign: Instagram screenshot lead. Sourced support gmail.",
-    "created_at": "2026-05-25T19:24:16.762295+00:00",
-    "updated_at": "2026-05-25T19:24:16.762295+00:00"
-  },
-  {
     "id": "71927045-5662-4230-93a9-dc077dd7e0ab",
     "brand_name": "Moiz Skincare (Corporate Sales)",
     "website": "https://www.moizskincare.com",
@@ -3088,21 +2488,6 @@
     "notes": null,
     "created_at": "2026-05-24T16:10:33.884518+00:00",
     "updated_at": "2026-05-24T16:10:33.884518+00:00"
-  },
-  {
-    "id": "72326f91-b038-4e19-a96e-c342f7dabb0c",
-    "brand_name": "Freewill",
-    "website": "https://freewill.co",
-    "instagram_handle": null,
-    "email": "support@freewill.co",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:18.562+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Personalized clean haircare brand offering bespoke formulations based on algorithmic analysis of individual hair goals, scalp conditions, and local water quality.",
-    "created_at": "2026-05-26T19:05:18.652974+00:00",
-    "updated_at": "2026-05-26T19:05:18.652974+00:00"
   },
   {
     "id": "7243363d-1af1-4b8e-8a3a-14b0f0d755a6",
@@ -3165,21 +2550,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "73800935-2e32-4b68-a955-5474c52710d9",
-    "brand_name": "The Wellness Shop (Divjot Mehta)",
-    "website": "https://thewellnessshop.in",
-    "instagram_handle": null,
-    "email": "influencer_connect@thewellnessshop.in",
-    "category": "Clean Beauty & Wellness D2C",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:45:34.771+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T18:45:34.870949+00:00",
-    "updated_at": "2026-05-25T18:45:34.870949+00:00"
-  },
-  {
     "id": "73f0e2be-d6a0-4b76-b0ee-afdbcff5889f",
     "brand_name": "Not Rocket Science",
     "website": "https://notrocketscience.in",
@@ -3223,21 +2593,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "74e1e3c0-4e3e-4601-8003-a1b9ed145cc6",
-    "brand_name": "Niyama Care",
-    "website": "https://niyamacare.com",
-    "instagram_handle": null,
-    "email": "info@niyamacare.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T11:02:43.639+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DENTAL): Advanced clinical dental alignment chain.",
-    "created_at": "2026-05-25T11:02:43.732181+00:00",
-    "updated_at": "2026-05-25T11:02:43.732181+00:00"
   },
   {
     "id": "74fadd02-5e6f-4dc6-af43-019ee2409b80",
@@ -3292,12 +2647,12 @@
     "email": "customercare@jawedhabib.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:16.558+00:00",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:14.609+00:00",
     "replied_at": null,
-    "notes": "NCR Salon Campaign: Official corporate care inbox for the iconic Jawed Habib chain. | Follow-up with PDF deck on 2026-05-25T19:06:16.558Z",
+    "notes": "NCR Salon Campaign: Official corporate care inbox for the iconic Jawed Habib chain.",
     "created_at": "2026-05-25T08:51:14.72815+00:00",
-    "updated_at": "2026-05-25T19:06:16.6583+00:00"
+    "updated_at": "2026-05-25T08:51:14.72815+00:00"
   },
   {
     "id": "789bda36-5a57-4873-83c7-06baa766b037",
@@ -3328,21 +2683,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "78fcfc24-97bc-4226-bfb6-95f2536916f2",
-    "brand_name": "Re'equil",
-    "website": "https://reequil.com",
-    "instagram_handle": null,
-    "email": "hello@reequil.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:25.009+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Honest, dermatologically tested skincare brand focusing on corrective formulations for hyperpigmentation, acne, and hair thinning, emphasizing realistic expectations and transparent pricing.",
-    "created_at": "2026-05-26T19:05:25.09954+00:00",
-    "updated_at": "2026-05-26T19:05:25.09954+00:00"
   },
   {
     "id": "7903de35-e62a-4c11-9d18-9879235eb507",
@@ -3388,21 +2728,6 @@
     "notes": "Contact Doctor: Dr. Shashi Ranjan",
     "created_at": "2026-05-22T19:45:59.007357+00:00",
     "updated_at": "2026-05-22T19:45:59.007357+00:00"
-  },
-  {
-    "id": "79b9325c-7323-44ba-bff6-e422831b7faa",
-    "brand_name": "The Auraa Care",
-    "website": "https://theauraacare.com",
-    "instagram_handle": null,
-    "email": "drdivya@theauraacare.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T11:02:51.15+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DENTAL): Multi-specialty high-end dental clinic in Noida.",
-    "created_at": "2026-05-25T11:02:51.263624+00:00",
-    "updated_at": "2026-05-25T11:02:51.263624+00:00"
   },
   {
     "id": "7a2bbf98-b3b5-4c29-9864-f613ba5599ef",
@@ -3538,21 +2863,6 @@
     "notes": "UGC outreach: Healthy Master is a leading D2C healthy food & snacks brand.",
     "created_at": "2026-05-23T18:17:40.377052+00:00",
     "updated_at": "2026-05-23T18:17:40.377052+00:00"
-  },
-  {
-    "id": "7f324684-28c2-46d8-9fed-0d5b26429367",
-    "brand_name": "Tea Trunk",
-    "website": "https://teatrunk.in",
-    "instagram_handle": null,
-    "email": "hello@teatrunk.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:30.746+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Founder-led by Snigdha Sen, Tea Trunk crafts premium wellness tea blends (e.g., Hibiscus Green Tea, Rose Oolong) with 100% natural ingredients, zero artificial flavorings, and direct sourcing from small farms.",
-    "created_at": "2026-05-26T19:04:30.841704+00:00",
-    "updated_at": "2026-05-26T19:04:30.841704+00:00"
   },
   {
     "id": "7fb7e8d2-8f5e-41bb-aca0-e9701e417a70",
@@ -3720,21 +3030,6 @@
     "updated_at": "2026-05-22T20:26:17.076263+00:00"
   },
   {
-    "id": "8691bf18-4a9a-4206-971f-81c4c7b70ce5",
-    "brand_name": "Hair Masters Noida",
-    "website": "https://hmsalon.org",
-    "instagram_handle": null,
-    "email": "info@hmsalon.org",
-    "category": "Salons",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:30:27.726+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (Remaining): Luxury salon chain flagships. Sourced corporate info inbox.",
-    "created_at": "2026-05-25T18:30:27.823959+00:00",
-    "updated_at": "2026-05-25T18:30:27.823959+00:00"
-  },
-  {
     "id": "880cf661-c5da-4fdf-90bb-e6fb69b8e035",
     "brand_name": "Suzyan Professional",
     "website": "https://suzyancosmetics.com",
@@ -3763,21 +3058,6 @@
     "notes": null,
     "created_at": "2026-05-24T16:34:11.874945+00:00",
     "updated_at": "2026-05-24T16:34:11.874945+00:00"
-  },
-  {
-    "id": "8a4dbf0d-e957-4ae6-98c6-9a1e23b7663a",
-    "brand_name": "Toffee Coffee Roasters",
-    "website": "https://toffeecoffeeroasters.com",
-    "instagram_handle": null,
-    "email": "customercare@toffeecoffeeroasters.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:11.758+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Boutique micro-roastery offering hand-roasted, custom-profile coffee beans and drip bags. They focus on unique flavor notes and roast-to-order models to guarantee peak freshness.",
-    "created_at": "2026-05-26T19:04:11.887878+00:00",
-    "updated_at": "2026-05-26T19:04:11.887878+00:00"
   },
   {
     "id": "8b1580c6-e162-4323-94dd-dbb7edcd9944",
@@ -3823,21 +3103,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "8bad5d45-e9fe-44a7-9830-15d1226f9c61",
-    "brand_name": "BirdEye",
-    "website": "https://birdeye.in",
-    "instagram_handle": null,
-    "email": "support@birdeye.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:52.138+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Focuses on ultra-versatile, all-day athleisure and activewear. Their pieces are designed to bridge gym performance with casual lounging, using extremely soft and breathable fabrics.",
-    "created_at": "2026-05-26T19:04:52.231274+00:00",
-    "updated_at": "2026-05-26T19:04:52.231274+00:00"
   },
   {
     "id": "8bb3c2f8-62e3-4e61-9f67-33fbb8da9653",
@@ -3907,12 +3172,12 @@
     "email": "support@thebeautybae.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:25.843+00:00",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:19.081+00:00",
     "replied_at": null,
-    "notes": "NCR Salon Campaign: Premium niche nail art, lash, and beauty salon brand. | Follow-up with PDF deck on 2026-05-25T19:06:25.843Z",
+    "notes": "NCR Salon Campaign: Premium niche nail art, lash, and beauty salon brand.",
     "created_at": "2026-05-25T08:51:19.203779+00:00",
-    "updated_at": "2026-05-25T19:06:25.943519+00:00"
+    "updated_at": "2026-05-25T08:51:19.203779+00:00"
   },
   {
     "id": "924ab171-a9b2-4b6d-8882-c1ac31c1af10",
@@ -3960,36 +3225,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "92f41fc2-6200-485e-9bf0-3486db7ba850",
-    "brand_name": "Epique",
-    "website": "https://myepique.com",
-    "instagram_handle": null,
-    "email": "customercare@myepique.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:26.955+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Premium phytocosmaceutical brand specializing in anti-aging skincare for mature skin. They extract potent phyto-actives using advanced cellular technology for deep penetration and wrinkle correction.",
-    "created_at": "2026-05-26T19:05:27.046068+00:00",
-    "updated_at": "2026-05-26T19:05:27.046068+00:00"
-  },
-  {
-    "id": "939e22e4-5f1c-4cdd-9635-7189d3b86722",
-    "brand_name": "Carniwel",
-    "website": "https://carniwel.com",
-    "instagram_handle": null,
-    "email": "petcare@growelfeeds.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:57:36.489+00:00",
-    "replied_at": null,
-    "notes": "Carniwel Campaign: Instagram link lead. Sourced support.",
-    "created_at": "2026-05-26T18:57:36.625517+00:00",
-    "updated_at": "2026-05-26T18:57:36.625517+00:00"
-  },
-  {
     "id": "93a3d072-7e97-4953-ae4c-28510289b8bd",
     "brand_name": "Advance Skin Hair & Laser Clinic",
     "website": "",
@@ -4018,21 +3253,6 @@
     "notes": "Contact Doctor: Dr. Kishore Amartya",
     "created_at": "2026-05-22T19:46:00.056035+00:00",
     "updated_at": "2026-05-22T19:46:00.056035+00:00"
-  },
-  {
-    "id": "93eb772c-58a1-45d7-9f2c-edbaa7c97652",
-    "brand_name": "Wild Date",
-    "website": "https://wilddate.in",
-    "instagram_handle": null,
-    "email": "hello@wilddate.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:47.4+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A bootstrapped healthy snack brand that produces natural, gluten-free, refined-sugar-free snack bars, granolas, and bites, focusing on clean seed-based nutrition.",
-    "created_at": "2026-05-26T19:05:47.494856+00:00",
-    "updated_at": "2026-05-26T19:05:47.494856+00:00"
   },
   {
     "id": "94027e7f-ee69-4cb0-ace5-2ad9fb33eb2b",
@@ -4065,51 +3285,6 @@
     "updated_at": "2026-05-25T08:07:23.012223+00:00"
   },
   {
-    "id": "94865c6f-83a4-46ef-b619-74af90796c87",
-    "brand_name": "Rasa Aesthetic & Dental Clinic",
-    "website": "https://rasaaesthetic.com",
-    "instagram_handle": null,
-    "email": "info@rasaaesthetic.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:57:16.18+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DERMO): Premium dual dermatologist and cosmetic dental center in Noida.",
-    "created_at": "2026-05-25T10:57:16.281305+00:00",
-    "updated_at": "2026-05-25T10:57:16.281305+00:00"
-  },
-  {
-    "id": "948e1a80-3335-4d20-bfd3-6198081a7b77",
-    "brand_name": "Ashba Botanics",
-    "website": "https://ashbabotanics.com",
-    "instagram_handle": null,
-    "email": "support@ashbabotanics.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:10.536+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: India's first dedicated brand for naturally curly and wavy hair. They offer clean, botanically enriched styling gels, leave-in conditioners, and gentle cleansers.",
-    "created_at": "2026-05-26T19:05:10.630154+00:00",
-    "updated_at": "2026-05-26T19:05:10.630154+00:00"
-  },
-  {
-    "id": "952713f3-352f-4695-8119-4cd98c0ed35e",
-    "brand_name": "Bili Hu",
-    "website": "https://bilihu.in",
-    "instagram_handle": null,
-    "email": "coffee@bilihu.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:16.703+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: An artisanal coffee brand that sources directly from single estates in India. They curate unique coffees for cafes and home brewers, aiming to highlight the diverse characteristics of Indian estate-grown coffees.",
-    "created_at": "2026-05-26T19:04:16.797796+00:00",
-    "updated_at": "2026-05-26T19:04:16.797796+00:00"
-  },
-  {
     "id": "957594b6-df67-4962-857e-ecd0268a8df7",
     "brand_name": "Krishna Dental Hospital & Research Center",
     "website": "",
@@ -4138,66 +3313,6 @@
     "notes": "Contact: Doctor | Location: Kidwai Puri",
     "created_at": "2026-05-22T20:25:37.234704+00:00",
     "updated_at": "2026-05-22T20:25:37.234704+00:00"
-  },
-  {
-    "id": "9610c54b-1871-45d1-ac0a-67fc6148b56c",
-    "brand_name": "DryNotch",
-    "website": "https://drynotch.com",
-    "instagram_handle": null,
-    "email": "hello@drynotch.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:56.706+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Emerging activewear brand focusing on performance lifestyle wear. They design versatile apparel that is equally suited for the office, gym, or weekend travel, prioritizing high-stretch and moisture-wicking tech.",
-    "created_at": "2026-05-26T19:04:56.796019+00:00",
-    "updated_at": "2026-05-26T19:04:56.796019+00:00"
-  },
-  {
-    "id": "9622558a-a3c2-4e04-9ca7-ce194299dfe7",
-    "brand_name": "Esthetica Aesthetic Clinic",
-    "website": "https://estheticaclinics.com",
-    "instagram_handle": null,
-    "email": "care@estheticaclinics.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:57:12.609+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DERMO): Advanced clinical aesthetic skin center in Noida.",
-    "created_at": "2026-05-25T10:57:12.695987+00:00",
-    "updated_at": "2026-05-25T10:57:12.695987+00:00"
-  },
-  {
-    "id": "963c4703-4c53-42e0-b468-b3f9d081229b",
-    "brand_name": "Dr. Khanna's Dental Clinic",
-    "website": "https://drkhannasdentalclinic.com",
-    "instagram_handle": null,
-    "email": "info@drkhannasdentalclinic.com",
-    "category": "Dental Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T11:02:40.479+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DENTAL): Saket-based high-rated cosmetic dentistry center.",
-    "created_at": "2026-05-25T11:02:40.618453+00:00",
-    "updated_at": "2026-05-25T11:02:40.618453+00:00"
-  },
-  {
-    "id": "977084fd-9cc0-499c-b622-bfab92fc879f",
-    "brand_name": "Skin Care World Clinic",
-    "website": "https://skincareworld.in",
-    "instagram_handle": null,
-    "email": "skincareworld959@gmail.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:50:10.972+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign Sourced: Sourced newly verified skin clinic.",
-    "created_at": "2026-05-25T10:50:11.102941+00:00",
-    "updated_at": "2026-05-25T10:50:11.102941+00:00"
   },
   {
     "id": "99ba5a11-0832-4058-a418-05358d91d40e",
@@ -4260,21 +3375,6 @@
     "updated_at": "2026-05-23T09:41:19.799677+00:00"
   },
   {
-    "id": "9adf840b-f281-488f-bb47-b339d66ce0fb",
-    "brand_name": "Silvertraq",
-    "website": "https://silvertraq.com",
-    "instagram_handle": null,
-    "email": "customercare@silvertraq.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:48.313+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Premium activewear brand offering sweat-wicking, anti-odor, and highly stretchable activewear suited for the tropical Indian climate, utilizing eco-friendly fabrics.",
-    "created_at": "2026-05-26T19:04:48.404731+00:00",
-    "updated_at": "2026-05-26T19:04:48.404731+00:00"
-  },
-  {
     "id": "9bb2551a-8953-4c88-8d72-61451ceb63a5",
     "brand_name": "SKINaGe Clinic",
     "website": "",
@@ -4335,21 +3435,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "9d3d83fc-229a-4c69-89ec-493036b1b753",
-    "brand_name": "Berkowits Hair & Skin Clinic",
-    "website": "https://www.berkowits.com",
-    "instagram_handle": null,
-    "email": "inquiry@berkowits.in",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:00:52.808+00:00",
-    "replied_at": null,
-    "notes": "Outreach pitch: Highly targeted Berkowits Delhi NCR and Mumbai clinic outreach.",
-    "created_at": "2026-05-25T10:00:52.994577+00:00",
-    "updated_at": "2026-05-25T10:00:52.994577+00:00"
-  },
-  {
     "id": "9dcc2cd9-34d9-4ead-aaff-1b4e7afe8fcb",
     "brand_name": "Mediversal Health Studio",
     "website": "",
@@ -4378,66 +3463,6 @@
     "notes": null,
     "created_at": "2026-05-22T21:00:51.554248+00:00",
     "updated_at": "2026-05-22T21:00:51.554248+00:00"
-  },
-  {
-    "id": "9e680768-22eb-4b2f-8ba2-e3e7fcdb8fb8",
-    "brand_name": "Aminu",
-    "website": "https://aminu.life",
-    "instagram_handle": null,
-    "email": "care@aminu.life",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:28.842+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A luxury, high-performance clean beauty brand that combines marine botanical bio-actives, cold-pressed oils, and advanced clinical ingredients for glowing, resilient skin.",
-    "created_at": "2026-05-26T19:05:28.93454+00:00",
-    "updated_at": "2026-05-26T19:05:28.93454+00:00"
-  },
-  {
-    "id": "9e7e093e-2400-405d-a0e5-e61ace03fafe",
-    "brand_name": "Above40",
-    "website": "https://above40.com",
-    "instagram_handle": null,
-    "email": "evergreen@above40.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:11:07.208+00:00",
-    "replied_at": null,
-    "notes": "Emerging D2C Campaign: Functional skincare for mature 40+ skin. Sourced evergreen.",
-    "created_at": "2026-05-25T19:11:07.309502+00:00",
-    "updated_at": "2026-05-25T19:11:07.309502+00:00"
-  },
-  {
-    "id": "9f863326-fe2c-40ec-87b9-ad6292830259",
-    "brand_name": "Antinorm",
-    "website": "https://www.antinorm.co",
-    "instagram_handle": null,
-    "email": "care@antinorm.co",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:20:30.101+00:00",
-    "replied_at": null,
-    "notes": "Seed-Funded D2C Campaign: Seed-funded multifunctional beauty brand (Fireside Ventures). Sourced care.",
-    "created_at": "2026-05-25T18:20:30.206869+00:00",
-    "updated_at": "2026-05-25T18:20:30.206869+00:00"
-  },
-  {
-    "id": "9fa00f84-c758-41bb-8279-6a32deeb6c6e",
-    "brand_name": "O'mumsie",
-    "website": "https://www.omumsie.com",
-    "instagram_handle": null,
-    "email": "info@omumsie.com",
-    "category": "Organic Baby & Mom Personal Care",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:03:43.805+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T19:03:43.903495+00:00",
-    "updated_at": "2026-05-25T19:03:43.903495+00:00"
   },
   {
     "id": "a0434c52-e90a-4521-9453-f549b04b1119",
@@ -4560,36 +3585,6 @@
     "updated_at": "2026-05-23T17:14:35.169882+00:00"
   },
   {
-    "id": "a71310b4-d6ec-49b0-9518-930c407e2e0f",
-    "brand_name": "Udyan Tea",
-    "website": "https://udyantea.com",
-    "instagram_handle": null,
-    "email": "love@udyantea.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:32.846+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Based in Siliguri near Darjeeling, this brand sources high-quality loose-leaf teas directly from premium estates, cutting out middlemen to deliver farm-fresh tea to global consumers.",
-    "created_at": "2026-05-26T19:04:32.943269+00:00",
-    "updated_at": "2026-05-26T19:04:32.943269+00:00"
-  },
-  {
-    "id": "a71ed6eb-8171-4f9f-8755-a00fc62bc898",
-    "brand_name": "Eat Better Co",
-    "website": "https://eatbetterco.com",
-    "instagram_handle": null,
-    "email": "care@eatbetterco.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:58:00.745+00:00",
-    "replied_at": null,
-    "notes": "Beverage & Snacks Campaign: Sourced Jaipur-based seed-funded healthy snacking startup.",
-    "created_at": "2026-05-26T18:58:00.833025+00:00",
-    "updated_at": "2026-05-26T18:58:00.833025+00:00"
-  },
-  {
     "id": "a7f544ba-5040-482d-aae5-8d8dd61b9f66",
     "brand_name": "Ratan Dental",
     "website": "",
@@ -4665,36 +3660,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "a9def027-bae5-40bc-9cd9-025acd8472c0",
-    "brand_name": "Corridor Seven Coffee Roasters",
-    "website": "https://corridorseven.coffee",
-    "instagram_handle": null,
-    "email": "hello@corridorseven.coffee",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:18.594+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A Nagpur-based independent specialty roaster focusing on sourcing directly from Indian farmers. Known for their meticulous roasting profiles, transparency, and a strong community of specialty coffee enthusiasts.",
-    "created_at": "2026-05-26T19:04:18.687668+00:00",
-    "updated_at": "2026-05-26T19:04:18.687668+00:00"
-  },
-  {
-    "id": "ac04e18c-9021-4e91-a3fe-2a2eb9d2ee7d",
-    "brand_name": "Black Baza Coffee",
-    "website": "https://blackbazacoffee.com",
-    "instagram_handle": null,
-    "email": "hello@blackbazacoffee.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:14.771+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A social and environmental enterprise focused on creating a self-sustaining coffee ecosystem. They produce specialty, shade-grown, biodiversity-friendly coffees sourced ethically from smallholder farmers in the Western Ghats.",
-    "created_at": "2026-05-26T19:04:14.8623+00:00",
-    "updated_at": "2026-05-26T19:04:14.8623+00:00"
-  },
-  {
     "id": "ac26d4da-1bdf-4515-ac34-92104d624310",
     "brand_name": "The World Of Beauty Place",
     "website": "",
@@ -4725,21 +3690,6 @@
     "updated_at": "2026-05-24T12:20:33.407504+00:00"
   },
   {
-    "id": "ac41fc51-a454-4898-a1dc-21bad3c07d4a",
-    "brand_name": "Tearaja",
-    "website": "https://tearaja.in",
-    "instagram_handle": null,
-    "email": "support@tearaja.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:35.34+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A bootstrapped brand offering over 300 varieties of premium wellness, green, herbal, and single-estate teas. They focus on fresh, hand-packaged, and highly customized blends.",
-    "created_at": "2026-05-26T19:04:35.435069+00:00",
-    "updated_at": "2026-05-26T19:04:35.435069+00:00"
-  },
-  {
     "id": "ada4351b-f4f3-4820-968d-582786847a42",
     "brand_name": "Clinic Dermatech",
     "website": "https://clinicdermatech.com",
@@ -4768,36 +3718,6 @@
     "notes": "Contact: Doctor | Location: Patna",
     "created_at": "2026-05-22T20:25:05.617277+00:00",
     "updated_at": "2026-05-22T20:25:05.617277+00:00"
-  },
-  {
-    "id": "af994299-c909-4b32-b240-e11dd04a9399",
-    "brand_name": "Ainmane Coffee",
-    "website": "https://ainmane.com",
-    "instagram_handle": null,
-    "email": "customercare@ainmane.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:28.57+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Specializes in sourcing specialty coffees and single-origin blends unique to the Coorg region, including the famous Civet coffee and local honey-infused blends.",
-    "created_at": "2026-05-26T19:04:28.659541+00:00",
-    "updated_at": "2026-05-26T19:04:28.659541+00:00"
-  },
-  {
-    "id": "afa8c3f5-38d5-45b5-8843-b65db2b85f24",
-    "brand_name": "HashtagXoxo",
-    "website": "https://hashtagxoxo.com",
-    "instagram_handle": null,
-    "email": "hello@hashtagxoxo.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:24:53.248+00:00",
-    "replied_at": null,
-    "notes": "HashtagXoxo Campaign: Instagram link lead. Sourced support.",
-    "created_at": "2026-05-25T19:24:53.392476+00:00",
-    "updated_at": "2026-05-25T19:24:53.392476+00:00"
   },
   {
     "id": "b039055d-29aa-47c3-821c-2dd20143117e",
@@ -4845,21 +3765,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "b366e9dc-fe78-4eb1-ac6f-54e1e5de4a2e",
-    "brand_name": "Snackible",
-    "website": "https://snackible.com",
-    "instagram_handle": null,
-    "email": "support@snackible.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:45.486+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Formulates healthy, creative, and delicious snack alternatives that fit perfectly in daily snacking habits.",
-    "created_at": "2026-05-26T19:05:45.578908+00:00",
-    "updated_at": "2026-05-26T19:05:45.578908+00:00"
-  },
-  {
     "id": "b381d54c-47d2-44d1-8bb7-67ffe17962a9",
     "brand_name": "The Sass Bar",
     "website": "https://thesassbar.com",
@@ -4888,51 +3793,6 @@
     "notes": "Contact: Dr. Ayush Adarsh | Location: Rajendra Nagar",
     "created_at": "2026-05-22T20:25:28.699358+00:00",
     "updated_at": "2026-05-22T20:25:28.699358+00:00"
-  },
-  {
-    "id": "b3ea4c79-82ad-44cf-bb28-ff3df01ec274",
-    "brand_name": "Cosmoderma Patna",
-    "website": "http://www.cosmodermapatna.com",
-    "instagram_handle": null,
-    "email": "cosmodermapatna@gmail.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:05:28.975+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (Patna): Premium Dermatology Clinic Sourced via Direct Messages. Highlights local explorer @patna_ki_nidhi.",
-    "created_at": "2026-05-25T18:05:29.111473+00:00",
-    "updated_at": "2026-05-25T18:05:29.111473+00:00"
-  },
-  {
-    "id": "b4445832-5313-4673-8191-0896df418872",
-    "brand_name": "Cosmoholic Clinic",
-    "website": "https://cosmoholicclinic.com",
-    "instagram_handle": null,
-    "email": "info@cosmoholicclinic.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:57:09.429+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DERMO): High-end aesthetic laser and hair transplant clinic in Noida.",
-    "created_at": "2026-05-25T10:57:09.563766+00:00",
-    "updated_at": "2026-05-25T10:57:09.563766+00:00"
-  },
-  {
-    "id": "b59f16ed-8b63-411d-8398-2f6364bebe52",
-    "brand_name": "Spirit Animal",
-    "website": "https://spiritanimal.in",
-    "instagram_handle": null,
-    "email": "support@spiritanimal.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:54.083+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A size-inclusive, body-positive activewear and swimwear brand celebrating all shapes. They offer premium high-performance athletic wear extending up to size 6XL.",
-    "created_at": "2026-05-26T19:04:54.173781+00:00",
-    "updated_at": "2026-05-26T19:04:54.173781+00:00"
   },
   {
     "id": "b5ec678e-c741-4319-bf20-874f4ed22a6d",
@@ -4965,21 +3825,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "b6bec2d3-b985-4d03-9be0-4db526d45358",
-    "brand_name": "The Ghar Soaps",
-    "website": "https://gharsoaps.shop",
-    "instagram_handle": null,
-    "email": "influencers@gharsoaps.in",
-    "category": "Handmade Organic Skincare & Soaps",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:01:19.131+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T19:01:19.24538+00:00",
-    "updated_at": "2026-05-25T19:01:19.24538+00:00"
-  },
-  {
     "id": "b82e7526-1567-4610-b9de-05b3abc0d369",
     "brand_name": "Blonde And Beyond Unisex Salon",
     "website": "",
@@ -5008,21 +3853,6 @@
     "notes": "Contact: Doctor | Location: Boring Road",
     "created_at": "2026-05-22T20:24:43.451014+00:00",
     "updated_at": "2026-05-22T20:24:43.451014+00:00"
-  },
-  {
-    "id": "b896b268-a6ee-4b8f-9d41-b17c4fb94a07",
-    "brand_name": "Skinfinity Gurgaon Clinic",
-    "website": "https://skinfinityderma.com",
-    "instagram_handle": null,
-    "email": "skinfinitygurgaonclinic@gmail.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:49:59.133+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign Sourced: Sourced newly verified Gurugram skin clinic.",
-    "created_at": "2026-05-25T10:49:59.269283+00:00",
-    "updated_at": "2026-05-25T10:49:59.269283+00:00"
   },
   {
     "id": "b919a300-ddd8-4d89-a13d-76faddc5e882",
@@ -5085,21 +3915,6 @@
     "updated_at": "2026-05-24T15:30:52.29283+00:00"
   },
   {
-    "id": "ba2813e9-eb34-4c3c-963a-a1b26f6b2e76",
-    "brand_name": "Bare Anatomy",
-    "website": "https://innovist.com",
-    "instagram_handle": null,
-    "email": "chat@innovist.com",
-    "category": "Scientific Hair Care & Personal Care",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:03:42.262+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T19:03:42.374621+00:00",
-    "updated_at": "2026-05-25T19:03:42.374621+00:00"
-  },
-  {
     "id": "ba595d6e-2f75-4879-b424-c7f4d328da8f",
     "brand_name": "Rahul Dental Clinic",
     "website": "",
@@ -5113,21 +3928,6 @@
     "notes": "Contact Doctor: Dr. Rahul",
     "created_at": "2026-05-22T19:45:58.659892+00:00",
     "updated_at": "2026-05-22T19:45:58.659892+00:00"
-  },
-  {
-    "id": "bb58612b-15ca-4c93-a4b2-0410d53ecca1",
-    "brand_name": "Hair Originals",
-    "website": "https://www.hairoriginals.com",
-    "instagram_handle": null,
-    "email": "feedback@hairoriginals.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:29:47.824+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 7 Campaign: Instagram link lead. Sourced feedback support.",
-    "created_at": "2026-05-25T19:29:47.934381+00:00",
-    "updated_at": "2026-05-25T19:29:47.934381+00:00"
   },
   {
     "id": "bcad8cf8-21ac-416b-a5f2-2b4b1a600b2a",
@@ -5218,51 +4018,6 @@
     "notes": null,
     "created_at": "2026-05-22T21:00:38.060141+00:00",
     "updated_at": "2026-05-22T21:00:38.060141+00:00"
-  },
-  {
-    "id": "bf0e73bc-59b3-4dc8-8e24-40c5971212c6",
-    "brand_name": "Terractive",
-    "website": "https://terractive.in",
-    "instagram_handle": null,
-    "email": "care@terractive.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:42.432+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A comfort-first, highly aesthetic activewear brand designed specifically for modern Indian women. They focus on premium-quality stretch fabrics, sleek minimalist designs, and high-support athletic wear.",
-    "created_at": "2026-05-26T19:04:42.520764+00:00",
-    "updated_at": "2026-05-26T19:04:42.520764+00:00"
-  },
-  {
-    "id": "bf2de00a-92e7-42fe-8df3-08f4bd73cf53",
-    "brand_name": "Glitz Salon",
-    "website": "http://glitzstudio.in",
-    "instagram_handle": null,
-    "email": "contactus@glitzstudio.in",
-    "category": "Salons",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:30:34.19+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (Remaining): Premium multi-city salon network. Sourced contactus mailbox.",
-    "created_at": "2026-05-25T18:30:34.329841+00:00",
-    "updated_at": "2026-05-25T18:30:34.329841+00:00"
-  },
-  {
-    "id": "c0be0aac-9e34-44d2-b91c-423e58793f53",
-    "brand_name": "Curl Cure",
-    "website": "https://curlcure.com",
-    "instagram_handle": null,
-    "email": "support@curlcure.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:14.695+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Founded by Harakh Mehta, Curl Cure provides 100% organic, hand-made curly hair solutions designed to help individuals embrace their natural curls.",
-    "created_at": "2026-05-26T19:05:14.78402+00:00",
-    "updated_at": "2026-05-26T19:05:14.78402+00:00"
   },
   {
     "id": "c1017b59-6eda-4b16-a5cb-2edb89012b53",
@@ -5377,27 +4132,12 @@
     "email": "Affinityluxe14@gmail.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:12.491+00:00",
-    "replied_at": null,
-    "notes": "NCR Salon Campaign: Super-premium luxury extension of the Affinity brand. | Follow-up with PDF deck on 2026-05-25T19:06:12.491Z",
-    "created_at": "2026-05-25T08:51:12.070489+00:00",
-    "updated_at": "2026-05-25T19:06:12.598695+00:00"
-  },
-  {
-    "id": "c487dd6a-57d0-48e8-816a-6b26fbb4aa2c",
-    "brand_name": "Pulp Cosmetics",
-    "website": "https://lovepulp.in",
-    "instagram_handle": null,
-    "email": "hello@lovepulp.in",
-    "category": "D2C Brands",
-    "status": "contacted",
     "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:30.958+00:00",
+    "last_contacted_at": "2026-05-25T08:51:11.942+00:00",
     "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Fun, cheeky, and highly functional skincare brand focusing on superfood-infused formulas catering to the Gen-Z consumer.",
-    "created_at": "2026-05-26T19:05:31.053632+00:00",
-    "updated_at": "2026-05-26T19:05:31.053632+00:00"
+    "notes": "NCR Salon Campaign: Super-premium luxury extension of the Affinity brand.",
+    "created_at": "2026-05-25T08:51:12.070489+00:00",
+    "updated_at": "2026-05-25T08:51:12.070489+00:00"
   },
   {
     "id": "c4909afa-228c-4580-b50a-1a1dee747030",
@@ -5428,21 +4168,6 @@
     "notes": null,
     "created_at": "2026-05-22T21:00:58.493469+00:00",
     "updated_at": "2026-05-22T21:00:58.493469+00:00"
-  },
-  {
-    "id": "c588ebba-3c8d-40bc-b7a4-0fbd84f59b9f",
-    "brand_name": "Nagomi Beauty Salon",
-    "website": "https://nagomi.co.in",
-    "instagram_handle": null,
-    "email": "info@nagomi.co.in",
-    "category": "Salons",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:05:35.455+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (SALON): Premium wellness spa and beauty salon in Patna.",
-    "created_at": "2026-05-25T18:05:35.83143+00:00",
-    "updated_at": "2026-05-25T18:05:35.83143+00:00"
   },
   {
     "id": "c5b8f5ab-5608-479e-92d1-02baa51c67ef",
@@ -5550,21 +4275,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "cb37d979-8a39-49f1-b3a6-0626f170ea7b",
-    "brand_name": "Ohria Ayurveda",
-    "website": "https://ohriaayurveda.com",
-    "instagram_handle": null,
-    "email": "contact@ohriaayurveda.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:39.016+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Dedicated to natural skincare and wellness using classical Ayurvedic techniques. They specialize in pure kansa wands, traditional face elixirs, and solid botanical perfumes.",
-    "created_at": "2026-05-26T19:05:39.106586+00:00",
-    "updated_at": "2026-05-26T19:05:39.106586+00:00"
-  },
-  {
     "id": "ccd0bf48-7d66-4084-bc86-1761cc89b28a",
     "brand_name": "ModaVeda",
     "website": "https://modaveda.com",
@@ -5593,21 +4303,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "cd243ddf-f942-405e-8abb-bb244086301b",
-    "brand_name": "Sadhev",
-    "website": "https://sadhev.com",
-    "instagram_handle": null,
-    "email": "care@sadhev.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:35.137+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Luxury Ayurvedic skincare and wellness brand blending ancient wisdom from 200-year-old family recipes with organic botanical extracts, supporting fair trade.",
-    "created_at": "2026-05-26T19:05:35.231041+00:00",
-    "updated_at": "2026-05-26T19:05:35.231041+00:00"
   },
   {
     "id": "cdbddaef-ba1b-4d8d-9b66-adc5c929b785",
@@ -5655,21 +4350,6 @@
     "updated_at": "2026-05-23T09:41:54.905081+00:00"
   },
   {
-    "id": "cebaa913-4fae-4b45-99af-c342cc332e84",
-    "brand_name": "Muditam",
-    "website": "https://muditam.com",
-    "instagram_handle": null,
-    "email": "support@muditam.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:04.571+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Focuses on organic Ayurvedic wellness, marrying age-old herbal recipes with modern clinical research to tackle hair wellness, digestion, and stress management.",
-    "created_at": "2026-05-26T19:05:04.665454+00:00",
-    "updated_at": "2026-05-26T19:05:04.665454+00:00"
-  },
-  {
     "id": "cf660267-7725-40cf-bb24-a2c3589ea97c",
     "brand_name": "Nappa Dori",
     "website": "https://nappadori.com",
@@ -5683,36 +4363,6 @@
     "notes": null,
     "created_at": "2026-05-23T09:42:12.469584+00:00",
     "updated_at": "2026-05-23T09:42:12.469584+00:00"
-  },
-  {
-    "id": "cfbb83c9-1ab4-4716-a7e6-3ceb19d45f61",
-    "brand_name": "Maverick & Farmer Coffee",
-    "website": "https://maverickandfarmer.com",
-    "instagram_handle": null,
-    "email": "brew@maverickandfarmer.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:26.47+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: An innovative, farm-to-cup coffee brand that experiments with unique processing and fermentation methods (e.g., cold smoked, milk fermented) directly on their estates in Coorg.",
-    "created_at": "2026-05-26T19:04:26.561025+00:00",
-    "updated_at": "2026-05-26T19:04:26.561025+00:00"
-  },
-  {
-    "id": "d021b497-cc20-4338-ac80-74ecd7f9b0cd",
-    "brand_name": "Conscious Chemist",
-    "website": "https://consciouschemist.com",
-    "instagram_handle": null,
-    "email": "care@consciouschemist.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:20.464+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A science-backed, clean clinical skincare brand. They formulate products focusing on biocompatible active ingredients paired with soothing botanicals for highly effective results.",
-    "created_at": "2026-05-26T19:05:20.555048+00:00",
-    "updated_at": "2026-05-26T19:05:20.555048+00:00"
   },
   {
     "id": "d064e553-83e2-49d5-b17b-d553c6d1ada0",
@@ -5730,21 +4380,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "d065350f-3e91-4521-9c40-b73ee5ebb2eb",
-    "brand_name": "Upakarma Ayurveda",
-    "website": "https://upakarma.com",
-    "instagram_handle": null,
-    "email": "info@upakarma.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:58.831+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Modern Ayurvedic brand focusing on authentic, premium wellness supplements like Pure Shilajit, Ashwagandha, and saffron, packaged and branded for the urban consumer.",
-    "created_at": "2026-05-26T19:04:58.926784+00:00",
-    "updated_at": "2026-05-26T19:04:58.926784+00:00"
-  },
-  {
     "id": "d12a3174-49fe-4ba2-a6bf-2b4c13f92216",
     "brand_name": "Isak Fragrances",
     "website": "https://isakfragrances.com",
@@ -5758,21 +4393,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "d36c189f-34c4-43eb-92e2-c90f9b90baa4",
-    "brand_name": "FitFeast",
-    "website": "https://fitfeast.in",
-    "instagram_handle": null,
-    "email": "contact@fitfeast.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:58:02.988+00:00",
-    "replied_at": null,
-    "notes": "Beverage & Snacks Campaign: Sourced Gurugram-based seed-funded functional food startup.",
-    "created_at": "2026-05-26T18:58:03.072575+00:00",
-    "updated_at": "2026-05-26T18:58:03.072575+00:00"
   },
   {
     "id": "d3f537b7-2d31-4f3f-b3c7-4abdbb82a2e6",
@@ -5820,36 +4440,6 @@
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
   },
   {
-    "id": "d49da74f-a26e-4551-a677-6bf9587411f2",
-    "brand_name": "Baller Athletik",
-    "website": "https://ballerathletik.com",
-    "instagram_handle": null,
-    "email": "support@ballerathletik.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:46.39+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: India's first brand to infuse bioceramic minerals into their fabrics. This Far Infrared (FIR) technology captures body heat and reflects it back as energy, aiding performance and recovery.",
-    "created_at": "2026-05-26T19:04:46.480859+00:00",
-    "updated_at": "2026-05-26T19:04:46.480859+00:00"
-  },
-  {
-    "id": "d4a9288a-deff-40fe-a9bb-a6bf50cf2e94",
-    "brand_name": "KC Roasters",
-    "website": "https://kcroasters.com",
-    "instagram_handle": null,
-    "email": "hello@kcroasters.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:20.701+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: A pioneer in Mumbai's third-wave coffee movement. They focus on micro-lot sourcing, artisanal roasting techniques, and educating consumers on single-origin Indian coffees.",
-    "created_at": "2026-05-26T19:04:20.796948+00:00",
-    "updated_at": "2026-05-26T19:04:20.796948+00:00"
-  },
-  {
     "id": "d52399d5-c06d-44d5-bb16-fdcc4553a9bf",
     "brand_name": "Kiran Skin Clinic",
     "website": "",
@@ -5878,21 +4468,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "d5e63707-fd29-464c-8eba-94d54c8922a0",
-    "brand_name": "Super Smelly",
-    "website": "https://supersmelly.in",
-    "instagram_handle": null,
-    "email": "care@supersmelly.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:02.644+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: India's first toxin-free personal care and wellness brand specifically formulated for teenagers and adolescents. They offer natural deodorants, face washes, and lip balms certified safe.",
-    "created_at": "2026-05-26T19:05:02.734636+00:00",
-    "updated_at": "2026-05-26T19:05:02.734636+00:00"
   },
   {
     "id": "d7242342-45a2-4f3d-a4a3-f612ef996b7d",
@@ -5940,36 +4515,6 @@
     "updated_at": "2026-05-23T17:14:47.130715+00:00"
   },
   {
-    "id": "da88e314-f967-43f9-9301-49080fc80289",
-    "brand_name": "Aesthetica360",
-    "website": "https://aesthetica360.com",
-    "instagram_handle": null,
-    "email": "care@aesthetica360.com",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:57:04.867+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign (DERMO): Premium dermatology and body shaping center in Noida.",
-    "created_at": "2026-05-25T10:57:04.981247+00:00",
-    "updated_at": "2026-05-25T10:57:04.981247+00:00"
-  },
-  {
-    "id": "da98cedc-6408-422f-a4e4-2c874e37cc05",
-    "brand_name": "Fiore Labs",
-    "website": "https://www.fiorelabs.com",
-    "instagram_handle": null,
-    "email": "fiorelabs23@gmail.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:11:15.584+00:00",
-    "replied_at": null,
-    "notes": "Emerging D2C Campaign: Emerging plant-powered barrier repair skincare. Sourced support.",
-    "created_at": "2026-05-25T19:11:15.689498+00:00",
-    "updated_at": "2026-05-25T19:11:15.689498+00:00"
-  },
-  {
     "id": "dd750f66-e7c3-4970-aaff-5d79cd7e41b3",
     "brand_name": "FarmDidi",
     "website": "https://farmdidi.co",
@@ -6007,12 +4552,12 @@
     "email": "admin@theaffinitysalon.com",
     "category": "Beauty, Skincare & Grooming",
     "status": "contacted",
-    "outreach_count": 2,
-    "last_contacted_at": "2026-05-25T19:06:07.822+00:00",
+    "outreach_count": 1,
+    "last_contacted_at": "2026-05-25T08:51:09.665+00:00",
     "replied_at": null,
-    "notes": "NCR Salon Campaign: Prestigious premium salon brand in South Delhi. | Follow-up with PDF deck on 2026-05-25T19:06:07.822Z",
+    "notes": "NCR Salon Campaign: Prestigious premium salon brand in South Delhi.",
     "created_at": "2026-05-25T08:51:09.785077+00:00",
-    "updated_at": "2026-05-25T19:06:07.924266+00:00"
+    "updated_at": "2026-05-25T08:51:09.785077+00:00"
   },
   {
     "id": "dfe6e906-05bc-4b0c-8f4a-3a5064f1db30",
@@ -6090,21 +4635,6 @@
     "updated_at": "2026-05-22T20:25:35.121207+00:00"
   },
   {
-    "id": "e2e05050-9e6d-42c3-a180-fe35dc4e27a9",
-    "brand_name": "Vamnaya",
-    "website": "https://vamnaya.com",
-    "instagram_handle": null,
-    "email": "contact@vamnaya.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:05:53.236+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (D2C): Premium botanical face/skin oil wellness brand.",
-    "created_at": "2026-05-25T18:05:53.342038+00:00",
-    "updated_at": "2026-05-25T18:05:53.342038+00:00"
-  },
-  {
     "id": "e2ea7be5-1281-418e-83e1-0f57b3ad784e",
     "brand_name": "Plum",
     "website": "https://plumgoodness.com",
@@ -6118,21 +4648,6 @@
     "notes": null,
     "created_at": "2026-05-23T09:41:44.108636+00:00",
     "updated_at": "2026-05-23T09:41:44.108636+00:00"
-  },
-  {
-    "id": "e3096510-a11d-4896-83c0-dc79de6eb8e5",
-    "brand_name": "Faith & Patience",
-    "website": "https://faithandpatience.co.in",
-    "instagram_handle": null,
-    "email": "contact@faithandpatience.co.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:05:43.388+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: An innovative, camel milk-based skincare and haircare brand. They utilize camel milk's rich nutrient profile for intense hydration.",
-    "created_at": "2026-05-26T19:05:43.480686+00:00",
-    "updated_at": "2026-05-26T19:05:43.480686+00:00"
   },
   {
     "id": "e340270b-0305-46a5-87de-7a7eccdd5460",
@@ -6315,21 +4830,6 @@
     "updated_at": "2026-05-24T15:30:11.578336+00:00"
   },
   {
-    "id": "ebf9166a-62b6-4eb9-80d7-9895cd0b306c",
-    "brand_name": "Jiva Water",
-    "website": "https://jivawater.com",
-    "instagram_handle": null,
-    "email": "support@jivawater.com",
-    "category": "Wellness Water Technology & Devices",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:54:17.74+00:00",
-    "replied_at": null,
-    "notes": null,
-    "created_at": "2026-05-25T10:54:17.853558+00:00",
-    "updated_at": "2026-05-25T10:54:17.853558+00:00"
-  },
-  {
     "id": "ecf6db15-fdb6-42d4-8249-30b1f14c09d1",
     "brand_name": "Jawed Habib Jagdeopath",
     "website": "http://www.thejawedhabibpatna.com",
@@ -6345,21 +4845,6 @@
     "updated_at": "2026-05-25T09:11:35.112633+00:00"
   },
   {
-    "id": "edda94b4-e063-4d67-ad54-ac0520526c9b",
-    "brand_name": "The Tea Shelf",
-    "website": "https://theteashelf.com",
-    "instagram_handle": null,
-    "email": "info@theteashelf.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:37.957+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: An online tea boutique offering premium loose-leaf teas from Assam, Darjeeling, Nilgiri, and Sikkim. It bridges the gap between traditional tea heritage and modern wellness convenience.",
-    "created_at": "2026-05-26T19:04:38.053776+00:00",
-    "updated_at": "2026-05-26T19:04:38.053776+00:00"
-  },
-  {
     "id": "ee012a89-87af-4518-a03d-56d127f9ec9c",
     "brand_name": "Rustic Art",
     "website": "https://rusticart.in",
@@ -6373,21 +4858,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "ee02634f-b152-4f21-9e60-fd1721502484",
-    "brand_name": "Nail Rituals Patna",
-    "website": "https://nailrituals.com",
-    "instagram_handle": null,
-    "email": "info@nailrituals.com",
-    "category": "Salons",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:05:41.541+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (SALON): Premium nail & lash art franchise studio in Boring Road, Patna.",
-    "created_at": "2026-05-25T18:05:41.692796+00:00",
-    "updated_at": "2026-05-25T18:05:41.692796+00:00"
   },
   {
     "id": "ee0768ca-f110-4aa1-8742-9012ec8f82c2",
@@ -6418,66 +4888,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "eeae363a-e3a0-4bc8-ad9a-60eb1652df86",
-    "brand_name": "Impulse Coffees",
-    "website": "https://impulsecoffees.com",
-    "instagram_handle": null,
-    "email": "support@impulsecoffees.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:57:58.46+00:00",
-    "replied_at": null,
-    "notes": "Beverage & Snacks Campaign: Sourced creator-led bootstrapped beverage startup.",
-    "created_at": "2026-05-26T18:57:58.565695+00:00",
-    "updated_at": "2026-05-26T18:57:58.565695+00:00"
-  },
-  {
-    "id": "efa961bb-c9fc-4daa-b3f8-101c766af8b4",
-    "brand_name": "CLOG LONDON",
-    "website": "https://cloglondon.com",
-    "instagram_handle": null,
-    "email": "online@coinceptinnovation.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:30:24.57+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (Remaining): Premium footwear brand. Sourced online innovations email.",
-    "created_at": "2026-05-25T18:30:24.700915+00:00",
-    "updated_at": "2026-05-25T18:30:24.700915+00:00"
-  },
-  {
-    "id": "f183e901-9267-41ea-9c3a-4be9cd14d92c",
-    "brand_name": "Curious Life Coffee Roasters",
-    "website": "https://curiouslifecoffee.com",
-    "instagram_handle": null,
-    "email": "info@curiouslifecoffee.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T19:04:24.567+00:00",
-    "replied_at": null,
-    "notes": "Bulk D2C Cohort 1 Campaign: Founded by an ex-Army officer, this Jaipur-based roastery is dedicated to sourcing some of the finest coffees globally and in India, focusing on rigorous quality standards and master roasting.",
-    "created_at": "2026-05-26T19:04:24.663131+00:00",
-    "updated_at": "2026-05-26T19:04:24.663131+00:00"
-  },
-  {
-    "id": "f1b42142-e670-4f01-aa1e-e7e16411bb96",
-    "brand_name": "Fabrico Patna",
-    "website": "https://fabrico.in",
-    "instagram_handle": null,
-    "email": "contact@fabrico.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:30:47.535+00:00",
-    "replied_at": null,
-    "notes": "Inbox Sourced Campaign (Remaining): Dry cleaning & laundry franchise store in Patna. Sourced corporate contact mailbox.",
-    "created_at": "2026-05-25T18:30:47.661978+00:00",
-    "updated_at": "2026-05-25T18:30:47.661978+00:00"
   },
   {
     "id": "f1b920fe-9cd7-4909-a4ea-eee800686d22",
@@ -6525,21 +4935,6 @@
     "updated_at": "2026-05-22T20:26:23.626694+00:00"
   },
   {
-    "id": "f36adb78-911c-4981-9a93-81376a2ff208",
-    "brand_name": "Maquillage Wellness",
-    "website": "https://maquillagewellness.com",
-    "instagram_handle": null,
-    "email": "care@maquillagewellness.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:24:23.655+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 6 Campaign: Instagram screenshot lead. Sourced care support.",
-    "created_at": "2026-05-25T19:24:23.759808+00:00",
-    "updated_at": "2026-05-25T19:24:23.759808+00:00"
-  },
-  {
     "id": "f46df981-504f-4b46-bce8-51a8d2ece08c",
     "brand_name": "CosIQ",
     "website": "https://mycosiq.com",
@@ -6553,21 +4948,6 @@
     "notes": null,
     "created_at": "2026-05-22T09:14:59.927044+00:00",
     "updated_at": "2026-05-22T09:14:59.927044+00:00"
-  },
-  {
-    "id": "f4af83ca-d80c-4800-a2f4-63ee7f3f9f4f",
-    "brand_name": "Blinku",
-    "website": "https://blinku.in",
-    "instagram_handle": null,
-    "email": "info@blinku.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:25:58.417+00:00",
-    "replied_at": null,
-    "notes": "Blinku Campaign: Instagram link lead. Sourced support.",
-    "created_at": "2026-05-25T19:25:58.54701+00:00",
-    "updated_at": "2026-05-25T19:25:58.54701+00:00"
   },
   {
     "id": "f4fa2718-3bbe-4d4c-a391-2876182cbc87",
@@ -6613,21 +4993,6 @@
     "notes": null,
     "created_at": "2026-05-24T11:09:14.586186+00:00",
     "updated_at": "2026-05-24T11:09:14.586186+00:00"
-  },
-  {
-    "id": "f5ceaf22-177e-440d-b38d-c8cdd53a803b",
-    "brand_name": "World of Asaya",
-    "website": "https://www.worldofasaya.com",
-    "instagram_handle": null,
-    "email": "asayacare@wellspringconsumer.in",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:20:26.157+00:00",
-    "replied_at": null,
-    "notes": "Seed-Funded D2C Campaign: Seed-funded melanin skincare brand (RPSG Capital). Sourced support.",
-    "created_at": "2026-05-25T18:20:26.545513+00:00",
-    "updated_at": "2026-05-25T18:20:26.545513+00:00"
   },
   {
     "id": "f6e2447e-f460-49cb-a86d-52aa39989147",
@@ -6750,51 +5115,6 @@
     "updated_at": "2026-05-22T21:00:16.377608+00:00"
   },
   {
-    "id": "fc1d616a-7afc-4fa6-987d-c912a8aed6b6",
-    "brand_name": "Skin Radiance Clinic",
-    "website": "https://www.squarerootclinic.com",
-    "instagram_handle": null,
-    "email": "squarerootclinic@gmail.com",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:24:19.255+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 6 Campaign: Instagram screenshot clinic. Sourced Square Root gmail.",
-    "created_at": "2026-05-25T19:24:19.36104+00:00",
-    "updated_at": "2026-05-25T19:24:19.36104+00:00"
-  },
-  {
-    "id": "fd4b9527-9cc5-4f89-af2c-d1ef91a0f52e",
-    "brand_name": "Diksha Choudhary",
-    "website": "https://instagram.com/dikshachoudhary_",
-    "instagram_handle": null,
-    "email": "dikshachoudhary@6thstreetartist.com",
-    "category": "Patna Creators",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-26T18:57:51.306+00:00",
-    "replied_at": null,
-    "notes": "Creator Outreach: Instagram screenshot lead. Patna Dental Barter Campaign.",
-    "created_at": "2026-05-26T18:57:51.425499+00:00",
-    "updated_at": "2026-05-26T18:57:51.425499+00:00"
-  },
-  {
-    "id": "fda7dece-93ad-45cf-a4c4-fe578b717a25",
-    "brand_name": "Nourish Co",
-    "website": "https://www.nourishco.co",
-    "instagram_handle": null,
-    "email": "info@nourishco.co",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T19:24:21.472+00:00",
-    "replied_at": null,
-    "notes": "Screenshot 6 Campaign: Instagram screenshot lead. Sourced support info.",
-    "created_at": "2026-05-25T19:24:21.572794+00:00",
-    "updated_at": "2026-05-25T19:24:21.572794+00:00"
-  },
-  {
     "id": "fdf16c42-49fb-417f-98b8-d21686f9d0e0",
     "brand_name": "Zyog Nutrition (CEO - Bhavin)",
     "website": "https://zyog.in",
@@ -6855,21 +5175,6 @@
     "updated_at": "2026-05-22T20:25:55.166505+00:00"
   },
   {
-    "id": "fe421e58-d017-41af-83ef-f5c9f2d26a10",
-    "brand_name": "Minimalist",
-    "website": "https://beminimalist.co",
-    "instagram_handle": null,
-    "email": "gifting@beminimalist.co",
-    "category": "D2C Brands",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T18:10:36.173+00:00",
-    "replied_at": null,
-    "notes": "Sourced D2C Campaign: Premium science-backed skincare brand. Sourced active gifting email.",
-    "created_at": "2026-05-25T18:10:36.314127+00:00",
-    "updated_at": "2026-05-25T18:10:36.314127+00:00"
-  },
-  {
     "id": "fe892fe2-8e12-4744-8cb8-86dce14769cb",
     "brand_name": "The Man Company",
     "website": "https://themancompany.com",
@@ -6883,21 +5188,6 @@
     "notes": null,
     "created_at": "2026-05-23T09:41:48.421832+00:00",
     "updated_at": "2026-05-23T09:41:48.421832+00:00"
-  },
-  {
-    "id": "ff0635e2-f7e7-4bfa-b5b5-2a2e97db17bf",
-    "brand_name": "Clair Skin Clinic",
-    "website": "https://clairskin.in",
-    "instagram_handle": null,
-    "email": "info@clairskin.in",
-    "category": "Dermatology Clinics",
-    "status": "contacted",
-    "outreach_count": 1,
-    "last_contacted_at": "2026-05-25T10:50:06.394+00:00",
-    "replied_at": null,
-    "notes": "Clinical Campaign Sourced: Sourced newly verified Clair skin clinic.",
-    "created_at": "2026-05-25T10:50:06.523678+00:00",
-    "updated_at": "2026-05-25T10:50:06.523678+00:00"
   },
   {
     "id": "ff2eb520-b8d1-4a15-be12-291ab5b8272e",

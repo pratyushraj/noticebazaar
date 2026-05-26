@@ -2958,6 +2958,398 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-26T18:58:02.988Z"
+    },
+    "Toffee Coffee Roasters": {
+      "email": "customercare@toffeecoffeeroasters.com",
+      "website": "https://toffeecoffeeroasters.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:11.758Z"
+    },
+    "Black Baza Coffee": {
+      "email": "hello@blackbazacoffee.com",
+      "website": "https://blackbazacoffee.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:14.771Z"
+    },
+    "Bili Hu": {
+      "email": "coffee@bilihu.in",
+      "website": "https://bilihu.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:16.703Z"
+    },
+    "Corridor Seven Coffee Roasters": {
+      "email": "hello@corridorseven.coffee",
+      "website": "https://corridorseven.coffee",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:18.594Z"
+    },
+    "KC Roasters": {
+      "email": "hello@kcroasters.com",
+      "website": "https://kcroasters.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:20.701Z"
+    },
+    "Savorworks Roasters": {
+      "email": "hello@savorworksroasters.com",
+      "website": "https://savorworksroasters.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:22.671Z"
+    },
+    "Curious Life Coffee Roasters": {
+      "email": "info@curiouslifecoffee.com",
+      "website": "https://curiouslifecoffee.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:24.567Z"
+    },
+    "Maverick & Farmer Coffee": {
+      "email": "brew@maverickandfarmer.com",
+      "website": "https://maverickandfarmer.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:26.470Z"
+    },
+    "Ainmane Coffee": {
+      "email": "customercare@ainmane.com",
+      "website": "https://ainmane.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:28.570Z"
+    },
+    "Tea Trunk": {
+      "email": "hello@teatrunk.com",
+      "website": "https://teatrunk.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:30.746Z"
+    },
+    "Udyan Tea": {
+      "email": "love@udyantea.com",
+      "website": "https://udyantea.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:32.846Z"
+    },
+    "Tearaja": {
+      "email": "support@tearaja.in",
+      "website": "https://tearaja.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:35.340Z"
+    },
+    "The Tea Shelf": {
+      "email": "info@theteashelf.com",
+      "website": "https://theteashelf.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:37.957Z"
+    },
+    "Zymrat": {
+      "email": "support@zymrat.com",
+      "website": "https://zymrat.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:40.461Z"
+    },
+    "Terractive": {
+      "email": "care@terractive.in",
+      "website": "https://terractive.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:42.432Z"
+    },
+    "Cava Athleisure": {
+      "email": "contact@cavaathleisure.com",
+      "website": "https://cavaathleisure.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:44.489Z"
+    },
+    "Baller Athletik": {
+      "email": "support@ballerathletik.com",
+      "website": "https://ballerathletik.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:46.390Z"
+    },
+    "Silvertraq": {
+      "email": "customercare@silvertraq.com",
+      "website": "https://silvertraq.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:48.313Z"
+    },
+    "Kica Active": {
+      "email": "support@kicaactive.com",
+      "website": "https://kicaactive.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:50.256Z"
+    },
+    "BirdEye": {
+      "email": "support@birdeye.in",
+      "website": "https://birdeye.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:52.138Z"
+    },
+    "Spirit Animal": {
+      "email": "support@spiritanimal.in",
+      "website": "https://spiritanimal.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:54.083Z"
+    },
+    "DryNotch": {
+      "email": "hello@drynotch.com",
+      "website": "https://drynotch.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:56.706Z"
+    },
+    "Upakarma Ayurveda": {
+      "email": "info@upakarma.com",
+      "website": "https://upakarma.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:04:58.831Z"
+    },
+    "Earth N Pure": {
+      "email": "care@earthnpure.com",
+      "website": "https://earthnpure.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:00.771Z"
+    },
+    "Super Smelly": {
+      "email": "care@supersmelly.in",
+      "website": "https://supersmelly.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:02.644Z"
+    },
+    "Muditam": {
+      "email": "support@muditam.com",
+      "website": "https://muditam.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:04.571Z"
+    },
+    "Nua": {
+      "email": "support@nuawoman.com",
+      "website": "https://nuawoman.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:06.668Z"
+    },
+    "Curl Up": {
+      "email": "letstalk@curlup.in",
+      "website": "https://curlup.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:08.605Z"
+    },
+    "Ashba Botanics": {
+      "email": "support@ashbabotanics.com",
+      "website": "https://ashbabotanics.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:10.536Z"
+    },
+    "Fix My Curls": {
+      "email": "care@fixmycurls.com",
+      "website": "https://fixmycurls.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:12.435Z"
+    },
+    "Curl Cure": {
+      "email": "support@curlcure.com",
+      "website": "https://curlcure.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:14.695Z"
+    },
+    "Ravel Care": {
+      "email": "support@ravelcare.com",
+      "website": "https://ravelcare.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:16.638Z"
+    },
+    "Freewill": {
+      "email": "support@freewill.co",
+      "website": "https://freewill.co",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:18.562Z"
+    },
+    "Conscious Chemist": {
+      "email": "care@consciouschemist.com",
+      "website": "https://consciouschemist.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:20.464Z"
+    },
+    "Juicy Chemistry": {
+      "email": "hello@juicychemistry.com",
+      "website": "https://juicychemistry.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:22.760Z"
+    },
+    "Re'equil": {
+      "email": "hello@reequil.com",
+      "website": "https://reequil.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:25.009Z"
+    },
+    "Epique": {
+      "email": "customercare@myepique.com",
+      "website": "https://myepique.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:26.955Z"
+    },
+    "Aminu": {
+      "email": "care@aminu.life",
+      "website": "https://aminu.life",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:28.842Z"
+    },
+    "Pulp Cosmetics": {
+      "email": "hello@lovepulp.in",
+      "website": "https://lovepulp.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:30.958Z"
+    },
+    "Neemli Naturals": {
+      "email": "hello@neemlinaturals.com",
+      "website": "https://neemlinaturals.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:33.243Z"
+    },
+    "Sadhev": {
+      "email": "care@sadhev.com",
+      "website": "https://sadhev.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:35.137Z"
+    },
+    "Shankara India": {
+      "email": "customercare@shankara.in",
+      "website": "https://shankara.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:37.106Z"
+    },
+    "Ohria Ayurveda": {
+      "email": "contact@ohriaayurveda.com",
+      "website": "https://ohriaayurveda.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:39.016Z"
+    },
+    "Sereko": {
+      "email": "care@serekobeauty.com",
+      "website": "https://serekobeauty.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:41.267Z"
+    },
+    "Faith & Patience": {
+      "email": "contact@faithandpatience.co.in",
+      "website": "https://faithandpatience.co.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:43.388Z"
+    },
+    "Snackible": {
+      "email": "support@snackible.com",
+      "website": "https://snackible.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:45.486Z"
+    },
+    "Wild Date": {
+      "email": "hello@wilddate.in",
+      "website": "https://wilddate.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:47.400Z"
+    },
+    "Omay Foods": {
+      "email": "support@omayfoods.com",
+      "website": "https://omayfoods.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:49.850Z"
+    },
+    "To Be Honest (TBH)": {
+      "email": "talktous@tobehonest.co.in",
+      "website": "https://tobehonest.co.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T19:05:53.222Z"
     }
   },
   "dentists": {
