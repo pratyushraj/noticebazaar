@@ -2252,56 +2252,56 @@
       "website": "https://cutandstyle.in",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:06.287Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:02.406Z"
     },
     "Affinity Salon": {
       "email": "admin@theaffinitysalon.com",
       "website": "https://affinity.salon",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:09.665Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:07.822Z"
     },
     "Affinity Luxe": {
       "email": "Affinityluxe14@gmail.com",
       "website": "https://affinityluxe.salon",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:11.942Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:12.491Z"
     },
     "Jawed Habib Corporate": {
       "email": "customercare@jawedhabib.com",
       "website": "https://jawedhabib.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:14.609Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:16.558Z"
     },
     "Jawed Habib Corporate Alt": {
       "email": "cs@jawedhabib.co.in",
       "website": "https://jawedhabib.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:16.808Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:21.398Z"
     },
     "The Beauty BAE": {
       "email": "support@thebeautybae.com",
       "website": "https://thebeautybae.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:19.081Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:25.843Z"
     },
     "Geetanjali Salon Corporate": {
       "email": "accounts@geetanjalisalon.com",
       "website": "https://www.geetanjalisalon.com",
       "category": "Beauty, Skincare & Grooming",
       "status": "contacted",
-      "outreach_count": 1,
-      "last_contacted_at": "2026-05-25T08:51:21.448Z"
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-25T19:06:30.657Z"
     },
     "Geetanjali Salon": {
       "email": "customercare@geetanjalisalon.com",
@@ -2608,6 +2608,356 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-25T11:02:51.150Z"
+    },
+    "Cosmoderma Patna": {
+      "email": "cosmodermapatna@gmail.com",
+      "website": "http://www.cosmodermapatna.com",
+      "category": "Dermatology Clinics",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:05:28.975Z"
+    },
+    "Nagomi Beauty Salon": {
+      "email": "info@nagomi.co.in",
+      "website": "https://nagomi.co.in",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:05:35.455Z"
+    },
+    "Nail Rituals Patna": {
+      "email": "info@nailrituals.com",
+      "website": "https://nailrituals.com",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:05:41.541Z"
+    },
+    "Beauty Island Patna": {
+      "email": "beautyislandpatna@gmail.com",
+      "website": "https://www.beautyisland.in",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:05:46.120Z"
+    },
+    "Qaadu": {
+      "email": "vcare@qaadu.com",
+      "website": "https://qaadu.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:05:50.979Z"
+    },
+    "Vamnaya": {
+      "email": "contact@vamnaya.com",
+      "website": "https://vamnaya.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:05:53.236Z"
+    },
+    "Minimalist": {
+      "email": "gifting@beminimalist.co",
+      "website": "https://beminimalist.co",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:10:36.173Z"
+    },
+    "World of Asaya": {
+      "email": "asayacare@wellspringconsumer.in",
+      "website": "https://www.worldofasaya.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:20:26.157Z"
+    },
+    "Antinorm": {
+      "email": "care@antinorm.co",
+      "website": "https://www.antinorm.co",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:20:30.101Z"
+    },
+    "CLOG LONDON": {
+      "email": "online@coinceptinnovation.com",
+      "website": "https://cloglondon.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:30:24.570Z"
+    },
+    "Hair Masters Noida": {
+      "email": "info@hmsalon.org",
+      "website": "https://hmsalon.org",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:30:27.726Z"
+    },
+    "Glitz Salon": {
+      "email": "contactus@glitzstudio.in",
+      "website": "http://glitzstudio.in",
+      "category": "Salons",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:30:34.190Z"
+    },
+    "Fabrico Patna": {
+      "email": "contact@fabrico.in",
+      "website": "https://fabrico.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:30:47.535Z"
+    },
+    "Gopaisa (Ayush Khanna)": {
+      "email": "Ayush.k@gopaisa.in",
+      "category": "Cashback & Supplement Barter Client",
+      "website": "https://gopaisa.in",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:45:32.547Z"
+    },
+    "The Wellness Shop (Divjot Mehta)": {
+      "email": "influencer_connect@thewellnessshop.in",
+      "category": "Clean Beauty & Wellness D2C",
+      "website": "https://thewellnessshop.in",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T18:45:34.600Z"
+    },
+    "Plix Life": {
+      "email": "hello@plixlife.com",
+      "category": "Venture-backed Lifestyle & Nutrition",
+      "website": "https://www.plixlife.com",
+      "handle": "@myplixlife",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-23T09:41:50.439+00:00"
+    },
+    "The Ghar Soaps": {
+      "email": "influencers@gharsoaps.in",
+      "category": "Handmade Organic Skincare & Soaps",
+      "website": "https://gharsoaps.shop",
+      "handle": "@gharsoaps",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:01:18.930Z"
+    },
+    "Lets Hyphen": {
+      "email": "care@letshyphen.com",
+      "category": "Seed-funded Skincare",
+      "website": "https://letshyphen.com",
+      "handle": "@letshyphen",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:01:20.176Z"
+    },
+    "Bare Anatomy": {
+      "email": "chat@innovist.com",
+      "category": "Scientific Hair Care & Personal Care",
+      "website": "https://innovist.com",
+      "handle": "@bareanatomy.official",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:03:42.089Z"
+    },
+    "O'mumsie": {
+      "email": "info@omumsie.com",
+      "category": "Organic Baby & Mom Personal Care",
+      "website": "https://www.omumsie.com",
+      "handle": "@omumsie",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:03:43.637Z"
+    },
+    "Hitayu Holistic Healthcare": {
+      "email": "support@hitayuholistic.com",
+      "category": "Ayurvedic Wellness & Hair Care",
+      "website": "https://hitayuholistichealthcare.com",
+      "handle": "@hitayuholistic",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:03:44.463Z"
+    },
+    "Dusky India": {
+      "email": "care@duskyindia.in",
+      "website": "https://www.duskyindia.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:11:03.341Z"
+    },
+    "Above40": {
+      "email": "evergreen@above40.com",
+      "website": "https://above40.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:11:07.208Z"
+    },
+    "The Holistik": {
+      "email": "support@theholistik.com",
+      "website": "https://theholistik.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:11:10.312Z"
+    },
+    "Elemen": {
+      "email": "contact@elemen.co.in",
+      "website": "https://elemen.co.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:11:13.357Z"
+    },
+    "Fiore Labs": {
+      "email": "fiorelabs23@gmail.com",
+      "website": "https://www.fiorelabs.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:11:15.584Z"
+    },
+    "Unik Naturals": {
+      "email": "uniknaturals1@gmail.com",
+      "website": "https://uniknaturals.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:24:16.628Z"
+    },
+    "Skin Radiance Clinic": {
+      "email": "squarerootclinic@gmail.com",
+      "website": "https://www.squarerootclinic.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:24:19.255Z"
+    },
+    "Nourish Co": {
+      "email": "info@nourishco.co",
+      "website": "https://www.nourishco.co",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:24:21.472Z"
+    },
+    "Maquillage Wellness": {
+      "email": "care@maquillagewellness.com",
+      "website": "https://maquillagewellness.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:24:23.655Z"
+    },
+    "Calme Beauty": {
+      "email": "support@calmebeauty.com",
+      "website": "https://calmebeauty.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:24:25.834Z"
+    },
+    "HashtagXoxo": {
+      "email": "hello@hashtagxoxo.com",
+      "website": "https://hashtagxoxo.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:24:53.248Z"
+    },
+    "Blinku": {
+      "email": "info@blinku.in",
+      "website": "https://blinku.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:25:58.417Z"
+    },
+    "Sowaka Bharat": {
+      "email": "sowakabharat@gmail.com",
+      "website": "https://sowakabharat.shop",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:29:40.446Z"
+    },
+    "Nine Blush": {
+      "email": "care@nineblush.com",
+      "website": "https://nineblush.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:29:43.408Z"
+    },
+    "Rare Chemistry": {
+      "email": "info@rare-chemistry.com",
+      "website": "https://rare-chemistry.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:29:45.626Z"
+    },
+    "Hair Originals": {
+      "email": "feedback@hairoriginals.com",
+      "website": "https://www.hairoriginals.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-25T19:29:47.824Z"
+    },
+    "Ashpveda": {
+      "email": "info@ashpveda.com",
+      "website": "https://ashpveda.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:57:27.990Z"
+    },
+    "Carniwel": {
+      "email": "petcare@growelfeeds.com",
+      "website": "https://carniwel.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:57:36.489Z"
+    },
+    "Hellmann's India": {
+      "email": "Corporate.Communication-Hul@unilever.com",
+      "website": "https://www.unilever.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:57:44.372Z"
+    },
+    "Impulse Coffees": {
+      "email": "support@impulsecoffees.com",
+      "website": "https://impulsecoffees.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:57:58.460Z"
+    },
+    "Eat Better Co": {
+      "email": "care@eatbetterco.com",
+      "website": "https://eatbetterco.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:58:00.745Z"
+    },
+    "FitFeast": {
+      "email": "contact@fitfeast.in",
+      "website": "https://fitfeast.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:58:02.988Z"
     }
   },
   "dentists": {
@@ -3216,6 +3566,16 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-22T21:00:24.007Z"
+    }
+  },
+  "creators_contacted": {
+    "dikshachoudhary_": {
+      "email": "dikshachoudhary@6thstreetartist.com",
+      "website": "https://instagram.com/dikshachoudhary_",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T18:57:51.306Z"
     }
   }
 }
