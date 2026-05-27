@@ -3350,6 +3350,238 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-26T19:05:53.222Z"
+    },
+    "Acuvue India": {
+      "email": "corpcommindia@its.jnj.com",
+      "website": "https://www.acuvue.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-26T20:14:21.478Z"
+    },
+    "52 Sundaze": {
+      "email": "hello@52sundaze.com",
+      "website": "https://52sundaze.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:41.095Z"
+    },
+    "Love Earth": {
+      "email": "support@loveearth.in",
+      "website": "https://loveearth.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:44.629Z"
+    },
+    "Avimee Herbal": {
+      "email": "info@avimeeherbal.com",
+      "website": "https://avimeeherbal.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:47.402Z"
+    },
+    "Subko Specialty Coffee": {
+      "email": "info@subko.coffee",
+      "website": "https://subko.coffee",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:50.102Z"
+    },
+    "Naivo Coffee Company": {
+      "email": "info@naivo.in",
+      "website": "https://naivo.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:52.052Z"
+    },
+    "Grey Soul Coffee Roasters": {
+      "email": "hello@greysoul.coffee",
+      "website": "https://greysoul.coffee",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:53.954Z"
+    },
+    "Bloom Coffee Roasters": {
+      "email": "hello@bloomcoffeeroasters.in",
+      "website": "https://bloomcoffeeroasters.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:55.873Z"
+    },
+    "Ministry of Kaapi": {
+      "email": "info@ministryofkaapi.com",
+      "website": "https://ministryofkaapi.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:57.806Z"
+    },
+    "Vahdam Teas": {
+      "email": "support@vahdam.com",
+      "website": "https://vahdam.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:22:59.717Z"
+    },
+    "OnlyLeaf": {
+      "email": "hello@onlyleaf.in",
+      "website": "https://onlyleaf.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:01.635Z"
+    },
+    "The Good Life Co": {
+      "email": "info@tglcompany.com",
+      "website": "https://tglcompany.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:03.906Z"
+    },
+    "Khari Foods": {
+      "email": "info@kharifoods.com",
+      "website": "https://kharifoods.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:05.808Z"
+    },
+    "Hungry Foal": {
+      "email": "contact@hungryfoal.com",
+      "website": "https://hungryfoal.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:07.709Z"
+    },
+    "The Whole Truth": {
+      "email": "support@thewholetruthfoods.com",
+      "website": "https://thewholetruthfoods.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:09.635Z"
+    },
+    "Open Secret": {
+      "email": "care@opensecret.in",
+      "website": "https://opensecret.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:11.496Z"
+    },
+    "Happilo": {
+      "email": "support@happilo.in",
+      "website": "https://happilo.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:13.427Z"
+    },
+    "True Elements": {
+      "email": "care@trueelements.com",
+      "website": "https://trueelements.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:15.338Z"
+    },
+    "The Healthy Company": {
+      "email": "support@thehealthycompany.in",
+      "website": "https://thehealthycompany.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:17.253Z"
+    },
+    "Flexiwear": {
+      "email": "info@flexiwear.in",
+      "website": "https://flexiwear.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:19.167Z"
+    },
+    "Deivee": {
+      "email": "care@deivee.com",
+      "website": "https://deivee.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:21.109Z"
+    },
+    "Pace Active": {
+      "email": "hello@paceactive.in",
+      "website": "https://paceactive.in",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:23.237Z"
+    },
+    "Tego Fit": {
+      "email": "support@tego.fit",
+      "website": "https://tego.fit",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:25.106Z"
+    },
+    "Proline Active": {
+      "email": "customercare@prolineindia.com",
+      "website": "https://prolineindia.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:27.128Z"
+    },
+    "Phool": {
+      "email": "hello@phool.co",
+      "website": "https://phool.co",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:29.081Z"
+    },
+    "Clensta": {
+      "email": "care@clensta.com",
+      "website": "https://clensta.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:30.944Z"
+    },
+    "Koparo Clean": {
+      "email": "support@koparoclean.com",
+      "website": "https://koparoclean.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:32.842Z"
+    },
+    "SustainKart": {
+      "email": "support@sustainkart.com",
+      "website": "https://sustainkart.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:34.707Z"
+    },
+    "Better Home": {
+      "email": "support@thebetterhome.com",
+      "website": "https://thebetterhome.com",
+      "category": "D2C Brands",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T10:23:36.607Z"
     }
   },
   "dentists": {
@@ -3968,6 +4200,54 @@
       "status": "contacted",
       "outreach_count": 1,
       "last_contacted_at": "2026-05-26T18:57:51.306Z"
+    },
+    "hereisishikaasinha": {
+      "email": "hereisishikaasinha@gmail.com",
+      "website": "https://instagram.com/hereisishikaasinha",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 2,
+      "last_contacted_at": "2026-05-27T10:00:51.251Z"
+    },
+    "t.a.r.aaaaaaa": {
+      "email": "timam9513@gmail.com",
+      "website": "https://instagram.com/t.a.r.aaaaaaa",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T09:05:41.725Z"
+    },
+    "ft.shambhavi_": {
+      "email": "work.vavi@gmail.com",
+      "website": "https://instagram.com/ft.shambhavi_",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T09:33:22.966Z"
+    },
+    "truu_the_retriever": {
+      "email": "truu.the.retriever@gmail.com",
+      "website": "https://instagram.com/truu_the_retriever",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T09:42:41.571Z"
+    },
+    "samya.hans": {
+      "email": "Samyahans5@gmail.com",
+      "website": "https://instagram.com/samya.hans",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T09:45:58.542Z"
+    },
+    "tanya_shivhare": {
+      "email": "tanyashivhare1996@gmail.com",
+      "website": "https://instagram.com/tanya_shivhare",
+      "category": "Patna Creators",
+      "status": "contacted",
+      "outreach_count": 1,
+      "last_contacted_at": "2026-05-27T09:59:57.208Z"
     }
   }
 }
