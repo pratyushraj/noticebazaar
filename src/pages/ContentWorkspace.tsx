@@ -505,8 +505,10 @@ export default function ContentWorkspace() {
   return (
     <div className="min-h-screen bg-[#030712] text-[#f3f4f6] font-sans antialiased overflow-x-hidden selection:bg-cyan-500/20 pb-20 lg:pb-0">
       <SEOHead
-        title="Creator Armour | Content Workspace"
-        description="Premium content calendar, creator collaborations, and approval system for local business marketing."
+        title="Creator Armour | Content Workspace — YOUR DENTIST, Patna"
+        description="June content calendar, creator briefs, and approval workflow for YOUR DENTIST. Managed by Creator Armour."
+        image="https://creatorarmour.com/og-dentist-workspace.png"
+        imageAlt="Creator Armour Content Workspace – Calendar and Content Brief for YOUR DENTIST, Patna"
       />
 
       {/* Lighting overlay */}
