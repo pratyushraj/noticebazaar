@@ -47,7 +47,8 @@ import {
   ListTodo,
   Copy,
   PlusCircle,
-  MessageCircle
+  MessageCircle,
+  ArrowRight
 } from 'lucide-react';
 
 interface ContentItem {
@@ -85,164 +86,202 @@ export default function ContentWorkspace() {
   const [activeCommentItem, setActiveCommentItem] = useState<ContentItem | null>(null);
   const [changeComment, setChangeComment] = useState('');
 
+  // New task input state
+  const [newTaskText, setNewTaskText] = useState('');
+
+  // Content Brief drawer tab state
+  const [briefTab, setBriefTab] = useState<'overview' | 'script' | 'caption' | 'assets'>('overview');
+
+  // Inline Request Changes state (inside drawer)
+  const [drawerChangesOpen, setDrawerChangesOpen] = useState(false);
+  const [drawerChangeText, setDrawerChangeText] = useState('');
+
   // Relative updated timestamp state
   const [lastUpdated, setLastUpdated] = useState('2 min ago');
 
-  // Content planner database
-  const [items, setItems] = useState<ContentItem[]>([
-    { 
-      day: 1, 
-      week: 1,
-      type: 'Reel', 
-      topic: 'Meet Dr. Aryan Parmar & Clinic Introduction', 
-      status: 'Published', 
-      publishDate: 'June 1, 2026',
-      details: 'Sleek walkthrough introducing Dr. Aryan and team under warm aesthetic lighting.',
-      hook: 'POV: You finally found a dental clinic in Patna that feels like a luxury lounge.',
-      script: '[Scene: Dr. Aryan welcomes patient with warm smile] Dr. Aryan: "Welcome to YOUR DENTIST. We believe your visit should be completely stress-free."',
-      caption: 'Welcome to YOUR DENTIST in Patliputra. Painless, modern dental care designed for comfort. 🩺✨',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+  // ── June demo seed data (YOUR DENTIST, Patna) ────────────────────────────
+  const DEFAULT_ITEMS: ContentItem[] = [
+    // Week 1
+    {
+      day: 1, week: 1, type: 'Reel', status: 'Published',
+      topic: 'Meet Dr. Aryan Parmar & Clinic Introduction',
+      details: 'Welcome reel introducing Dr. Aryan Parmar and the YOUR DENTIST clinic in Patliputra Colony, Patna.',
+      hook: 'POV: You just found the most premium dental clinic in Patna.',
+      script: 'Walk-through of the clinic. Dr. Aryan introduces himself, the team, and the services offered. End with CTA: Book a consultation today!',
+      caption: '✨ Welcome to YOUR DENTIST – where smiles are crafted with precision. 🦷 Dr. Aryan Parmar, Patliputra Colony, Patna.',
+      publishDate: 'Jun 1',
     },
-    { 
-      day: 2, 
-      week: 1,
-      type: 'Carousel', 
-      topic: '5 Signs You Need a Dental Checkup', 
-      status: 'Scheduled', 
-      publishDate: 'June 3, 2026',
-      details: 'Slide-by-slide checklist covering early warning signs of decay.',
-      hook: '5 Silent signs your teeth are crying for help.',
-      script: 'Slide 1: Cover. Slide 2: Bleeding gums. Slide 3: Persistent bad breath. Slide 4: Hot/Cold sensitivity. Slide 5: Gum recession.',
-      caption: 'Don\'t wait for the toothache. Catch the early signs of decay. 🦷 Swipe to read!',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    {
+      day: 3, week: 1, type: 'Photo Post', status: 'Published',
+      topic: 'Clinic Interior & Facilities Showcase',
+      details: 'High-quality photo reel showing the premium interiors, equipment, and patient-friendly environment.',
+      caption: 'A space designed for comfort, built for excellence. 🏥 YOUR DENTIST, Patna.',
+      publishDate: 'Jun 3',
     },
-    { 
-      day: 3, 
-      week: 1,
-      type: 'Photo Post', 
-      topic: 'Clinic Interior & Facilities', 
-      status: 'Published', 
-      publishDate: 'May 28, 2026',
-      details: 'Aesthetic showcase of our state-of-the-art sterilization equipment and modern dental chair.',
-      hook: 'Hygiene standards aligned with international protocols.',
-      script: 'High-res photos highlighting autoclaves, sterile pouches, and clean setup.',
-      caption: 'Your safety is our top priority. We use hospital-grade multi-step sterilization. 🏥',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    {
+      day: 5, week: 1, type: 'Carousel', status: 'Published',
+      topic: '5 Signs You Need a Dental Checkup',
+      details: '5-slide carousel: bleeding gums, sensitivity, bad breath, tooth pain, and discolouration — each with a fix tip.',
+      hook: 'Slide 1: "Ignoring these 5 signs could cost you a tooth."',
+      caption: 'Don\'t wait for pain to visit the dentist. 🦷 Book a checkup at YOUR DENTIST, Patna.',
+      publishDate: 'Jun 5',
     },
-    { 
-      day: 4, 
-      week: 1,
-      type: 'Review', 
-      topic: 'Patient Testimonial: Google Highlight', 
-      status: 'Published', 
-      publishDate: 'May 30, 2026',
-      details: 'Featured 5-star Google review showing our completely painless extraction care.',
-      hook: '"Absolutely painless scaling and root canal!"',
-      script: 'Screenshot layout overlay with gold star graphics.',
-      caption: 'Thank you Patna for making us your 5.0-star rated clinic of choice! ⭐',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    {
+      day: 7, week: 1, type: 'Review', status: 'Published',
+      topic: 'Google Review Highlight – Patient Feedback',
+      details: 'Branded review graphic featuring a 5-star Google Review from a real patient.',
+      caption: 'Thank you for trusting YOUR DENTIST 🙏 Book your visit today.',
+      publishDate: 'Jun 7',
     },
-    { 
-      day: 5, 
-      week: 1,
-      type: 'Carousel', 
-      topic: 'Dental Myths vs Facts', 
-      status: 'Approved', 
-      publishDate: 'June 5, 2026',
-      details: 'Debunking abrasive charcoal treatments and brushing mistakes.',
-      hook: 'Stop brushing harder! It is destroying your enamel.',
-      script: 'Slide 1: Myths. Slide 2: Brushing hard vs gentle circles. Slide 3: Charcoal abrasive fact check.',
-      caption: 'Are you making these 3 brushing mistakes? Let us know below! 👇',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1598256989800-fe5f95da9787?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    // Week 2
+    {
+      day: 8, week: 2, type: 'Reel', status: 'Published',
+      topic: 'Dental Cleaning Process – Behind the Scenes',
+      details: 'Reel showing the ultrasonic scaling procedure, emphasising painless and safe enamel care.',
+      hook: 'POV: Your dentist actually explains what they\'re doing while cleaning.',
+      script: 'Dr. Aryan explains ultrasonic scaling step by step. Ends with before/after smile reveal.',
+      caption: 'Painless scaling. Safe enamel. Brilliant results. 🦷 YOUR DENTIST, Patna.',
+      publishDate: 'Jun 8',
     },
-    { 
-      day: 8, 
-      week: 2,
-      type: 'Reel', 
-      topic: 'Dental Cleaning Process', 
-      status: 'Published', 
-      publishDate: 'May 25, 2026',
-      details: 'Dr. Aryan explaining how ultrasonic scaling works comfortably.',
-      hook: 'Does scaling damage your enamel? The truth.',
-      script: '[Scene: Dr. Aryan using scaler model] "Ultrasonic scaling uses vibrations, not drills. It is 100% safe."',
-      caption: 'Debunking the biggest myth in dentistry. Scaling protects your enamel! 🦷',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1447433589675-4adf5662685f?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    { 
-      day: 9, 
-      week: 2,
-      type: 'Carousel', 
-      topic: 'Dental Implant vs Denture', 
-      status: 'Review', 
+    {
+      day: 10, week: 2, type: 'Carousel', status: 'Review',
+      topic: 'Dental Implant vs Denture – Which Is Right for You?',
+      details: '5-slide comparison carousel: bone health, durability, cost, comfort, and aesthetics.',
+      hook: 'Slide 1: "Still choosing between an implant and a denture? Read this first."',
       dueDate: 'Tomorrow',
-      details: 'Procedural comparison of fixed implant durability vs removable options.',
-      hook: 'Fixed Implant vs Removable Denture: Which is right for you?',
-      script: 'Comparison matrix covering cost, comfort, and bone health.',
-      caption: 'Missing teeth can cause bone loss. Implants act like natural roots. 🔩',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1606811971618-4486d14f3f99?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+      caption: 'The permanent solution exists. 🦷 Ask Dr. Aryan about dental implants at YOUR DENTIST.',
     },
-    { 
-      day: 15, 
-      week: 3,
-      type: 'Influencer', 
-      topic: 'Painless Cleaning Experience Vlog', 
-      status: 'Published', 
-      publishDate: 'May 29, 2026',
-      creator: 'Shambhavi',
-      followers: '14.2K',
-      details: 'Shambhavi vlogging her painless clinic session and showing glowing results.',
-      hook: 'Vlog: Trying Patna\'s most aesthetic dental clinic.',
-      script: '[Creator walks into Patliputra clinic, consults Dr. Aryan, does painless scaling]',
-      caption: 'Finally got my teeth scaled at @yourdentist_patna. Painless, aesthetic, and quick! 💖',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    {
+      day: 12, week: 2, type: 'Educational', status: 'Approved',
+      topic: 'Why Scaling Is Important – Educational Post',
+      details: 'Infographic-style photo post explaining gum disease prevention through regular scaling.',
+      caption: 'Scaling ≠ damaging your teeth. It protects them. 🦷 YOUR DENTIST, Patliputra Colony, Patna.',
     },
-    { 
-      day: 22, 
-      week: 4,
-      type: 'Reel', 
-      topic: 'Teeth Whitening Explained', 
-      status: 'Approved', 
-      publishDate: 'June 8, 2026',
-      details: 'Blue-light curing teeth whitening process demonstration.',
-      hook: 'How professional teeth whitening actually works.',
-      script: '[Macro curing light close-up, teeth shade mapping]',
-      caption: 'Get up to 4 shades lighter in 60 minutes safely with Dr. Aryan Parmar. 🌟',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    {
+      day: 14, week: 2, type: 'Case Study', status: 'Scheduled',
+      topic: 'Complete Lower Arch Rehabilitation – Case Study',
+      details: 'Before/after case study of a full lower arch implant procedure with Dr. Aryan.',
+      publishDate: 'Jun 14',
     },
-    { 
-      day: 29, 
-      week: 4,
-      type: 'Influencer', 
-      topic: 'Smile Makeover Experience Vlog', 
-      status: 'Review', 
-      creator: 'patnafoodie',
-      followers: '45.1K',
-      details: 'Vlogging smile makeover options and consultations with Dr. Aryan.',
-      hook: 'POV: Getting a full smile consultation in Patna.',
-      script: '[Creator walks in, reviews veneers & whitening options, interviews doctor]',
-      caption: 'Explored cosmetic teeth transformation options at @yourdentist_patna! 🦷✨',
-      thumbnailUrl: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=300&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
+    // Week 3
+    {
+      day: 15, week: 3, type: 'Influencer', status: 'Published',
+      topic: 'Teeth Cleaning Experience – Influencer Reel',
+      creator: 'ft.shambhavi_', followers: '180K',
+      details: 'Shambhavi documents her ultrasonic cleaning experience at YOUR DENTIST. Authentic and relatable.',
+      hook: 'POV: I was terrified of dental cleaning until I visited YOUR DENTIST.',
+      caption: 'Honestly, the best dental experience I\'ve had. 🤍 @your.dentist.patna',
+      publishDate: 'Jun 15',
+    },
+    {
+      day: 17, week: 3, type: 'Carousel', status: 'Approved',
+      topic: 'Foods That Harm Your Teeth the Most',
+      details: '6-slide carousel: soda, citrus overload, sticky candy, ice chewing, coffee, and alcohol. Each with damage explanation.',
+      caption: 'Your snack habits might be wrecking your enamel 😬 YOUR DENTIST, Patna.',
+    },
+    {
+      day: 19, week: 3, type: 'Educational', status: 'Scheduled',
+      topic: 'Common Causes of Tooth Sensitivity',
+      details: 'Educational reel or photo post on sensitivity triggers: cold drinks, whitening, enamel erosion.',
+      publishDate: 'Jun 19',
+      caption: 'That "zap" feeling when you drink cold water? Here\'s why. 🦷',
+    },
+    {
+      day: 21, week: 3, type: 'Photo Post', status: 'Review',
+      topic: 'Team Introduction – Meet the YOUR DENTIST Crew',
+      details: 'Introducing the dental team with names, specialisations, and a fun behind-the-scenes photo.',
+      dueDate: 'Jun 21',
+      caption: 'The team behind your best smile 😄 YOUR DENTIST, Patna.',
+    },
+    // Week 4
+    {
+      day: 22, week: 4, type: 'Reel', status: 'Approved',
+      topic: 'Teeth Whitening Explained – Myths vs Facts',
+      details: 'Reel busting common whitening myths with Dr. Aryan on camera.',
+      hook: '"Does whitening damage your teeth?" Dr. Aryan answers.',
+      dueDate: 'Jun 22',
+      caption: 'Professional whitening, done right. 🦷 YOUR DENTIST, Patna.',
+    },
+    {
+      day: 24, week: 4, type: 'Carousel', status: 'Scheduled',
+      topic: '3 Brushing Mistakes You\'re Probably Making',
+      details: 'Carousel: brushing too hard, wrong angle, skipping tongue. Each slide with a correct technique tip.',
+      publishDate: 'Jun 24',
+      caption: 'You might be brushing wrong 😬 Here\'s how to fix it. YOUR DENTIST, Patna.',
+    },
+    {
+      day: 26, week: 4, type: 'Review', status: 'Scheduled',
+      topic: 'Patient Testimonial – Real Review Graphic',
+      details: 'Branded graphic with a verified patient testimonial about their root canal experience.',
+      publishDate: 'Jun 26',
+      caption: 'Real people. Real smiles. YOUR DENTIST, Patna. 🦷',
+    },
+    {
+      day: 29, week: 4, type: 'Influencer', status: 'Review',
+      topic: 'Smile Makeover Experience – Influencer Reel',
+      creator: 'patnafoodie', followers: '95K',
+      details: 'patnafoodie\'s vlog documenting their smile consultation and whitening treatment at YOUR DENTIST.',
+      hook: '"I got a smile makeover in Patna and this is what happened."',
+      dueDate: 'Jun 29',
+      caption: 'A new smile, right here in Patna 😍 @your.dentist.patna',
+    },
+    {
+      day: 30, week: 4, type: 'Reel', status: 'Draft',
+      topic: 'Why Patna Chooses Your Dentist – Brand Story',
+      details: 'Emotional brand story reel. Dr. Aryan shares his mission and why he opened YOUR DENTIST in Patliputra Colony.',
+      hook: '"I didn\'t just want to open a clinic. I wanted Patna to have a dental experience it deserves."',
+    },
+  ];
+
+  const DEFAULT_TASKS: Array<{ id: number; text: string; dueDate: string; checked: boolean }> = [
+    { id: 1, text: 'Shoot Patient Testimonial', dueDate: 'Jun 26', checked: false },
+    { id: 2, text: 'Record Whitening B-roll footage', dueDate: 'Jun 22', checked: false },
+    { id: 3, text: 'Approve Influencer Reel (@patnafoodie)', dueDate: 'Today', checked: false },
+    { id: 4, text: 'Upload Before/After Case Study assets', dueDate: 'Jun 28', checked: false },
+  ];
+
+  // Content planner database
+  const [items, setItems] = useState<ContentItem[]>(() => {
+    const saved = localStorage.getItem('ca_workspace_items');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch { /* fall through to seed */ }
     }
-  ]);
+    return DEFAULT_ITEMS;
+  });
 
   // Shoot Checklist with Due Dates
-  const [shootTasks, setShootTasks] = useState([
-    { id: 1, text: 'Clinic Exterior shot (Aesthetic warm lighting)', dueDate: 'June 8', checked: false },
-    { id: 2, text: 'Sterilization Process walkthrough', dueDate: 'June 9', checked: true },
-    { id: 3, text: 'Dr. Aryan Parmar introduction clip', dueDate: 'June 8', checked: false },
-    { id: 4, text: 'Implant Procedure B-roll footage', dueDate: 'June 10', checked: false },
-    { id: 5, text: 'Patient Testimonial recording', dueDate: 'June 10', checked: true }
-  ]);
+  const [shootTasks, setShootTasks] = useState<Array<{ id: number; text: string; dueDate: string; checked: boolean }>>(() => {
+    const saved = localStorage.getItem('ca_workspace_tasks');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch { /* fall through to seed */ }
+    }
+    return DEFAULT_TASKS;
+  });
 
   // AI State
   const [aiInput, setAiInput] = useState('');
   const [aiMessages, setAiMessages] = useState<Array<{ sender: 'user' | 'ai', text: string }>>([
     { 
       sender: 'ai', 
-      text: "Content Workspace Assistant. Preloaded with clinic parameters. Click presets below to generate Reel scripts, Story polls, Carousels, or Google Review graphics." 
+      text: "Welcome. Content Workspace Assistant loaded. Select presets below to generate localized scripts, captions, or brief outlines." 
     }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
+
+  // Sync to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('ca_workspace_items', JSON.stringify(items));
+  }, [items]);
+
+  React.useEffect(() => {
+    localStorage.setItem('ca_workspace_tasks', JSON.stringify(shootTasks));
+  }, [shootTasks]);
 
   const handleStatusChange = (dayNum: number, nextStatus: ContentItem['status']) => {
     setItems(prev => prev.map(d => {
@@ -269,7 +308,7 @@ export default function ContentWorkspace() {
     setIsAiLoading(true);
 
     setTimeout(() => {
-      let aiResponse = "Content Workspace active. Select a preset chip below for clinic-optimized generation.";
+      let aiResponse = "Content Workspace active. Select a preset chip below for instant content templates.";
       const query = userQuery.toLowerCase();
       if (query.includes('reel') || query.includes('script')) {
         aiResponse = "🎬 **Reel Script (YOUR DENTIST, Patna):**\n\n*Hook:* \"POV: You found a clinic in Patna that feels like a luxury lounge.\"\n*Script:* \"Scaling at YOUR DENTIST doesn't thin teeth. Dr. Aryan Parmar uses ultrasonic scaling vibrations to leave your natural enamel safe and clean. Schedule a scaling consult today in Patliputra Colony!\"";
@@ -290,21 +329,79 @@ export default function ContentWorkspace() {
 
   const getStatusColor = (status: ContentItem['status']) => {
     switch (status) {
-      case 'Draft': return 'border-yellow-500/20 bg-yellow-500/[0.02] text-yellow-400';
-      case 'Review': return 'border-cyan-500/20 bg-cyan-500/[0.02] text-cyan-400';
-      case 'Approved': return 'border-purple-500/20 bg-purple-500/[0.02] text-purple-400';
-      case 'Scheduled': return 'border-orange-500/20 bg-orange-500/[0.02] text-orange-400';
-      case 'Published': return 'border-emerald-500/20 bg-emerald-500/[0.02] text-emerald-400';
+      case 'Draft': return 'border-l-2 border-l-amber-500/80 border-white/[0.06] bg-amber-500/[0.02] text-amber-400';
+      case 'Review': return 'border-l-2 border-l-cyan-500/80 border-white/[0.06] bg-cyan-500/[0.02] text-cyan-400';
+      case 'Approved': return 'border-l-2 border-l-purple-500/80 border-white/[0.06] bg-purple-500/[0.02] text-purple-400';
+      case 'Scheduled': return 'border-l-2 border-l-orange-500/80 border-white/[0.06] bg-orange-500/[0.02] text-orange-400';
+      case 'Published': return 'border-l-2 border-l-emerald-500/80 border-white/[0.06] bg-emerald-500/[0.02] text-emerald-400';
     }
   };
 
   const getStatusBadgeDot = (status: ContentItem['status']) => {
     switch (status) {
-      case 'Draft': return 'bg-yellow-400';
-      case 'Review': return 'bg-cyan-400';
-      case 'Approved': return 'bg-purple-400';
-      case 'Scheduled': return 'bg-orange-400';
-      case 'Published': return 'bg-emerald-400';
+      case 'Draft': return 'bg-amber-500';
+      case 'Review': return 'bg-cyan-500';
+      case 'Approved': return 'bg-purple-500';
+      case 'Scheduled': return 'bg-orange-500';
+      case 'Published': return 'bg-emerald-500';
+    }
+  };
+
+  // ── Brief helper functions ────────────────────────────────────────────────
+  const getShootRequirements = (item: ContentItem): string[] => {
+    switch (item.type) {
+      case 'Reel':
+        return ['Doctor talking head (15 sec)', 'Clinic reception shot', 'Dental chair B-roll', 'Close-up of procedure'];
+      case 'Influencer':
+        return ['Creator walking into clinic', 'Treatment experience footage', 'Creator reaction / testimonial', '3 Stories clips (behind the scenes)'];
+      case 'Carousel':
+        return ['Branded slide design assets', 'Doctor photo (if required)', 'Clinic logo & color assets'];
+      case 'Photo Post':
+        return ['High-res clinic interior shot', 'Natural lighting setup', 'Staff in frame (optional)'];
+      case 'Educational':
+        return ['Infographic design assets', 'Doctor quote or voiceover (optional)', 'Procedure reference photo'];
+      case 'Case Study':
+        return ['Before photo (patient consent required)', 'After photo (patient consent required)', 'Short doctor explanation clip'];
+      case 'Review':
+        return ['Google Review screenshot', 'Patient name & rating visible', 'Branded graphic template'];
+      default:
+        return ['Content brief assets', 'Clinic branding materials'];
+    }
+  };
+
+  const getShootTime = (type: ContentItem['type']): string => {
+    switch (type) {
+      case 'Reel': return '15 Minutes';
+      case 'Influencer': return '45–60 Minutes';
+      case 'Carousel': return '20 Minutes (Design)';
+      case 'Photo Post': return '10 Minutes';
+      case 'Educational': return '15 Minutes (Design)';
+      case 'Case Study': return '30 Minutes';
+      case 'Review': return '5 Minutes (Design)';
+      default: return '20 Minutes';
+    }
+  };
+
+  const getDeliverable = (type: ContentItem['type']): string => {
+    switch (type) {
+      case 'Reel': return 'Instagram Reel (15–30s)';
+      case 'Influencer': return 'Influencer Reel + 3 Stories';
+      case 'Carousel': return 'Instagram Carousel (5–7 slides)';
+      case 'Photo Post': return 'Instagram Photo Post';
+      case 'Educational': return 'Educational Infographic Post';
+      case 'Case Study': return 'Before/After Case Post';
+      case 'Review': return 'Google Review Graphic';
+      default: return 'Instagram Post';
+    }
+  };
+
+  const getManagedStatusLabel = (status: ContentItem['status']) => {
+    switch (status) {
+      case 'Published': return { dot: 'bg-emerald-500', label: 'Published', sub: 'Created by Creator Armour · Approved by Dr. Aryan' };
+      case 'Scheduled': return { dot: 'bg-orange-500', label: 'Scheduled', sub: 'Queued by Creator Armour · Ready to publish' };
+      case 'Approved': return { dot: 'bg-purple-500', label: 'Approved', sub: 'Approved by Dr. Aryan · Awaiting scheduling' };
+      case 'Review': return { dot: 'bg-cyan-500 animate-pulse', label: 'In Review', sub: 'Awaiting approval from Dr. Aryan' };
+      case 'Draft': return { dot: 'bg-amber-500', label: 'Draft', sub: 'Creator Armour preparing this brief' };
     }
   };
 
@@ -313,12 +410,62 @@ export default function ContentWorkspace() {
       case 'Reel': return '🎥';
       case 'Carousel': return '📚';
       case 'Review': return '⭐';
+      case 'Photo Post': return '📸';
+      case 'Educational': return '🎓';
+      case 'Influencer': return '🤝';
+      case 'Case Study': return '🦷';
       default: return '📄';
     }
   };
 
   const scheduledCount = items.filter(d => d.status === 'Scheduled' || d.status === 'Published').length;
   const pendingApproval = items.filter(d => d.status === 'Review');
+
+  const activeCreators = Array.from(new Set(items.filter(item => item.creator).map(item => item.creator!))).map(username => {
+    const creatorItems = items.filter(item => item.creator === username);
+    const hasReview = creatorItems.some(item => item.status === 'Review');
+    const hasScheduled = creatorItems.some(item => item.status === 'Scheduled');
+    const hasPublished = creatorItems.some(item => item.status === 'Published');
+    
+    let status = 'Awaiting Shoot';
+    let color = 'text-yellow-400 animate-pulse';
+    if (hasPublished) {
+      status = 'Published';
+      color = 'text-emerald-400';
+    } else if (hasScheduled) {
+      status = 'Scheduled';
+      color = 'text-orange-400';
+    } else if (hasReview) {
+      status = 'Review';
+      color = 'text-cyan-400 animate-pulse';
+    }
+    
+    return { username: `@${username}`, status, color };
+  });
+
+  const upcomingItems = items
+    .filter(item => item.status === 'Scheduled' || item.status === 'Approved' || item.status === 'Review')
+    .slice(0, 3);
+
+  const dynamicCreators = items
+    .filter(item => item.creator)
+    .reduce((acc, item) => {
+      const existing = acc.find(c => c.username === item.creator);
+      if (existing) {
+        if (item.type === 'Reel' || item.type === 'Carousel') {
+          existing.deliverables.push(`${item.status === 'Published' ? '✓' : '□'} 1 ${item.type}`);
+        }
+      } else {
+        acc.push({
+          username: item.creator!,
+          type: item.topic,
+          deliverables: [`${item.status === 'Published' ? '✓' : '□'} 1 ${item.type}`],
+          status: item.status === 'Published' ? 'Scheduled' : item.status === 'Scheduled' ? 'Scheduled' : 'Awaiting Shoot',
+          lastContacted: 'Recently'
+        });
+      }
+      return acc;
+    }, [] as Array<{ username: string; type: string; deliverables: string[]; status: string; lastContacted: string }>);
 
   const handleRequestContentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -356,7 +503,7 @@ export default function ContentWorkspace() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030712] text-[#f3f4f6] font-sans antialiased overflow-x-hidden selection:bg-cyan-500/20">
+    <div className="min-h-screen bg-[#030712] text-[#f3f4f6] font-sans antialiased overflow-x-hidden selection:bg-cyan-500/20 pb-20 lg:pb-0">
       <SEOHead
         title="Creator Armour | Content Workspace"
         description="Premium content calendar, creator collaborations, and approval system for local business marketing."
@@ -383,14 +530,30 @@ export default function ContentWorkspace() {
               </div>
             </div>
 
-            {/* Clinic details */}
-            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3.5 flex items-center gap-3">
-              <div className="w-8.5 h-8.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400 text-xs">
-                YD
+            {/* Clinic Card with metrics */}
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 flex flex-col gap-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center font-bold text-cyan-400 text-xs">
+                  YD
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase text-white truncate">YOUR DENTIST</p>
+                  <p className="text-[9px] text-neutral-400 truncate">Dr. Aryan Parmar</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-xs font-black uppercase text-white truncate">YOUR DENTIST</p>
-                <p className="text-[9.5px] text-neutral-400 truncate">Dr. Aryan Parmar</p>
+              <div className="grid grid-cols-3 gap-1 border-t border-white/5 pt-2 text-center text-[9px] font-mono">
+                <div>
+                  <p className="text-white font-bold">{scheduledCount}</p>
+                  <p className="text-neutral-500 uppercase text-[7px] tracking-wider mt-0.5">Sched</p>
+                </div>
+                <div className="border-x border-white/5">
+                  <p className="text-yellow-400 font-bold">{pendingApproval.length}</p>
+                  <p className="text-neutral-500 uppercase text-[7px] tracking-wider mt-0.5">Pend</p>
+                </div>
+                <div>
+                   <p className="text-purple-400 font-bold">{activeCreators.length}</p>
+                   <p className="text-neutral-500 uppercase text-[7px] tracking-wider mt-0.5">Active</p>
+                </div>
               </div>
             </div>
 
@@ -422,9 +585,9 @@ export default function ContentWorkspace() {
             </nav>
           </div>
 
-          <div className="pt-6 border-t border-white/[0.06] mt-8 lg:mt-0 flex flex-col gap-1 text-[9px] text-neutral-500 font-bold uppercase tracking-wider">
+          <div className="pt-6 border-t border-white/[0.06] mt-8 lg:mt-0 flex flex-col gap-1 text-[9px] text-neutral-500 font-bold uppercase tracking-wider font-mono">
             <span>Sync Status: Live</span>
-            <span className="font-mono">v1.2</span>
+            <span>Version v1.2</span>
           </div>
         </aside>
 
@@ -433,22 +596,45 @@ export default function ContentWorkspace() {
           
           {/* Header */}
           <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/[0.06] pb-6">
-            <div>
-              <div className="flex items-center gap-4 flex-wrap">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl font-black uppercase text-white tracking-wide">Dr. Aryan's Workspace</h1>
-                <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider bg-white/5 px-2.5 py-1 rounded-lg">
+                <span className="text-[9px] text-neutral-400 font-mono font-bold uppercase tracking-wider bg-white/5 px-2.5 py-1 rounded-lg">
                   Last updated {lastUpdated}
                 </span>
               </div>
-              <p className="text-xs text-neutral-400 mt-1 font-medium">Content calendar, creator collaborations, and approval workspace for local businesses.</p>
+              
+              {/* June Progress Bar prominently under title */}
+              <div className="bg-white/[0.01] border border-white/[0.04] p-3.5 rounded-xl flex items-center justify-between gap-6 max-w-md w-full">
+                <div className="min-w-0">
+                  <p className="text-[9px] font-bold text-neutral-400 uppercase">June Progress</p>
+                  <p className="text-[10px] font-mono text-cyan-400 font-bold mt-0.5">{scheduledCount} / 16 Posts Delivered</p>
+                </div>
+                <div className="flex-1 max-w-[200px] flex items-center gap-3">
+                  <div className="flex-1 bg-white/5 h-2 rounded-full overflow-hidden border border-white/5">
+                    <div className="bg-gradient-to-r from-cyan-500 to-indigo-500 h-full rounded-full" style={{ width: `${Math.min(100, Math.round((scheduledCount / 16) * 100))}%` }} />
+                  </div>
+                  <span className="text-[10px] font-mono font-black text-cyan-400">{Math.min(100, Math.round((scheduledCount / 16) * 100))}%</span>
+                </div>
+              </div>
             </div>
+
+            {/* Desktop Request Button */}
             <button 
               onClick={() => setIsRequestModalOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-cyan-500/10 transition-all active:scale-[0.98]"
+              className="hidden lg:flex px-4 py-2 bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider items-center gap-2 shadow-lg shadow-cyan-500/10 transition-all active:scale-[0.98]"
             >
               <Plus className="h-4 w-4" /> Request Content
             </button>
           </header>
+
+          {/* MOBILE FLOATING ACTION BUTTON */}
+          <button
+            onClick={() => setIsRequestModalOpen(true)}
+            className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 hover:scale-105 active:scale-95 transition-all"
+          >
+            <Plus className="w-6 h-6" />
+          </button>
 
           {/* DEFAULT TAB LANDING: CALENDAR PLANNER */}
           {activeTab === 'calendar' && (
@@ -461,92 +647,71 @@ export default function ContentWorkspace() {
                     <h2 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
                       <CalendarIcon className="h-4.5 w-4.5 text-cyan-400" /> June Content Calendar
                     </h2>
-                    <span className="text-[9px] text-neutral-500 uppercase font-mono">30-Day Planner</span>
+                    <span className="text-[9px] text-neutral-500 uppercase font-mono">30-Day Workspace</span>
                   </div>
 
-                  {/* Calendar Grid Week-by-Week */}
-                  <div className="space-y-6">
-                    {[1, 2, 3, 4].map((weekNum) => {
-                      const weekItems = items.filter(d => d.week === weekNum);
-                      return (
-                        <div key={weekNum} className="space-y-2.5">
-                          <p className="text-[9.5px] font-black uppercase tracking-widest text-neutral-500">Week {weekNum}</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                            {weekItems.map((item) => (
-                              <div 
-                                key={item.day}
-                                onClick={() => setSelectedItem(item)}
-                                className={`border hover:border-cyan-500/40 p-4 rounded-xl cursor-pointer hover:bg-white/[0.02] transition-all flex flex-col justify-between min-h-[96px] group ${getStatusColor(item.status)}`}
-                              >
-                                <div className="space-y-1">
-                                  <div className="flex justify-between items-start">
-                                    <span className="text-[8.5px] font-mono font-black text-cyan-400">DAY {item.day}</span>
-                                    <span className="text-[10px] font-black uppercase text-neutral-500 bg-white/5 px-1.5 py-0.5 rounded flex items-center gap-1">
-                                      <span>{getTypeIcon(item.type)}</span>
-                                      <span>{item.type}</span>
-                                    </span>
+                  {/* Calendar Grid Week-by-Week (COMPRESSED CARDS) */}
+                  {items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-4 border border-dashed border-white/[0.06] rounded-xl">
+                      <CalendarIcon className="h-8 w-8 text-neutral-700" />
+                      <div className="text-center">
+                        <p className="text-xs font-black uppercase text-neutral-500 tracking-wider">No content scheduled yet</p>
+                        <p className="text-[10px] text-neutral-600 mt-1">Use ➕ Request Content to add your first post</p>
+                      </div>
+                      <button
+                        onClick={() => setIsRequestModalOpen(true)}
+                        className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                      >
+                        + Request First Content
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {[1, 2, 3, 4].map((weekNum) => {
+                        const weekItems = items.filter(d => d.week === weekNum);
+                        if (weekItems.length === 0) return null;
+                        return (
+                          <div key={weekNum} className="space-y-2.5">
+                            <p className="text-[9.5px] font-black uppercase tracking-widest text-neutral-500">Week {weekNum}</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {weekItems.map((item) => (
+                                <div 
+                                  key={item.day}
+                                  onClick={() => setSelectedItem(item)}
+                                  className={`border hover:border-cyan-500/40 p-3 rounded-lg cursor-pointer hover:bg-white/[0.02] transition-all flex flex-col justify-between min-h-[72px] group ${getStatusColor(item.status)}`}
+                                >
+                                  <div className="min-w-0">
+                                    <span className="text-[8px] font-mono font-bold text-neutral-500 block uppercase">DAY {item.day}</span>
+                                    <p className="text-xs font-black uppercase text-white truncate max-w-full leading-tight mt-1">
+                                      {getTypeIcon(item.type)} {item.topic}
+                                    </p>
                                   </div>
-                                  <p className="text-xs font-black uppercase text-white tracking-wide group-hover:text-cyan-300 transition-colors leading-snug truncate max-w-full">{item.topic}</p>
+                                  <div className="flex items-center justify-between border-t border-white/5 pt-1.5 mt-1.5">
+                                    <span className="text-[7.5px] font-bold uppercase tracking-wider">
+                                      {item.status}
+                                    </span>
+                                    {item.creator && (
+                                      <span className="text-[7.5px] font-bold text-amber-400 truncate max-w-[60px]">@{item.creator}</span>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-2">
-                                  <span className="text-[8.5px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${getStatusBadgeDot(item.status)}`} />
-                                    {item.status}
-                                  </span>
-                                  {item.creator && (
-                                    <span className="text-[8.5px] font-bold text-amber-400">@{item.creator}</span>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Right Column: Support Modules (35%) */}
+              {/* Right Column: Tasks and Approvals (35%) */}
               <div className="lg:col-span-4 space-y-6">
-                
-                {/* Upcoming This Week Widget */}
-                <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-6 space-y-4">
+                {/* To-Do List */}
+                <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-5 space-y-3">
                   <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 flex items-center gap-2">
-                    <Clock className="h-4.5 w-4.5 text-cyan-400" /> Upcoming This Week
+                    <CheckSquare className="h-4 w-4 text-cyan-400" /> Action Items
                   </h3>
-                  
-                  <div className="space-y-2.5 font-mono text-xs">
-                    <div className="bg-white/[0.01] border border-white/[0.04] p-3 rounded-xl flex justify-between items-center">
-                      <div>
-                        <p className="text-[8.5px] font-bold text-neutral-500">TOMORROW</p>
-                        <p className="text-xs font-black uppercase text-white mt-0.5">Teeth Cleaning Reel</p>
-                      </div>
-                      <span className="text-[9px] text-cyan-400">🎥 Reel</span>
-                    </div>
-                    <div className="bg-white/[0.01] border border-white/[0.04] p-3 rounded-xl flex justify-between items-center">
-                      <div>
-                        <p className="text-[8.5px] font-bold text-neutral-500">THURSDAY</p>
-                        <p className="text-xs font-black uppercase text-white mt-0.5">Implant Carousel</p>
-                      </div>
-                      <span className="text-[9px] text-purple-400">📚 Slide</span>
-                    </div>
-                    <div className="bg-white/[0.01] border border-white/[0.04] p-3 rounded-xl flex justify-between items-center">
-                      <div>
-                        <p className="text-[8.5px] font-bold text-neutral-500">SATURDAY</p>
-                        <p className="text-xs font-black uppercase text-white mt-0.5">Influencer Visit</p>
-                      </div>
-                      <span className="text-[9px] text-indigo-400">🤝 Collab</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Shoot Checklist widget with Due Dates */}
-                <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-6 space-y-4">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 flex items-center gap-2">
-                    <Video className="h-4.5 w-4.5 text-cyan-400" /> Shoot Checklist
-                  </h3>
-                  
                   <div className="space-y-2">
                     {shootTasks.map((task) => (
                       <div 
@@ -570,10 +735,83 @@ export default function ContentWorkspace() {
                         <span className="text-[8px] font-mono text-cyan-400 font-bold shrink-0 self-center">Due: {task.dueDate}</span>
                       </div>
                     ))}
+                    {shootTasks.length === 0 && (
+                      <p className="text-[10px] text-neutral-600 font-bold uppercase tracking-wider text-center py-3">No tasks yet</p>
+                    )}
+                  </div>
+                  {/* Inline quick-add */}
+                  <div className="flex gap-2 border-t border-white/5 pt-3">
+                    <input
+                      type="text"
+                      placeholder="Add a task..."
+                      value={newTaskText}
+                      onChange={(e) => setNewTaskText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newTaskText.trim()) {
+                          setShootTasks(prev => [...prev, { id: Date.now(), text: newTaskText.trim(), dueDate: 'Soon', checked: false }]);
+                          setNewTaskText('');
+                          toast.success('Task added');
+                        }
+                      }}
+                      className="flex-1 bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-[10px] outline-none text-white placeholder:text-neutral-600 focus:border-cyan-500/30"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!newTaskText.trim()) return;
+                        setShootTasks(prev => [...prev, { id: Date.now(), text: newTaskText.trim(), dueDate: 'Soon', checked: false }]);
+                        setNewTaskText('');
+                        toast.success('Task added');
+                      }}
+                      className="p-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 rounded-lg text-cyan-400 transition-all"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Approvals Queue Upgraded */}
+                {/* Active Creators Widget */}
+                {activeCreators.length > 0 && (
+                  <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-5 space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+                      <Users className="h-4 w-4 text-purple-400" /> Active Creators
+                    </h3>
+                    <div className="space-y-2">
+                      {activeCreators.map((creator, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white/[0.01] border border-white/[0.04] px-3 py-2.5 rounded-xl">
+                          <span className="text-[10px] font-black text-amber-400">{creator.username}</span>
+                          <span className={`text-[8.5px] font-black uppercase tracking-wider ${creator.color}`}>{creator.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upcoming This Week Widget */}
+                {upcomingItems.length > 0 && (
+                  <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-5 space-y-3">
+                    <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 flex items-center gap-2">
+                      <CalendarDays className="h-4 w-4 text-cyan-400" /> Upcoming This Week
+                    </h3>
+                    <div className="space-y-2">
+                      {upcomingItems.map((item) => (
+                        <div
+                          key={item.day}
+                          onClick={() => setSelectedItem(item)}
+                          className={`flex items-center gap-3 border px-3 py-2.5 rounded-xl cursor-pointer hover:border-cyan-500/30 transition-all ${getStatusColor(item.status)}`}
+                        >
+                          <span className="text-sm">{getTypeIcon(item.type)}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-black uppercase text-white truncate">{item.topic}</p>
+                            <p className="text-[8px] font-mono text-neutral-500 uppercase mt-0.5">Day {item.day}</p>
+                          </div>
+                          <ChevronRight className="h-3 w-3 text-neutral-600 shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Approvals Queue Upgraded with icon buttons */}
                 <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-6 space-y-4">
                   <h3 className="text-xs font-black uppercase tracking-wider text-neutral-400 flex items-center gap-2">
                     <CheckSquare className="h-4.5 w-4.5 text-cyan-400" /> Approvals Queue
@@ -595,15 +833,15 @@ export default function ContentWorkspace() {
                         <div className="flex gap-2 border-t border-white/5 pt-3">
                           <button 
                             onClick={() => handleStatusChange(item.day, 'Approved')}
-                            className="flex-1 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase text-[8.5px] rounded-lg tracking-wider transition-all"
+                            className="flex-1 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-black font-black uppercase text-[9px] rounded-lg tracking-wider transition-all flex items-center justify-center gap-1"
                           >
-                            Approve ✅
+                            ✅ Approve
                           </button>
                           <button 
                             onClick={() => handleOpenCommentModal(item)}
-                            className="flex-1 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black uppercase text-[8.5px] rounded-lg tracking-wider transition-all"
+                            className="flex-1 py-1.5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black uppercase text-[9px] rounded-lg tracking-wider transition-all flex items-center justify-center gap-1"
                           >
-                            Request Changes ✏️
+                            ✏️ Feedback
                           </button>
                         </div>
                       </div>
@@ -628,28 +866,32 @@ export default function ContentWorkspace() {
               
               {/* KPI Cards Grid */}
               <section className="grid grid-cols-2 lg:grid-cols-4 gap-4 pb-4">
-                {[
-                  { title: 'Posts Scheduled', value: scheduledCount, sub: 'Calendar target ready', color: 'text-cyan-400' },
-                  { title: 'Pending Approval', value: pendingApproval.length, sub: 'Needs dentist action', color: 'text-yellow-400' },
-                  { title: 'Active Creators', value: '2', sub: '@ft.shambhavi_, @patnafoodie', color: 'text-purple-400' },
-                  { title: 'Completion %', value: '75%', sub: '12 / 16 Content completed', color: 'text-emerald-400' }
-                ].map((kpi, idx) => (
-                  <div key={idx} className="bg-white/[0.01] border border-white/[0.06] rounded-2xl p-4.5 relative overflow-hidden">
-                    <p className="text-[9px] font-black uppercase text-neutral-500 tracking-widest">{kpi.title}</p>
-                    <p className={`text-2xl font-black font-mono mt-2 ${kpi.color}`}>{kpi.value}</p>
-                    <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mt-1">{kpi.sub}</p>
-                  </div>
-                ))}
+{(() => {
+                  const completionPct = Math.min(100, Math.round((scheduledCount / 16) * 100));
+                  const creatorNames = activeCreators.map(c => c.username).join(', ') || 'No creators yet';
+                  return [
+                    { title: 'Posts Scheduled', value: scheduledCount, sub: 'Calendar target ready', color: 'text-cyan-400' },
+                    { title: 'Pending Approval', value: pendingApproval.length, sub: 'Needs dentist action', color: 'text-yellow-400' },
+                    { title: 'Active Creators', value: activeCreators.length, sub: creatorNames, color: 'text-purple-400' },
+                    { title: 'Completion %', value: `${completionPct}%`, sub: `${scheduledCount} / 16 Content completed`, color: 'text-emerald-400' }
+                  ].map((kpi, idx) => (
+                    <div key={idx} className="bg-white/[0.01] border border-white/[0.06] rounded-2xl p-4.5 relative overflow-hidden">
+                      <p className="text-[9px] font-black uppercase text-neutral-500 tracking-widest">{kpi.title}</p>
+                      <p className={`text-2xl font-black font-mono mt-2 ${kpi.color}`}>{kpi.value}</p>
+                      <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider mt-1">{kpi.sub}</p>
+                    </div>
+                  ));
+                })()}
               </section>
 
               {/* Progress bar prominent display */}
               <div className="bg-white/[0.01] border border-white/[0.06] rounded-xl p-5 space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-xs font-black uppercase text-white">Current Month Content Progress</p>
-                  <span className="text-sm font-mono text-cyan-400 font-black">75% Complete</span>
+                  <span className="text-sm font-mono text-cyan-400 font-black">{Math.min(100, Math.round((scheduledCount / 16) * 100))}% Complete</span>
                 </div>
                 <div className="w-full bg-white/5 h-3 rounded-full overflow-hidden border border-white/5">
-                  <div className="bg-gradient-to-r from-cyan-500 to-indigo-500 h-full rounded-full" style={{ width: '75%' }} />
+                  <div className="bg-gradient-to-r from-cyan-500 to-indigo-500 h-full rounded-full" style={{ width: `${Math.min(100, Math.round((scheduledCount / 16) * 100))}%` }} />
                 </div>
               </div>
 
@@ -955,7 +1197,7 @@ export default function ContentWorkspace() {
                 </button>
               </div>
 
-              {/* Content Type Radio options */}
+              {/* Content Type options */}
               <div className="space-y-1.5">
                 <label className="text-[8px] uppercase font-black text-neutral-500">Content Type</label>
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -974,7 +1216,7 @@ export default function ContentWorkspace() {
                 </div>
               </div>
 
-              {/* Priority Select */}
+              {/* Priority options */}
               <div className="space-y-1.5">
                 <label className="text-[8px] uppercase font-black text-neutral-500">Priority</label>
                 <div className="flex gap-2">
@@ -1026,7 +1268,7 @@ export default function ContentWorkspace() {
         )}
       </AnimatePresence>
 
-      {/* COMMENTS FEEDBACK MODAL (Approvals flow) */}
+      {/* COMMENTS FEEDBACK MODAL */}
       <AnimatePresence>
         {isCommentModalOpen && activeCommentItem && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
@@ -1080,119 +1322,289 @@ export default function ContentWorkspace() {
         )}
       </AnimatePresence>
 
-      {/* DETAIL MODAL DRAWER */}
+      {/* DETAIL MODAL DRAWER — TABBED CONTENT BRIEF */}
       <AnimatePresence>
-        {selectedItem && (
-          <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm">
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="w-full max-w-[500px] h-full bg-[#0a0f1d] border-l border-l-white/[0.08] p-6 flex flex-col justify-between"
+        {selectedItem && (() => {
+          const managed = getManagedStatusLabel(selectedItem.status)!;
+          const shootReqs = getShootRequirements(selectedItem);
+          return (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm"
+              onClick={() => setSelectedItem(null)}
             >
-              <div className="space-y-6 overflow-y-auto max-h-[82vh] pr-1 scrollbar-none">
-                <div className="flex justify-between items-center pb-4 border-b border-white/5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-black text-cyan-400 uppercase tracking-widest">DAY {selectedItem.day}</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 text-neutral-400 font-mono">
-                      WEEK {selectedItem.week}
-                    </span>
-                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 text-neutral-400">
-                      {selectedItem.type}
-                    </span>
-                  </div>
-                  <button 
-                    onClick={() => setSelectedItem(null)}
-                    className="p-1.5 hover:bg-white/5 rounded-lg text-neutral-500 hover:text-white"
-                  >
-                    <X className="h-4.5 w-4.5" />
-                  </button>
-                </div>
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 26, stiffness: 300 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-[520px] h-full bg-[#07091280] backdrop-blur-xl border-l border-white/[0.07] flex flex-col"
+              >
+                {/* ── Drawer Header ───────────────────────────────────────────── */}
+                <div className="flex-shrink-0 px-6 pt-6 pb-4 border-b border-white/[0.06] space-y-4">
 
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">Content Topic</span>
-                    <h3 className="text-base font-black uppercase text-white leading-tight mt-1">{selectedItem.topic}</h3>
-                  </div>
-
-                  {selectedItem.creator && (
-                    <div className="bg-[#070b16] p-3.5 rounded-xl border border-white/5 flex justify-between items-center">
-                      <div>
-                        <p className="text-[8px] font-black uppercase text-neutral-500">Collaborator</p>
-                        <p className="text-xs font-black uppercase text-amber-400 mt-0.5">@{selectedItem.creator}</p>
+                  {/* Top bar */}
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-mono font-black text-cyan-400 uppercase tracking-widest">DAY {selectedItem.day} · WK {selectedItem.week}</span>
+                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/5 text-neutral-400">
+                          {getTypeIcon(selectedItem.type)} {selectedItem.type}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-bold text-neutral-400">{selectedItem.followers} Followers</span>
+                      <h2 className="text-sm font-black uppercase text-white leading-tight pr-6">{selectedItem.topic}</h2>
+                    </div>
+                    <button
+                      onClick={() => { setSelectedItem(null); setDrawerChangesOpen(false); setBriefTab('overview'); }}
+                      className="flex-shrink-0 p-1.5 hover:bg-white/5 rounded-lg text-neutral-500 hover:text-white transition-all"
+                    >
+                      <X className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
+
+                  {/* Managed status block */}
+                  <div className="flex items-center gap-3 bg-white/[0.02] border border-white/[0.05] rounded-xl px-3.5 py-2.5">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${managed.dot}`} />
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase text-white tracking-wide">{managed.label}</p>
+                      <p className="text-[8.5px] text-neutral-500 font-bold mt-0.5 truncate">{managed.sub}</p>
+                    </div>
+                    <select
+                      value={selectedItem.status}
+                      onChange={(e) => handleStatusChange(selectedItem.day, e.target.value as ContentItem['status'])}
+                      className="ml-auto bg-transparent text-[8px] text-neutral-500 outline-none cursor-pointer font-black uppercase hover:text-white transition-colors border-0"
+                    >
+                      {(['Draft', 'Review', 'Approved', 'Scheduled', 'Published'] as const).map(st => (
+                        <option key={st} value={st} className="bg-[#0a0f1d]">{st}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Meta row: shoot time · deliverable · publish date */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { icon: '⏱', label: 'Shoot Time', value: getShootTime(selectedItem.type) },
+                      { icon: '🎬', label: 'Deliverable', value: getDeliverable(selectedItem.type) },
+                      { icon: '📅', label: 'Publish Date', value: selectedItem.publishDate || 'TBD' },
+                    ].map((m) => (
+                      <div key={m.label} className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-2.5 text-center">
+                        <p className="text-base leading-none">{m.icon}</p>
+                        <p className="text-[7px] font-black uppercase text-neutral-600 tracking-wider mt-1">{m.label}</p>
+                        <p className="text-[9px] font-black text-white mt-0.5 leading-tight">{m.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Creator badge (if influencer) */}
+                  {selectedItem.creator && (
+                    <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl px-3.5 py-2.5 flex items-center justify-between">
+                      <div>
+                        <p className="text-[8px] font-black uppercase text-amber-500/80 tracking-wider">Collaborating Creator</p>
+                        <p className="text-xs font-black text-amber-400 mt-0.5">@{selectedItem.creator}</p>
+                      </div>
+                      <span className="text-[9px] font-bold text-neutral-400">{selectedItem.followers} followers</span>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">Status Stage</span>
-                      <div className="relative mt-1">
-                        <select 
-                          value={selectedItem.status} 
-                          onChange={(e) => handleStatusChange(selectedItem.day, e.target.value as any)}
-                          className="w-full bg-[#070b16] border border-white/[0.06] rounded-xl px-3 py-2 text-xs outline-none text-white focus:border-cyan-500/20 appearance-none"
-                        >
-                          {(['Draft', 'Review', 'Approved', 'Scheduled', 'Published'] as const).map(st => (
-                            <option key={st} value={st}>{st}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">Publish Date</span>
-                      <p className="text-xs font-black text-white mt-2.5">{selectedItem.publishDate || 'TBD (Scheduling)'}</p>
-                    </div>
+                  {/* Tab bar */}
+                  <div className="flex gap-1 bg-black/40 p-1 rounded-xl border border-white/[0.05]">
+                    {(['overview', 'script', 'caption', 'assets'] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setBriefTab(tab)}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
+                          briefTab === tab ? 'bg-cyan-500 text-black shadow-md' : 'text-neutral-500 hover:text-white'
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
                   </div>
+                </div>
 
-                  <div className="space-y-3.5 pt-2">
-                    {selectedItem.hook && (
-                      <div className="bg-[#070b16] p-4 rounded-xl border border-white/5">
-                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider">Visual Hook (Attention 0-3s)</span>
-                        <p className="text-xs font-black text-white mt-1 leading-normal italic">"{selectedItem.hook}"</p>
+                {/* ── Tab Content ─────────────────────────────────────────────── */}
+                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-3.5 scrollbar-none">
+
+                  {/* OVERVIEW TAB */}
+                  {briefTab === 'overview' && (
+                    <>
+                      {/* Objective */}
+                      <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
+                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">🎯 Objective</span>
+                        <p className="text-xs text-neutral-300 leading-relaxed mt-2 font-medium">{selectedItem.details}</p>
                       </div>
-                    )}
 
-                    {selectedItem.script && (
-                      <div className="bg-[#070b16] p-4 rounded-xl border border-white/5">
-                        <span className="text-[8px] font-black uppercase text-purple-400 tracking-wider">Video Script / Slide Layout</span>
-                        <p className="text-xs text-neutral-300 mt-1.5 leading-relaxed font-medium">{selectedItem.script}</p>
+                      {/* Hook */}
+                      {selectedItem.hook && (
+                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
+                          <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider">⚡ Visual Hook (0–3 sec)</span>
+                          <p className="text-xs font-black text-white mt-2 leading-normal italic">"{selectedItem.hook}"</p>
+                        </div>
+                      )}
+
+                      {/* Shoot Requirements */}
+                      <div className="bg-[#070b16] border border-white/5 rounded-xl p-4 space-y-2.5">
+                        <span className="text-[8px] font-black uppercase text-orange-400 tracking-wider">📹 Shoot Requirements</span>
+                        <ul className="space-y-1.5 mt-1">
+                          {shootReqs.map((req, i) => (
+                            <li key={i} className="flex items-start gap-2 text-[10px] text-neutral-300 font-medium leading-tight">
+                              <span className="w-1 h-1 rounded-full bg-orange-500/60 flex-shrink-0 mt-1.5" />
+                              {req}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    )}
+                    </>
+                  )}
 
-                    {selectedItem.caption && (
-                      <div className="bg-[#070b16] p-4 rounded-xl border border-white/5">
-                        <span className="text-[8px] font-black uppercase text-amber-400 tracking-wider">Instagram Caption Draft</span>
-                        <p className="text-xs text-neutral-300 mt-1.5 leading-relaxed font-medium">{selectedItem.caption}</p>
+                  {/* SCRIPT TAB */}
+                  {briefTab === 'script' && (
+                    <>
+                      {selectedItem.script ? (
+                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
+                          <span className="text-[8px] font-black uppercase text-purple-400 tracking-wider">📝 Full Script / Slide Layout</span>
+                          <p className="text-xs text-neutral-300 mt-2.5 leading-relaxed font-medium whitespace-pre-line">{selectedItem.script}</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-white/[0.05] rounded-xl">
+                          <span className="text-2xl">📝</span>
+                          <p className="text-[10px] font-black uppercase text-neutral-600 tracking-wider">Script coming soon</p>
+                          <p className="text-[9px] text-neutral-700">Creator Armour team is preparing this</p>
+                        </div>
+                      )}
+                      {selectedItem.hook && (
+                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
+                          <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider">⚡ Opening Hook</span>
+                          <p className="text-xs font-black text-white mt-2 leading-normal italic">"{selectedItem.hook}"</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* CAPTION TAB */}
+                  {briefTab === 'caption' && (
+                    <>
+                      {selectedItem.caption ? (
+                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4 space-y-3">
+                          <span className="text-[8px] font-black uppercase text-amber-400 tracking-wider">📸 Instagram Caption Draft</span>
+                          <p className="text-xs text-neutral-300 leading-relaxed font-medium">{selectedItem.caption}</p>
+                          <button
+                            onClick={() => { navigator.clipboard.writeText(selectedItem.caption || ''); toast.success('Caption copied!'); }}
+                            className="flex items-center gap-1.5 text-[9px] font-black uppercase text-cyan-400 hover:text-cyan-300 transition-colors"
+                          >
+                            <Copy className="h-3 w-3" /> Copy Caption
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-white/[0.05] rounded-xl">
+                          <span className="text-2xl">✍️</span>
+                          <p className="text-[10px] font-black uppercase text-neutral-600 tracking-wider">Caption coming soon</p>
+                        </div>
+                      )}
+                      {/* Hashtag suggestion */}
+                      <div className="bg-white/[0.01] border border-white/[0.04] rounded-xl p-3.5">
+                        <span className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">#️⃣ Suggested Hashtags</span>
+                        <p className="text-[10px] text-neutral-400 mt-2 leading-relaxed">#YourDentistPatna #DrAryanParmar #DentalCarePatna #PatnaDentist #PatliputraColony #SmilePatna #DentalHealthIndia</p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ASSETS TAB */}
+                  {briefTab === 'assets' && (
+                    <>
+                      <div className="bg-[#070b16] border border-white/5 rounded-xl p-4 space-y-2.5">
+                        <span className="text-[8px] font-black uppercase text-emerald-400 tracking-wider">📦 Required Assets</span>
+                        <ul className="space-y-1.5 mt-1">
+                          {shootReqs.map((req, i) => (
+                            <li key={i} className="flex items-start gap-2 text-[10px] text-neutral-300 font-medium leading-tight">
+                              <span className="w-1 h-1 rounded-full bg-emerald-500/60 flex-shrink-0 mt-1.5" />
+                              {req}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="bg-white/[0.01] border border-white/[0.04] rounded-xl p-3.5 space-y-2">
+                        <span className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">🏥 Brand Assets</span>
+                        {['YOUR DENTIST logo (white)', 'Brand colors: #0ea5e9 / #ffffff', 'Clinic address: Patliputra Colony, Patna', 'Contact: +91 XXXXX XXXXX', 'Instagram: @your.dentist.patna'].map((asset, i) => (
+                          <p key={i} className="text-[10px] text-neutral-400 font-medium">{asset}</p>
+                        ))}
+                      </div>
+                      {selectedItem.creator && (
+                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 space-y-2">
+                          <span className="text-[8px] font-black uppercase text-amber-400 tracking-wider">🤝 Creator Deliverables</span>
+                          <p className="text-[10px] text-neutral-300 font-medium">1× Reel (15–30s, vertical, H.264)</p>
+                          <p className="text-[10px] text-neutral-300 font-medium">3× Instagram Stories</p>
+                          <p className="text-[10px] text-neutral-300 font-medium">Raw footage submitted within 48h of shoot</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── Inline Request Changes ─────────────────────────────── */}
+                  <div className="border-t border-white/[0.05] pt-4 mt-2">
+                    {!drawerChangesOpen ? (
+                      <button
+                        onClick={() => setDrawerChangesOpen(true)}
+                        className="w-full py-2.5 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] hover:border-cyan-500/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-neutral-400 hover:text-white transition-all flex items-center justify-center gap-2"
+                      >
+                        <MessageCircle className="h-3.5 w-3.5" /> 💬 Request Changes
+                      </button>
+                    ) : (
+                      <div className="space-y-2.5">
+                        <p className="text-[8px] font-black uppercase text-neutral-500 tracking-wider">💬 What would you like changed?</p>
+                        <textarea
+                          autoFocus
+                          placeholder={'e.g., "Add clinic address", "Use Hindi", "Change hook", "Mention implants"'}
+                          value={drawerChangeText}
+                          onChange={(e) => setDrawerChangeText(e.target.value)}
+                          className="w-full h-20 bg-black/60 border border-white/[0.08] rounded-xl p-3 text-xs outline-none focus:border-cyan-500/30 text-white placeholder:text-neutral-600 resize-none font-medium"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => { setDrawerChangesOpen(false); setDrawerChangeText(''); }}
+                            className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (!drawerChangeText.trim()) { toast.error('Please describe the change.'); return; }
+                              toast.success(`Changes requested for "${selectedItem.topic}"`);
+                              setDrawerChangesOpen(false);
+                              setDrawerChangeText('');
+                            }}
+                            className="flex-1 py-2 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
+                          >
+                            Submit Request
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-4 border-t border-white/5 flex gap-2">
-                <button 
-                  onClick={() => {
-                    toast.success("Brief details downloaded locally!");
-                  }}
-                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-black uppercase tracking-wider border border-white/10 transition-all"
-                >
-                  Download Brief
-                </button>
-                <button 
-                  onClick={() => setSelectedItem(null)}
-                  className="flex-1 py-3 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl text-xs font-black uppercase tracking-wider transition-all"
-                >
-                  Close Brief
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+                {/* ── Drawer Footer ────────────────────────────────────────── */}
+                <div className="flex-shrink-0 px-6 pb-6 pt-4 border-t border-white/[0.06] flex gap-2">
+                  <button
+                    onClick={() => toast.success('Brief downloaded!')}
+                    className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-wider border border-white/10 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Download className="h-3.5 w-3.5" /> Download Brief
+                  </button>
+                  <button
+                    onClick={() => { setSelectedItem(null); setDrawerChangesOpen(false); setBriefTab('overview'); }}
+                    className="flex-1 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-black rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                  >
+                    Close Brief
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
+      {/* FOOTER */}
       <footer className="border-t border-white/[0.06] py-8 text-center text-[10px] text-neutral-600 uppercase tracking-widest bg-[#090d16] relative z-20">
         © {new Date().getFullYear()} Creator Armour · Content Workspace
       </footer>
