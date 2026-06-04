@@ -47,6 +47,7 @@ export default function DentalTrendFinder() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('All');
   const [selectedFormat, setSelectedFormat] = useState<string>('All');
+  const [sortByViews, setSortByViews] = useState<string>('highToLow');
 
   // State for AI Generator
   const [aiCategory, setAiCategory] = useState<TrendCategory>('Myths');
@@ -640,18 +641,10 @@ JSON structure:
       itemsList.push(clonedItem);
       localStorage.setItem('ca_content_workspace_items', JSON.stringify(itemsList));
       
-      toast.success(`Cloned "${topicTitle}" to My Clinic! Opening in Studio...`);
-      
-      const params = new URLSearchParams({
-        hook: brief.hook,
-        topic: topicTitle,
-        format: idea.format || 'Talking Head',
-        category: category,
-        clonedId: clonedItem.id
-      });
+      toast.success(`Cloned "${topicTitle}" to My Clinic! Opening in Workspace...`);
       
       setTimeout(() => {
-        navigate(`/reel-generator?${params.toString()}`);
+        navigate(`/dentist-proposal`);
       }, 800);
     } catch (err) {
       console.error(err);
@@ -749,8 +742,16 @@ JSON structure:
     return matchesCat && matchesDiff && matchesFormat;
   });
 
-  // All reels are available in the public/open database
-  const displayReels = filteredReels;
+  // Sort Database logic
+  const displayReels = [...filteredReels].sort((a, b) => {
+    if (sortByViews === 'highToLow') {
+      return b.views - a.views;
+    }
+    if (sortByViews === 'lowToHigh') {
+      return a.views - b.views;
+    }
+    return 0;
+  });
 
   return (
     <div className="min-h-screen bg-[#020504] text-white font-outfit pb-24 relative overflow-hidden">
@@ -1004,7 +1005,7 @@ JSON structure:
 
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
                       <button
-                        onClick={() => handleCopyIdea(idea, index)}
+                        onClick={() => handleCopyIdea(idea, idx)}
                         className="flex-1 min-w-[100px] p-2.5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-white/5"
                       >
                         {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1128,6 +1129,19 @@ JSON structure:
                 <option value="Patient Testimonial" className="bg-neutral-900">Patient Testimonial</option>
               </select>
             </div>
+
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl hover:bg-white/5 text-xs text-white/80 border-l border-white/10">
+              <Eye className="w-3.5 h-3.5 text-white/40" />
+              <select
+                value={sortByViews}
+                onChange={(e) => setSortByViews(e.target.value)}
+                className="bg-transparent border-none text-white focus:outline-none cursor-pointer font-bold"
+              >
+                <option value="highToLow" className="bg-neutral-900">Views: High to Low</option>
+                <option value="lowToHigh" className="bg-neutral-900">Views: Low to High</option>
+                <option value="none" className="bg-neutral-900">Default Order</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -1166,7 +1180,7 @@ JSON structure:
                       "{reel.hook}"
                     </h3>
 
-                    {/* Reference Reel — YouTube embed */}
+                    {/* Reference Reel — YouTube or Instagram embed */}
                     {reel.videoUrl && (
                       <div className="mt-3 space-y-1.5">
                         <span className="text-[8px] font-black uppercase tracking-wider text-emerald-400/70 flex items-center gap-1">
@@ -1174,7 +1188,11 @@ JSON structure:
                         </span>
                         <div className="relative w-full rounded-2xl overflow-hidden border border-white/10 bg-black" style={{ aspectRatio: '9/16', maxHeight: '220px' }}>
                           <iframe
-                            src={`${reel.videoUrl}?autoplay=0&rel=0&modestbranding=1`}
+                            src={
+                              reel.videoUrl.includes('instagram.com')
+                                ? `${reel.videoUrl.replace(/\/$/, '')}/embed/`
+                                : `${reel.videoUrl}?autoplay=0&rel=0&modestbranding=1`
+                            }
                             className="w-full h-full"
                             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
@@ -1203,19 +1221,12 @@ JSON structure:
                   <div className="space-y-3 pt-3 border-t border-white/5">
                     {/* Detailed Source attribution block */}
                     <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
-                      <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
+                      <span>Based on: <strong className="text-white">{reel.views.toLocaleString('en-IN')} Views</strong></span>
                       <span>{reel.sourceCreator}</span>
                       <span>Last Seen: {reel.lastSeen}</span>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      {/* Left stats */}
-                      {reel.generatedAppointments && (
-                        <div className="flex flex-col">
-                          <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
-                          <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
-                        </div>
-                      )}
 
                       <div className="flex gap-1.5 ml-auto">
                         <button

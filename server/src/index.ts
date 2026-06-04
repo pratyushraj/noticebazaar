@@ -66,6 +66,7 @@ import pushNotificationsRouter from './routes/pushNotifications.js';
 import shippingRouter from './routes/shipping.js';
 import cronDealRemindersRouter from './routes/cronDealReminders.js';
 import cronOnboardingEmailsRouter from './routes/cronOnboardingEmails.js';
+import cronInstagramReelsSyncRouter from './routes/cronInstagramReelsSync.js';
 import onboardingEmailsRouter from './routes/onboardingEmails.js';
 import brandDashboardRouter from './routes/brandDashboard.js';
 import brandInquiriesRouter from './routes/brandInquiries.js';
@@ -411,6 +412,7 @@ app.use('/api/brand-inquiries', brandInquiriesRouter); // Public inbound brand l
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/cron', cronOnboardingEmailsRouter); // Cron: creator onboarding sequence (protected by CRON_SECRET)
+app.use('/api/cron', cronInstagramReelsSyncRouter); // Cron: Instagram Reels crawler sync (protected by CRON_SECRET)
 app.use('/api/og', ogRouter); // Public OG bot scraper routes
 app.use('/api/bot', botRouter); // OpenClaw bot access to admin operations
 app.use('/api/collab-action', collabActionRouter); // Public collab action routes (accept/decline via token)

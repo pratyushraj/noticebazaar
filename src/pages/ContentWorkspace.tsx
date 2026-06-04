@@ -656,6 +656,16 @@ export default function ContentWorkspace() {
                             >
                               Schedule to Calendar →
                             </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setItems(prev => prev.filter(i => i.id !== item.id));
+                                toast.success(`Deleted draft "${item.topic}"`);
+                              }}
+                              className="text-[9px] font-black text-rose-500/80 hover:text-rose-400 uppercase tracking-wider"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
                       ))}

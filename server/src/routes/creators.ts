@@ -6,8 +6,64 @@ import express, { Request, Response } from 'express';
 import { supabase } from '../lib/supabase.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { estimateReelBudgetRange, getEffectiveReelRate } from '../services/creatorRateService.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
+
+/**
+ * GET /api/creators/dental-reels
+ * Fetch scraped dental reels from DB or fallback local file cache
+ */
+router.get('/dental-reels', async (req: Request, res: Response) => {
+  try {
+    // 1. Try to query database table
+    const { data: dbReels, error } = await supabase
+      .from('instagram_viral_reels')
+      .select('*')
+      .order('scraped_at', { ascending: false });
+
+    if (!error && dbReels && dbReels.length > 0) {
+      const mapped = dbReels.map((r: any) => ({
+        id: r.id,
+        topic: r.topic,
+        category: r.category,
+        hook: r.hook,
+        views: r.views,
+        difficulty: r.difficulty,
+        shootTime: r.shoot_time,
+        format: r.format,
+        generatedAppointments: r.generated_appointments,
+        source: r.source,
+        engagementScore: Number(r.engagement_score),
+        whyItWorked: r.why_it_worked || [],
+        sourceCreator: r.source_creator,
+        lastSeen: r.last_seen,
+        industry: r.industry,
+        videoUrl: r.video_url
+      }));
+      return res.json({ success: true, source: 'database', reels: mapped });
+    }
+
+    // 2. Fallback to local file cache
+    const localFilePath = path.resolve(__dirname, '../../scratch/scraped_reels.json');
+    if (fs.existsSync(localFilePath)) {
+      const fileData = fs.readFileSync(localFilePath, 'utf8');
+      const reels = JSON.parse(fileData);
+      return res.json({ success: true, source: 'file_cache', reels });
+    }
+
+    // 3. Fallback to empty list
+    return res.json({ success: true, source: 'none', reels: [] });
+  } catch (err: any) {
+    console.error('[Creators] Error in GET /dental-reels:', err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 const numberOrNull = (value: unknown) => {
   const num = Number(value);
