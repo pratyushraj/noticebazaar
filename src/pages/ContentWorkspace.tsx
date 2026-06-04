@@ -107,6 +107,10 @@ export default function ContentWorkspace() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Custom script editing state
+  const [isEditingScript, setIsEditingScript] = useState(false);
+  const [customScriptText, setCustomScriptText] = useState('');
+
   // ── June demo seed data (YOUR DENTIST, Patna) ────────────────────────────
   const DEFAULT_ITEMS: ContentItem[] = [];
 
@@ -1444,9 +1448,58 @@ export default function ContentWorkspace() {
                       </div>
 
                       {selectedItem.script ? (
-                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
-                          <span className="text-[8px] font-black uppercase text-purple-400 tracking-wider">📝 Full Script / Slide Layout</span>
-                          <p className="text-xs text-neutral-300 mt-2.5 leading-relaxed font-medium whitespace-pre-line">{selectedItem.script}</p>
+                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4 space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[8px] font-black uppercase text-purple-400 tracking-wider">📝 Full Script / Slide Layout</span>
+                            {!isEditingScript ? (
+                              <button
+                                onClick={() => {
+                                  setIsEditingScript(true);
+                                  setCustomScriptText(selectedItem.script || '');
+                                }}
+                                className="text-[9px] font-black uppercase text-cyan-400 hover:text-cyan-300 transition-colors"
+                              >
+                                Edit Script
+                              </button>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setItems(prev => prev.map(item => {
+                                      const match = selectedItem.id ? item.id === selectedItem.id : item.topic === selectedItem.topic;
+                                      if (match) {
+                                        const updated = { ...item, script: customScriptText };
+                                        setSelectedItem(updated);
+                                        return updated;
+                                      }
+                                      return item;
+                                    }));
+                                    setIsEditingScript(false);
+                                    toast.success('Custom script saved successfully!');
+                                  }}
+                                  className="text-[9px] font-black uppercase text-emerald-400 hover:text-emerald-300 transition-colors"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setIsEditingScript(false)}
+                                  className="text-[9px] font-black uppercase text-red-400 hover:text-red-300 transition-colors"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {!isEditingScript ? (
+                            <p className="text-xs text-neutral-300 mt-2.5 leading-relaxed font-medium whitespace-pre-line">{selectedItem.script}</p>
+                          ) : (
+                            <textarea
+                              value={customScriptText}
+                              onChange={(e) => setCustomScriptText(e.target.value)}
+                              rows={10}
+                              className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-xs text-neutral-300 outline-none focus:border-cyan-500/30 font-medium resize-y"
+                            />
+                          )}
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center py-12 gap-3 border border-dashed border-white/[0.05] rounded-xl">
