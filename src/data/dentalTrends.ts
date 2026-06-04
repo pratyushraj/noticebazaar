@@ -27,6 +27,9 @@ export interface TrendIdea {
   generatedAppointments?: number;
   source: string;
   engagementScore: number;
+  whyItWorked: string[];
+  sourceCreator: string;
+  lastSeen: string;
 }
 
 export interface TopicCluster {
@@ -51,7 +54,7 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "Stop using charcoal toothpaste — a dentist explains why",
       "Mouthwash is RUINING your teeth (here's why)",
     ],
-    color: "#ef4444", // red
+    color: "#ef4444",
     icon: "🧐",
     description: "Debunking common misconceptions. Fear + disbelief drives high saving and sharing rates.",
   },
@@ -65,7 +68,7 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "What 6 months of clear aligners actually looks like",
       "We rebuilt this smile in just 2 sittings!",
     ],
-    color: "#10b981", // emerald
+    color: "#10b981",
     icon: "✨",
     description: "Visual before-and-after proof. Very high aspiration factor, generating direct booking intent.",
   },
@@ -79,7 +82,7 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "Please NEVER do this to your teeth...",
       "Is this viral TikTok trend actually safe?",
     ],
-    color: "#f59e0b", // amber
+    color: "#f59e0b",
     icon: "😂",
     description: "Reacting to popular internet hacks/memes. Highly entertaining, generates comment sections.",
   },
@@ -93,7 +96,7 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "Stop rinsing your mouth after brushing!",
       "If your gums bleed when flossing, watch this",
     ],
-    color: "#06b6d4", // cyan
+    color: "#06b6d4",
     icon: "🪥",
     description: "Correction of daily habits. Highly actionable, leading to high save counts.",
   },
@@ -107,7 +110,7 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "Dental treatments worth paying for vs. ones you can skip",
       "Why root canal costs vary so much",
     ],
-    color: "#8b5cf6", // purple
+    color: "#8b5cf6",
     icon: "💰",
     description: "Breaking down treatments, costs, and value. Directly targets high-intent leads and DMs.",
   },
@@ -121,7 +124,7 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "How we treat patients who are terrified of dentists",
       "Read this if you're avoiding the dentist out of fear",
     ],
-    color: "#ec4899", // pink
+    color: "#ec4899",
     icon: "😱",
     description: "Addressing dental anxiety directly. Empathetic approach that builds trust and patient comfort.",
   },
@@ -135,18 +138,18 @@ export const DENTAL_TOPIC_CLUSTERS: TopicCluster[] = [
       "She hasn't smiled in 5 years, until today...",
       "What our patients say when the anesthesia wears off",
     ],
-    color: "#3b82f6", // blue
+    color: "#3b82f6",
     icon: "🎬",
     description: "Real stories and emotional journeys of patients. Establishes ultimate credibility and local trust.",
   },
 ];
 
 export const TRENDING_THIS_MONTH = [
-  { rank: 1, topic: "Teeth Whitening", views: "1.2M+", trend: "up" },
-  { rank: 2, topic: "Scaling Myths", views: "850K+", trend: "up" },
-  { rank: 3, topic: "Implant Costs", views: "720K+", trend: "stable" },
-  { rank: 4, topic: "Root Canal Pain", views: "640K+", trend: "stable" },
-  { rank: 5, topic: "Bad Breath Hacks", views: "550K+", trend: "up" },
+  { rank: 1, topic: "Does Scaling Loosen Teeth?", views: "1.2M+", trend: "up" },
+  { rank: 2, topic: "Teeth Whitening Mistakes", views: "850K+", trend: "up" },
+  { rank: 3, topic: "Root Canal vs Extraction", views: "720K+", trend: "stable" },
+  { rank: 4, topic: "Dental Implant Cost", views: "640K+", trend: "stable" },
+  { rank: 5, topic: "Bad Breath Causes", views: "550K+", trend: "up" },
 ];
 
 export const VIRAL_REEL_DATABASE: TrendIdea[] = [
@@ -162,6 +165,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 18,
     source: "Dr. Rohan's Dental Hub",
     engagementScore: 9.2,
+    whyItWorked: [
+      "🧠 Common misconception about scaling",
+      "⚠️ Fear-based hook capturing attention",
+      "💬 High comment volume debating teeth stability"
+    ],
+    sourceCreator: "Dr. Rohan's Dental Hub",
+    lastSeen: "May 2026"
   },
   {
     id: "r002",
@@ -175,6 +185,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 7,
     source: "Mumbai Smile Clinic",
     engagementScore: 8.5,
+    whyItWorked: [
+      "🧠 Debunks popular beauty aesthetic trend",
+      "⚠️ Urgency hook warning of enamel destruction",
+      "⚡ Visual side-by-side sandpaper explanation"
+    ],
+    sourceCreator: "Mumbai Smile Clinic",
+    lastSeen: "May 2026"
   },
   {
     id: "r003",
@@ -188,6 +205,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 14,
     source: "Dr. Nidhi's Dental Care",
     engagementScore: 10.4,
+    whyItWorked: [
+      "😂 Humorous reaction format matching TikTok trends",
+      "🧠 Science-backed explanation of citric acid danger",
+      "💬 High debate and share rate"
+    ],
+    sourceCreator: "Dr. Nidhi's Dental Care",
+    lastSeen: "April 2026"
   },
   {
     id: "r004",
@@ -201,6 +225,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 32,
     source: "Smile Designers Delhi",
     engagementScore: 9.7,
+    whyItWorked: [
+      "✨ Aspirational before/after shift sequence",
+      "🧠 Solves brace-related visual fear",
+      "💬 Generates high 'Inquire for cost' comments"
+    ],
+    sourceCreator: "Smile Designers Delhi",
+    lastSeen: "May 2026"
   },
   {
     id: "r005",
@@ -214,6 +245,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 9,
     source: "Healthy Smiles India",
     engagementScore: 7.9,
+    whyItWorked: [
+      "🧠 Points out everyday habit errors",
+      "⚡ Easy-to-replicate visual guide",
+      "🪥 Practical advice drives high bookmark/save rates"
+    ],
+    sourceCreator: "Healthy Smiles India",
+    lastSeen: "May 2026"
   },
   {
     id: "r006",
@@ -227,6 +265,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 22,
     source: "Dr. Kunal Orthodontics",
     engagementScore: 8.1,
+    whyItWorked: [
+      "💰 Absolute cost transparency build trust",
+      "🧠 Clarifies tech differences (manual vs rotary)",
+      "💬 Generates direct consultation inquiries"
+    ],
+    sourceCreator: "Dr. Kunal Orthodontics",
+    lastSeen: "May 2026"
   },
   {
     id: "r007",
@@ -240,6 +285,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 19,
     source: "Aesthetic Dental Care",
     engagementScore: 8.9,
+    whyItWorked: [
+      "🧠 Addresses primary patient anxiety head-on",
+      "⚡ Explains modern painless local anesthetic",
+      "💬 Sympathetic tone builds local clinic trust"
+    ],
+    sourceCreator: "Aesthetic Dental Care",
+    lastSeen: "May 2026"
   },
   {
     id: "r008",
@@ -253,6 +305,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 15,
     source: "Dr. Pooja's Dental Clinic",
     engagementScore: 11.5,
+    whyItWorked: [
+      "🎬 Strong narrative-driven emotional hook",
+      "🧠 Focuses on empathetic sedation solutions",
+      "✨ High social proof values"
+    ],
+    sourceCreator: "Dr. Pooja's Dental Clinic",
+    lastSeen: "April 2026"
   },
   {
     id: "r009",
@@ -266,6 +325,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 5,
     source: "Tooth Studio Pune",
     engagementScore: 9.1,
+    whyItWorked: [
+      "🧠 Counters standard commercial mouthwash tips",
+      "⚡ Mind-blowing chemical interaction breakdown",
+      "💬 Saves/shares fueled by surprise factor"
+    ],
+    sourceCreator: "Tooth Studio Pune",
+    lastSeen: "May 2026"
   },
   {
     id: "r010",
@@ -279,6 +345,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 12,
     source: "Elite Dentistry Bangalore",
     engagementScore: 9.5,
+    whyItWorked: [
+      "🧠 Exposes wrong standard morning ritual",
+      "🪥 Explains leaving fluoride protection layer",
+      "⚡ Visual demonstration of correct process"
+    ],
+    sourceCreator: "Elite Dentistry Bangalore",
+    lastSeen: "May 2026"
   },
   {
     id: "r011",
@@ -292,6 +365,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 27,
     source: "Advance Dental & Implant Centre",
     engagementScore: 7.8,
+    whyItWorked: [
+      "✨ Emotional elder transformation dynamic",
+      "🧠 Showcases advanced implant mapping capability",
+      "💬 Strong validation from families booking for parents"
+    ],
+    sourceCreator: "Advance Dental & Implant Centre",
+    lastSeen: "May 2026"
   },
   {
     id: "r012",
@@ -305,6 +385,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 16,
     source: "Maxilla Dental Care",
     engagementScore: 8.6,
+    whyItWorked: [
+      "🧠 Visual process map reduces mystery fear",
+      "⚠️ Focuses on post-care reward (ice cream)",
+      "💬 Extremely relatable to young adults"
+    ],
+    sourceCreator: "Maxilla Dental Care",
+    lastSeen: "May 2026"
   },
   {
     id: "r013",
@@ -318,6 +405,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 11,
     source: "Perfect Smile Jaipur",
     engagementScore: 9.3,
+    whyItWorked: [
+      "🧠 Warns about unsupervised teeth shifting",
+      "😂 Sarcastic react to online brace advertising",
+      "⚡ Drives clinical orthondotic checkup bookings"
+    ],
+    sourceCreator: "Perfect Smile Jaipur",
+    lastSeen: "March 2026"
   },
   {
     id: "r014",
@@ -331,6 +425,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 24,
     source: "Apex Implants India",
     engagementScore: 7.2,
+    whyItWorked: [
+      "💰 Shows 10-year cost efficiency of implants",
+      "🧠 Explains bridge grinding damage to adjacent teeth",
+      "⚡ High conversion rate for older patients"
+    ],
+    sourceCreator: "Apex Implants India",
+    lastSeen: "May 2026"
   },
   {
     id: "r015",
@@ -344,6 +445,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 39,
     source: "The Dental Lounge",
     engagementScore: 9.1,
+    whyItWorked: [
+      "✨ Aspirational timeline for brides-to-be",
+      "🧠 Fast results with minimal veneers/whitening",
+      "💬 Urgency triggers direct DM inquiries"
+    ],
+    sourceCreator: "The Dental Lounge",
+    lastSeen: "May 2026"
   },
   {
     id: "r016",
@@ -357,6 +465,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 18,
     source: "Dr. Shruti's Dental Art",
     engagementScore: 8.0,
+    whyItWorked: [
+      "🧠 Dispels fear of brushing tender bleeding areas",
+      "⚡ Logical explanation of plaque-induced gingivitis",
+      "🪥 Encourages correct light circular flossing"
+    ],
+    sourceCreator: "Dr. Shruti's Dental Art",
+    lastSeen: "May 2026"
   },
   {
     id: "r017",
@@ -370,6 +485,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 8,
     source: "Clove Dental Inspired",
     engagementScore: 11.2,
+    whyItWorked: [
+      "🧠 Shocking anatomical fact about dentin thickness",
+      "⚡ Comforts patients insecure about natural shade",
+      "💬 Generates massive debate in comment section"
+    ],
+    sourceCreator: "Clove Dental Inspired",
+    lastSeen: "April 2026"
   },
   {
     id: "r018",
@@ -383,6 +505,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 15,
     source: "Dentistry & Beyond",
     engagementScore: 6.9,
+    whyItWorked: [
+      "💰 Exposes cheap strip kits eroding enamel",
+      "🧠 Defends clinical bleaching safety & duration",
+      "⚡ Captures brides/groom prospects"
+    ],
+    sourceCreator: "Dentistry & Beyond",
+    lastSeen: "May 2026"
   },
   {
     id: "r019",
@@ -396,6 +525,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 6,
     source: "Modern Dental Clinic",
     engagementScore: 9.9,
+    whyItWorked: [
+      "🧠 Warns against dangerous rubber-band setups",
+      "😂 Genuine shock and professional horror react",
+      "💬 Explains roots choking under gum pressure"
+    ],
+    sourceCreator: "Modern Dental Clinic",
+    lastSeen: "May 2026"
   },
   {
     id: "r020",
@@ -409,6 +545,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 21,
     source: "Aligner Experts India",
     engagementScore: 8.4,
+    whyItWorked: [
+      "🧠 Truthful discomfort rating index",
+      "⚠️ Normalizes initial pressure days",
+      "💬 Attracts high-intent aligner prospects"
+    ],
+    sourceCreator: "Aligner Experts India",
+    lastSeen: "April 2026"
   },
   {
     id: "r021",
@@ -422,6 +565,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 25,
     source: "Care Dental Clinic",
     engagementScore: 10.8,
+    whyItWorked: [
+      "🎬 Warm family emotion connection",
+      "🧠 Practical explanation of chewing bite load",
+      "💬 Direct booking from caring children"
+    ],
+    sourceCreator: "Care Dental Clinic",
+    lastSeen: "May 2026"
   },
   {
     id: "r022",
@@ -435,6 +585,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 10,
     source: "Smile Studio Patna",
     engagementScore: 7.5,
+    whyItWorked: [
+      "🧠 Visual guide correcting gum bleeding triggers",
+      "⚡ Demonstration of C-wrap technique",
+      "🪥 High bookmark count for evening routines"
+    ],
+    sourceCreator: "Smile Studio Patna",
+    lastSeen: "May 2026"
   },
   {
     id: "r023",
@@ -448,6 +605,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 4,
     source: "Dr. Vikas's Preventive Care",
     engagementScore: 8.2,
+    whyItWorked: [
+      "🧠 Rebuts health influencer fear mongering",
+      "⚡ Scientific toxicity comparison stats",
+      "💬 Sparks logical hygiene discussion"
+    ],
+    sourceCreator: "Dr. Vikas's Preventive Care",
+    lastSeen: "May 2026"
   },
   {
     id: "r024",
@@ -461,6 +625,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 28,
     source: "Veneer Artistry Delhi",
     engagementScore: 8.7,
+    whyItWorked: [
+      "✨ Visual aesthetic transformation loop",
+      "🧠 Focuses on custom digital shade mapping",
+      "💬 Attracts high-value cosmetic requests"
+    ],
+    sourceCreator: "Veneer Artistry Delhi",
+    lastSeen: "May 2026"
   },
   {
     id: "r025",
@@ -474,6 +645,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 16,
     source: "Radiant Smiles Pune",
     engagementScore: 9.0,
+    whyItWorked: [
+      "🧠 Clarifies difference between plaque and dentin shade",
+      "⚡ Prevents post-scaling complaints",
+      "💰 Sells actual clinic whitening treatments"
+    ],
+    sourceCreator: "Radiant Smiles Pune",
+    lastSeen: "May 2026"
   },
   {
     id: "r026",
@@ -487,6 +665,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 19,
     source: "Orthodontic Centre India",
     engagementScore: 7.0,
+    whyItWorked: [
+      "💰 Complete cost honesty creates premium leads",
+      "🧠 Details refinement alignments & retainers",
+      "💬 Connects with Series-A / high income patients"
+    ],
+    sourceCreator: "Orthodontic Centre India",
+    lastSeen: "May 2026"
   },
   {
     id: "r027",
@@ -500,6 +685,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 9,
     source: "Dr. Neha's Dental World",
     engagementScore: 12.1,
+    whyItWorked: [
+      "🧠 Warns on irreversibility of enamel filing",
+      "😂 High comedy and react expression appeal",
+      "💬 Generates massive shares from worried parents"
+    ],
+    sourceCreator: "Dr. Neha's Dental World",
+    lastSeen: "April 2026"
   },
   {
     id: "r028",
@@ -513,6 +705,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 34,
     source: "Healthy Tooth Care",
     engagementScore: 9.4,
+    whyItWorked: [
+      "⚠️ Educates on bone infection spreads",
+      "🧠 Urgency trigger regarding irreversible pain",
+      "💬 Direct booking conversion mechanism"
+    ],
+    sourceCreator: "Healthy Tooth Care",
+    lastSeen: "May 2026"
   },
   {
     id: "r029",
@@ -526,6 +725,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 17,
     source: "Junior Smiles Pediatric",
     engagementScore: 10.2,
+    whyItWorked: [
+      "🎬 Warm cute child reaction dynamic",
+      "🧠 Comforts parents who fear child dental fights",
+      "💬 Direct booking from mothers"
+    ],
+    sourceCreator: "Junior Smiles Pediatric",
+    lastSeen: "May 2026"
   },
   {
     id: "r030",
@@ -539,6 +745,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 12,
     source: "Smile Innovations",
     engagementScore: 7.7,
+    whyItWorked: [
+      "🧠 Objective comparison breakdown of motor cycles",
+      "🪥 Focuses on protection of gum margin line",
+      "⚡ Relatable to tech-loving crowd"
+    ],
+    sourceCreator: "Smile Innovations",
+    lastSeen: "May 2026"
   },
   {
     id: "r031",
@@ -552,6 +765,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 22,
     source: "Dr. Abhishek's Aesthetics",
     engagementScore: 8.3,
+    whyItWorked: [
+      "🧠 Explains bruxism headache correlations",
+      "⚡ Shows night guard protection visual",
+      "💬 Leads to night guard custom molds bookings"
+    ],
+    sourceCreator: "Dr. Abhishek's Aesthetics",
+    lastSeen: "May 2026"
   },
   {
     id: "r032",
@@ -565,6 +785,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 31,
     source: "Perfect Aligners Chennai",
     engagementScore: 8.6,
+    whyItWorked: [
+      "🧠 Comforts adult patients self-conscious of brackets",
+      "✨ Showcases invisible clear tray aesthetic",
+      "💬 Converts mature corporate clientele"
+    ],
+    sourceCreator: "Perfect Aligners Chennai",
+    lastSeen: "May 2026"
   },
   {
     id: "r033",
@@ -578,6 +805,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 15,
     source: "Dr. Pooja's Dental Clinic",
     engagementScore: 14.2,
+    whyItWorked: [
+      "⚡ Simple self-test prompts massive curiosity",
+      "🧠 High shock factor concerning tongue bio-film",
+      "💬 Explodes with saves/shares metrics"
+    ],
+    sourceCreator: "Dr. Pooja's Dental Clinic",
+    lastSeen: "May 2026"
   },
   {
     id: "r034",
@@ -591,6 +825,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 11,
     source: "Maxilla Dental Care",
     engagementScore: 8.8,
+    whyItWorked: [
+      "🧠 Clarifies alignment extraction necessity",
+      "⚠️ Relieves extraction paranoia",
+      "⚡ Simple diagnostic x-ray display visual"
+    ],
+    sourceCreator: "Maxilla Dental Care",
+    lastSeen: "May 2026"
   },
   {
     id: "r035",
@@ -604,6 +845,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 14,
     source: "Tooth Studio Pune",
     engagementScore: 6.8,
+    whyItWorked: [
+      "💰 Shows price factors based on tooth impaction",
+      "🧠 Prevents sticker shock for surgery patients",
+      "💬 Excellent informational baseline"
+    ],
+    sourceCreator: "Tooth Studio Pune",
+    lastSeen: "May 2026"
   },
   {
     id: "r036",
@@ -617,6 +865,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 5,
     source: "Elite Dentistry Bangalore",
     engagementScore: 10.1,
+    whyItWorked: [
+      "🧠 Warns on industrial toxic glue dangers",
+      "😂 High fashion trends reaction format",
+      "⚡ Sells clinic safe gems procedures"
+    ],
+    sourceCreator: "Elite Dentistry Bangalore",
+    lastSeen: "May 2026"
   },
   {
     id: "r037",
@@ -630,6 +885,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 26,
     source: "Apex Implants India",
     engagementScore: 9.0,
+    whyItWorked: [
+      "🧠 Demonstrates dental numbing gel prefix",
+      "⚠️ Focuses on visual comfort elements",
+      "💬 Highly successful in converting phobic patients"
+    ],
+    sourceCreator: "Apex Implants India",
+    lastSeen: "May 2026"
   },
   {
     id: "r038",
@@ -643,6 +905,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 30,
     source: "Smile Studio Patna",
     engagementScore: 11.1,
+    whyItWorked: [
+      "🎬 Strong emotional confidence narrative",
+      "✨ Quick gap shift visual result",
+      "💬 Encourages Patna locals to DM"
+    ],
+    sourceCreator: "Smile Studio Patna",
+    lastSeen: "May 2026"
   },
   {
     id: "r039",
@@ -656,6 +925,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 8,
     source: "Dr. Nidhi's Dental Care",
     engagementScore: 8.9,
+    whyItWorked: [
+      "🧠 Explains bacteria trapping structure of tongue papillae",
+      "🪥 Promotes copper scrapers benefit",
+      "⚡ ASMR scraping visual drives high retention"
+    ],
+    sourceCreator: "Dr. Nidhi's Dental Care",
+    lastSeen: "May 2026"
   },
   {
     id: "r040",
@@ -669,6 +945,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 13,
     source: "Mumbai Smile Clinic",
     engagementScore: 8.2,
+    whyItWorked: [
+      "🧠 Reassures expecting mothers on second trimester safety",
+      "⚡ Clears confusion on dental x-rays during pregnancy",
+      "💬 Highly shared in family chats"
+    ],
+    sourceCreator: "Mumbai Smile Clinic",
+    lastSeen: "May 2026"
   },
   {
     id: "r041",
@@ -682,6 +965,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 21,
     source: "Veneer Artistry Delhi",
     engagementScore: 8.1,
+    whyItWorked: [
+      "✨ Inside look at clinic CAD/CAM tech",
+      "🧠 High custom fit satisfaction visual",
+      "💬 Pre-filters premium cosmetic target"
+    ],
+    sourceCreator: "Veneer Artistry Delhi",
+    lastSeen: "May 2026"
   },
   {
     id: "r042",
@@ -695,6 +985,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 17,
     source: "Dr. Shruti's Dental Art",
     engagementScore: 7.1,
+    whyItWorked: [
+      "💰 Detailed tooth shaving comparison",
+      "🧠 Clinically advises veneers for front aesthetics only",
+      "⚡ Direct conversion logic"
+    ],
+    sourceCreator: "Dr. Shruti's Dental Art",
+    lastSeen: "May 2026"
   },
   {
     id: "r043",
@@ -708,6 +1005,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 18,
     source: "Healthy Smiles India",
     engagementScore: 11.8,
+    whyItWorked: [
+      "🧠 Unveils truth on optical temporary stains",
+      "😂 Popular aesthetic trend react format",
+      "💬 Massive save & share numbers"
+    ],
+    sourceCreator: "Healthy Smiles India",
+    lastSeen: "May 2026"
   },
   {
     id: "r044",
@@ -721,6 +1025,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 29,
     source: "Dr. Rohan's Dental Hub",
     engagementScore: 8.4,
+    whyItWorked: [
+      "💰 Details future cost of replacement implants if pulled",
+      "🧠 Protects natural tooth retention value",
+      "💬 Generates massive booking consult volume"
+    ],
+    sourceCreator: "Dr. Rohan's Dental Hub",
+    lastSeen: "May 2026"
   },
   {
     id: "r045",
@@ -734,6 +1045,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 23,
     source: "Smile Designers Delhi",
     engagementScore: 9.2,
+    whyItWorked: [
+      "✨ Laser soft-tissue contouring visual",
+      "🧠 Immediate side-by-side healed smile",
+      "💬 Converts young aesthetic seekers"
+    ],
+    sourceCreator: "Smile Designers Delhi",
+    lastSeen: "May 2026"
   },
   {
     id: "r046",
@@ -747,6 +1065,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 20,
     source: "Tooth Studio Pune",
     engagementScore: 8.7,
+    whyItWorked: [
+      "🧠 Explains enamel wear exposing dentin tubules",
+      "🪥 Advises soft brushes & sensitivity paste",
+      "💬 Saves driven by common cold trigger symptoms"
+    ],
+    sourceCreator: "Tooth Studio Pune",
+    lastSeen: "May 2026"
   },
   {
     id: "r047",
@@ -760,6 +1085,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 6,
     source: "Modern Dental Clinic",
     engagementScore: 8.1,
+    whyItWorked: [
+      "🧠 Visual demonstration of scrub wear on gum lining",
+      "🪥 Shows wear on yellow root exposures",
+      "💬 Highly shared warning to family"
+    ],
+    sourceCreator: "Modern Dental Clinic",
+    lastSeen: "May 2026"
   },
   {
     id: "r048",
@@ -773,6 +1105,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 12,
     source: "Dr. Neha's Dental World",
     engagementScore: 10.3,
+    whyItWorked: [
+      "🧠 Explains abrasives scratching enamel instead of bleaching",
+      "⚠️ Warns against permanent yellowing from wear",
+      "💬 Save rate spikes from consumer cost warnings"
+    ],
+    sourceCreator: "Dr. Neha's Dental World",
+    lastSeen: "May 2026"
   },
   {
     id: "r049",
@@ -786,6 +1125,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 16,
     source: "Clove Dental Inspired",
     engagementScore: 7.3,
+    whyItWorked: [
+      "💰 Shows transparent price points in India",
+      "🧠 Evaluates aesthetic vs bracket thickness",
+      "💬 Direct booking lead generator"
+    ],
+    sourceCreator: "Clove Dental Inspired",
+    lastSeen: "May 2026"
   },
   {
     id: "r050",
@@ -799,6 +1145,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 11,
     source: "Radiant Smiles Pune",
     engagementScore: 6.7,
+    whyItWorked: [
+      "🧠 Explains wear margins and micro leakage",
+      "🪥 Advises yearly clinical checkups",
+      "⚡ Honest expectation builder"
+    ],
+    sourceCreator: "Radiant Smiles Pune",
+    lastSeen: "May 2026"
   },
   {
     id: "r051",
@@ -812,5 +1165,12 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     generatedAppointments: 18,
     source: "Care Dental Clinic",
     engagementScore: 8.5,
-  },
+    whyItWorked: [
+      "🧠 Visual look at clinic silent laser cavities removal",
+      "⚠️ Reassures pediatric and highly phobic patients",
+      "💬 Highly shared locally"
+    ],
+    sourceCreator: "Care Dental Clinic",
+    lastSeen: "May 2026"
+  }
 ];

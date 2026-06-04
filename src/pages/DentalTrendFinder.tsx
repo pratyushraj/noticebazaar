@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
 import { 
   Sparkles, 
   TrendingUp, 
@@ -20,7 +21,9 @@ import {
   Zap,
   Shield,
   HelpCircle,
-  Video
+  Video,
+  Calendar,
+  FolderHeart
 } from 'lucide-react';
 import { useSession } from '@/contexts/SessionContext';
 import { useLocalLLM } from '@/lib/hooks/useLocalLLM';
@@ -50,7 +53,7 @@ export default function DentalTrendFinder() {
   const [generatedIdeas, setGeneratedIdeas] = useState<any[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
-  const { generateText, isGenerating, error } = useLocalLLM({
+  const { generateText, isGenerating } = useLocalLLM({
     temperature: 0.8,
     maxTokens: 1200
   });
@@ -76,13 +79,13 @@ JSON structure:
     "body": "Brief step-by-step description of what happens visually and verbally in the reel",
     "cta": "Clear call to action targeting clinic bookings or comments",
     "format": "Talking Head / Voiceover / Before/After / Patient Testimonial",
-    "audio": "Trending audio suggestion description"
+    "audio": "Trending audio suggestion description",
+    "whyItWorked": ["Styled emoji bullet 1", "Styled emoji bullet 2"]
   }
 ]`;
 
     try {
       const responseText = await generateText(prompt);
-      // Clean potential JSON markdown wraps
       const cleanJson = responseText
         .replace(/```json/g, '')
         .replace(/```/g, '')
@@ -105,7 +108,12 @@ JSON structure:
             body: "Explain with a 3D dental model how calculus is removed, showing that scaling actually tightens teeth over time by protecting bone.",
             cta: "DM 'SCALING' to book a professional cleaning session today!",
             format: "Talking Head",
-            audio: "Chill Lo-Fi Beat (Original Audio)"
+            audio: "Chill Lo-Fi Beat (Original Audio)",
+            whyItWorked: [
+              "🧠 Common misconception about scaling",
+              "⚠️ Fear-based hook capturing attention",
+              "💬 High comment volume debating teeth stability"
+            ]
           },
           {
             title: "Charcoal Toothpaste Warning",
@@ -113,7 +121,12 @@ JSON structure:
             body: "Show a piece of sandpaper. Rub it on a surface to show how abrasive charcoal particles scrape away precious enamel that never returns.",
             cta: "Comment your toothpaste brand & we will review it!",
             format: "Talking Head",
-            audio: "Synthwave Instrumental Trend"
+            audio: "Synthwave Instrumental Trend",
+            whyItWorked: [
+              "🧠 Debunks popular beauty aesthetic trend",
+              "⚠️ Urgency hook warning of enamel destruction",
+              "⚡ Visual side-by-side sandpaper explanation"
+            ]
           },
           {
             title: "White Teeth Strengths",
@@ -121,7 +134,12 @@ JSON structure:
             body: "Explain that dentin is naturally pale yellow, showing through translucent enamel. Bright white usually means enamel thinning.",
             cta: "Schedule a dental checkup by tapping the link in bio.",
             format: "Voiceover",
-            audio: "Aesthetic Chill Vibe"
+            audio: "Aesthetic Chill Vibe",
+            whyItWorked: [
+              "🧠 Shocking anatomical fact about dentin thickness",
+              "⚡ Comforts patients insecure about natural shade",
+              "💬 Generates massive debate in comment section"
+            ]
           },
           {
             title: "Fluoride Safety check",
@@ -129,7 +147,12 @@ JSON structure:
             body: "Show fluoride ppm numbers. Debunk the toxicity myth by explaining that you would need to swallow 5 whole tubes to get sick.",
             cta: "Save this reel to protect your family's oral hygiene!",
             format: "Talking Head",
-            audio: "Inspiring Corporate Synth"
+            audio: "Inspiring Corporate Synth",
+            whyItWorked: [
+              "🧠 Rebuts health influencer fear mongering",
+              "⚡ Scientific toxicity comparison stats",
+              "💬 Sparks logical hygiene discussion"
+            ]
           },
           {
             title: "Mouthwash Post Brushing",
@@ -137,7 +160,12 @@ JSON structure:
             body: "Show that mouthwash washes away the highly beneficial fluoride left behind by your toothpaste, rendering the brush useless.",
             cta: "Tag a friend who always uses mouthwash!",
             format: "Voiceover",
-            audio: "Upbeat Pop Instrumental"
+            audio: "Upbeat Pop Instrumental",
+            whyItWorked: [
+              "🧠 Counters standard commercial mouthwash tips",
+              "⚡ Mind-blowing chemical interaction breakdown",
+              "💬 Saves/shares fueled by surprise factor"
+            ]
           }
         ],
         Transformations: [
@@ -147,7 +175,12 @@ JSON structure:
             body: "Show the patient's self-conscious smile, followed by clip of digital mapping, finishing with the stunning porcelain veneer reveal.",
             cta: "DM 'MAKEOVER' to secure a free smile consultation.",
             format: "Before/After",
-            audio: "Romantic Bollywood Acoustic"
+            audio: "Romantic Bollywood Acoustic",
+            whyItWorked: [
+              "✨ Aspirational timeline for brides-to-be",
+              "🧠 Fast results with minimal veneers/whitening",
+              "💬 Urgency triggers direct DM inquiries"
+            ]
           },
           {
             title: "6 Months Clear Aligners",
@@ -155,7 +188,12 @@ JSON structure:
             body: "Visual timeline transition showing teeth shifting week-by-week. Clear, metallic-free aesthetic.",
             cta: "Tap the link in bio to check your aligners eligibility.",
             format: "Before/After",
-            audio: "Upbeat electro-pop drop"
+            audio: "Upbeat electro-pop drop",
+            whyItWorked: [
+              "✨ Aspirational before/after shift sequence",
+              "🧠 Solves brace-related visual fear",
+              "💬 Generates high 'Inquire for cost' comments"
+            ]
           },
           {
             title: "Grandmother's New Smile",
@@ -163,7 +201,12 @@ JSON structure:
             body: "Show her struggling with hard food, followed by 3D implant placement visual, ending with her eating an apple happily.",
             cta: "Send this to someone who needs dental implants!",
             format: "Patient Testimonial",
-            audio: "Soft Emotional Piano"
+            audio: "Soft Emotional Piano",
+            whyItWorked: [
+              "🎬 Warm family emotion connection",
+              "🧠 Practical explanation of chewing bite load",
+              "💬 Direct booking from caring children"
+            ]
           },
           {
             title: "Gap Closure Magic",
@@ -171,7 +214,12 @@ JSON structure:
             body: "Show composite bonding process up close. Quick, painless veneer replacement aesthetic.",
             cta: "Book your cosmetic consult today via our bio link.",
             format: "Before/After",
-            audio: "Satisfying ASMR Lo-Fi"
+            audio: "Satisfying ASMR Lo-Fi",
+            whyItWorked: [
+              "✨ Visual aesthetic transformation loop",
+              "🧠 Focuses on custom digital shade mapping",
+              "💬 Attracts high-value cosmetic requests"
+            ]
           },
           {
             title: "Gummy Smile Makeover",
@@ -179,7 +227,12 @@ JSON structure:
             body: "Show laser gingivectomy process. Quick, pain-free contouring highlighting the immediate healing results.",
             cta: "Comment 'SMILE' to learn more about laser contouring.",
             format: "Before/After",
-            audio: "Energizing Synthpop"
+            audio: "Energizing Synthpop",
+            whyItWorked: [
+              "✨ Laser soft-tissue contouring visual",
+              "🧠 Immediate side-by-side healed smile",
+              "💬 Converts young aesthetic seekers"
+            ]
           }
         ],
         "Doctor Reacts": [
@@ -189,7 +242,12 @@ JSON structure:
             body: "Split screen: TikToker rubbing lemons on teeth, dentist rubbing hands on face in horror. Explain how citric acid dissolves enamel.",
             cta: "Follow us to save your teeth from internet hacks!",
             format: "Talking Head",
-            audio: "Funny Comedy Soundboard"
+            audio: "Funny Comedy Soundboard",
+            whyItWorked: [
+              "😂 Humorous reaction format matching TikTok trends",
+              "🧠 Science-backed explanation of citric acid danger",
+              "💬 High debate and share rate"
+            ]
           },
           {
             title: "DIY Nail File Brushing",
@@ -197,7 +255,12 @@ JSON structure:
             body: "React to the dangerous trend. Explain how filing removes enamel, exposes nerves, and leads to permanent root canals.",
             cta: "Share this to save someone from ruining their smile!",
             format: "Talking Head",
-            audio: "Dramatic Orchestral Build"
+            audio: "Dramatic Orchestral Build",
+            whyItWorked: [
+              "🧠 Warns on irreversibility of enamel filing",
+              "😂 High comedy and react expression appeal",
+              "💬 Generates massive shares from worried parents"
+            ]
           },
           {
             title: "DIY Braces Horror",
@@ -205,7 +268,12 @@ JSON structure:
             body: "Explain how rubber bands slip under gums, choke tooth roots, and cause teeth to literally fall out in weeks.",
             cta: "Drop your dental questions in the comments!",
             format: "Talking Head",
-            audio: "Suspenseful Drone Vibe"
+            audio: "Suspenseful Drone Vibe",
+            whyItWorked: [
+              "🧠 Warns against dangerous rubber-band setups",
+              "😂 Genuine shock and professional horror react",
+              "💬 Explains roots choking under gum pressure"
+            ]
           },
           {
             title: "DIY Rhinestones Glue",
@@ -213,7 +281,12 @@ JSON structure:
             body: "Explain the toxicity of superglue and how it traps bacteria underneath, causing instant decay.",
             cta: "DM us for safe, temporary tooth gems done in clinic!",
             format: "Talking Head",
-            audio: "Pop Dance Instrumental"
+            audio: "Pop Dance Instrumental",
+            whyItWorked: [
+              "🧠 Warns on industrial toxic glue dangers",
+              "😂 High fashion trends reaction format",
+              "⚡ Sells clinic safe gems procedures"
+            ]
           },
           {
             title: "Purple Shampoo Toothpaste",
@@ -221,7 +294,12 @@ JSON structure:
             body: "Explain color theory (purple neutralizes yellow). Admit it works for 2 hours, but doesn't whiten the actual tooth structure.",
             cta: "Save this reel to save your money on fake whitening!",
             format: "Talking Head",
-            audio: "Retro Synth Vibe"
+            audio: "Retro Synth Vibe",
+            whyItWorked: [
+              "🧠 Unveils truth on optical temporary stains",
+              "😂 Popular aesthetic trend react format",
+              "💬 Massive save & share numbers"
+            ]
           }
         ],
         Hygiene: [
@@ -231,7 +309,12 @@ JSON structure:
             body: "Show brushing too hard, rinsing with water immediately, and brushing right after acidic coffee instead of waiting.",
             cta: "Comment 'GUIDE' for our free oral health PDF!",
             format: "Voiceover",
-            audio: "Chill Chill Summer Beat"
+            audio: "Chill Chill Summer Beat",
+            whyItWorked: [
+              "🧠 Points out everyday habit errors",
+              "⚡ Easy-to-replicate visual guide",
+              "🪥 Practical advice drives high bookmark/save rates"
+            ]
           },
           {
             title: "Spoon breath test",
@@ -239,7 +322,12 @@ JSON structure:
             body: "Scrape the back of your tongue with a metal spoon, let it dry, and smell it. Explain why tongue scraping is mandatory.",
             cta: "Book a deep scaling session using our link in bio.",
             format: "Voiceover",
-            audio: "Satisfying ASMR Sounds"
+            audio: "Satisfying ASMR Sounds",
+            whyItWorked: [
+              "⚡ Simple self-test prompts massive curiosity",
+              "🧠 High shock factor concerning tongue bio-film",
+              "💬 Explodes with saves/shares metrics"
+            ]
           },
           {
             title: "Bleeding Gums Truth",
@@ -247,7 +335,12 @@ JSON structure:
             body: "Explain that bleeding is a sign of plaque buildup (gingivitis). Stopping brushing makes it worse. Gentle flossing is the cure.",
             cta: "Tap link in bio to schedule a gum health check.",
             format: "Talking Head",
-            audio: "Inspiring Corporate Synth"
+            audio: "Inspiring Corporate Synth",
+            whyItWorked: [
+              "🧠 Dispels fear of brushing tender bleeding areas",
+              "⚡ Logical explanation of plaque-induced gingivitis",
+              "🪥 Encourages correct light circular flossing"
+            ]
           },
           {
             title: "Flossing Wrong Tutorial",
@@ -255,7 +348,12 @@ JSON structure:
             body: "Show snapping floss straight down vs. curving it in a 'C' shape around each tooth structure.",
             cta: "Save this video for your nightly routine!",
             format: "Voiceover",
-            audio: "Lo-Fi Beats for Studying"
+            audio: "Lo-Fi Beats for Studying",
+            whyItWorked: [
+              "🧠 Visual guide correcting gum bleeding triggers",
+              "⚡ Demonstration of C-wrap technique",
+              "🪥 High bookmark count for evening routines"
+            ]
           },
           {
             title: "Toothbrush replacement",
@@ -263,7 +361,12 @@ JSON structure:
             body: "Show frayed bristles vs. fresh bristles. Explain the 3-month rule and after-flu replacement.",
             cta: "Tag someone who hasn't changed their brush in a year!",
             format: "Voiceover",
-            audio: "Groovy Disco Pop"
+            audio: "Groovy Disco Pop",
+            whyItWorked: [
+              "🧠 Visual demonstration of scrub wear on gum lining",
+              "🪥 Shows wear on yellow root exposures",
+              "💬 Highly shared warning to family"
+            ]
           }
         ],
         Costs: [
@@ -273,7 +376,12 @@ JSON structure:
             body: "Break down components: titanium fixture, abutment, crown, surgical fee. Compare to the cost of letting bone melt.",
             cta: "DM 'IMPLANT' for pricing sheets of our clinic.",
             format: "Talking Head",
-            audio: "Corporate Finance Beat"
+            audio: "Corporate Finance Beat",
+            whyItWorked: [
+              "💰 Absolute cost transparency build trust",
+              "🧠 Clarifies tech differences (manual vs rotary)",
+              "💬 Generates direct consultation inquiries"
+            ]
           },
           {
             title: "Root Canal Price Variance",
@@ -281,7 +389,12 @@ JSON structure:
             body: "Explain technology differences: manual files vs. rotary, dental microscope, custom fiber posts, and crown materials.",
             cta: "Book your pain-free consultation via our bio.",
             format: "Talking Head",
-            audio: "Smooth Elevator Jazz"
+            audio: "Smooth Elevator Jazz",
+            whyItWorked: [
+              "💰 Complete cost honesty creates premium leads",
+              "🧠 Details refinement alignments & retainers",
+              "💬 Connects with Series-A / high income patients"
+            ]
           },
           {
             title: "Treatments Worth Buying",
@@ -289,7 +402,12 @@ JSON structure:
             body: "Highly worth: Scaling, cavity filling, aligners. Skip: DIY kits, expensive whitening toothpastes, non-medical veneers.",
             cta: "Drop your treatment questions below!",
             format: "Talking Head",
-            audio: "Retro Synth Vibe"
+            audio: "Retro Synth Vibe",
+            whyItWorked: [
+              "💰 Exposes cheap strip kits eroding enamel",
+              "🧠 Defends clinical bleaching safety & duration",
+              "⚡ Captures brides/groom prospects"
+            ]
           },
           {
             title: "Implant vs Bridge",
@@ -297,7 +415,12 @@ JSON structure:
             body: "Explain how bridges shave adjacent healthy teeth, while implants protect them. Cost comparison over 15 years.",
             cta: "Book an appointment to save your adjacent teeth.",
             format: "Talking Head",
-            audio: "Inspiring Synthwave"
+            audio: "Inspiring Synthwave",
+            whyItWorked: [
+              "💰 Shows 10-year cost efficiency of implants",
+              "🧠 Explains bridge grinding damage to adjacent teeth",
+              "⚡ High conversion rate for older patients"
+            ]
           },
           {
             title: "Aligner Price Secrets",
@@ -305,17 +428,27 @@ JSON structure:
             body: "Break down refinement trays, retainers, and clinical attachment costs. Prompts transparency.",
             cta: "Comment 'ALIGN' to get a customized estimate.",
             format: "Talking Head",
-            audio: "Minimal Techno Ambient"
+            audio: "Minimal Techno Ambient",
+            whyItWorked: [
+              "💰 Complete cost honesty creates premium leads",
+              "🧠 Details refinement alignments & retainers",
+              "💬 Connects with Series-A / high income patients"
+            ]
           }
         ],
         "Pain/Fear": [
           {
             title: "Root Canal Pain Truth",
-            hook: "Does a Root Canal actually hurt? (Let's be completely honest)",
+            hook: "Does a Root Canal actually hurt? (Let's be honest)",
             body: "Explain modern anesthesia. Show that a root canal actually RELIEVES pain, and is no more painful than a regular filling.",
             cta: "DM 'PAINLESS' to chat with our comfort specialist.",
             format: "Talking Head",
-            audio: "Calming Ambient Pad"
+            audio: "Calming Ambient Pad",
+            whyItWorked: [
+              "🧠 Addresses primary patient anxiety head-on",
+              "⚡ Explains modern painless local anesthetic",
+              "💬 Sympathetic tone builds local clinic trust"
+            ]
           },
           {
             title: "Wisdom Tooth Extraction",
@@ -323,7 +456,12 @@ JSON structure:
             body: "Walk through step-by-step with simple illustrations to remove the fear of the unknown. Emphasize post-op ice cream.",
             cta: "Share this with someone who is putting off their wisdom tooth surgery!",
             format: "Voiceover",
-            audio: "Aesthetic Chill Vibe"
+            audio: "Aesthetic Chill Vibe",
+            whyItWorked: [
+              "🧠 Visual process map reduces mystery fear",
+              "⚠️ Focuses on post-care reward (ice cream)",
+              "💬 Extremely relatable to young adults"
+            ]
           },
           {
             title: "Terrified of needles?",
@@ -331,7 +469,12 @@ JSON structure:
             body: "Show local anesthetic gel used to numb gums BEFORE any needle touches, and explain nitrous oxide (laughing gas).",
             cta: "Tap link in bio to book a gentle-dental appointment.",
             format: "Talking Head",
-            audio: "Soft Peaceful Acoustic"
+            audio: "Soft Peaceful Acoustic",
+            whyItWorked: [
+              "🧠 Demonstrates dental numbing gel prefix",
+              "⚠️ Focuses on visual comfort elements",
+              "💬 Highly successful in converting phobic patients"
+            ]
           },
           {
             title: "Laser Dentistry comfort",
@@ -339,7 +482,12 @@ JSON structure:
             body: "Show laser dentistry removing decay silently with no vibration and no pain. Perfect for kids and anxious adults.",
             cta: "Comment 'LASER' to see if you qualify.",
             format: "Voiceover",
-            audio: "Tech-Focused Synth"
+            audio: "Tech-Focused Synth",
+            whyItWorked: [
+              "🧠 Visual look at clinic silent laser cavities removal",
+              "⚠️ Reassures pediatric and highly phobic patients",
+              "💬 Highly shared locally"
+            ]
           },
           {
             title: "Anxiety checklist",
@@ -347,7 +495,12 @@ JSON structure:
             body: "List weighted blankets, custom Netflix goggles, and a signal to STOP treatment immediately if they raise their hand.",
             cta: "Save this for your next dental visit!",
             format: "Talking Head",
-            audio: "Lo-Fi Instrumental Lounge"
+            audio: "Lo-Fi Instrumental Lounge",
+            whyItWorked: [
+              "🧠 Explains headache correlations",
+              "⚡ Shows night guard protection visual",
+              "💬 Leads to night guard custom molds bookings"
+            ]
           }
         ],
         "Patient Stories": [
@@ -357,7 +510,12 @@ JSON structure:
             body: "Show Rahul's self-conscious teeth, the digital preview, the 2 sittings of porcelain veneers, and his new confident posture.",
             cta: "DM 'NEW SMILE' to start your online consultation.",
             format: "Patient Testimonial",
-            audio: "Cinematic Uplifting Strings"
+            audio: "Cinematic Uplifting Strings",
+            whyItWorked: [
+              "🎬 Strong emotional confidence narrative",
+              "✨ Quick gap shift visual result",
+              "💬 Encourages Patna locals to DM"
+            ]
           },
           {
             title: "Smiling after 5 years",
@@ -365,7 +523,12 @@ JSON structure:
             body: "Show a client who stopped laughing due to broken teeth, undergoing full mouth reconstruction, ending with tears of joy.",
             cta: "Tap link in bio to schedule a restorative consult.",
             format: "Patient Testimonial",
-            audio: "Inspiring Piano Melody"
+            audio: "Inspiring Piano Melody",
+            whyItWorked: [
+              "🎬 Strong narrative-driven emotional hook",
+              "🧠 Focuses on empathetic sedation solutions",
+              "✨ High social proof values"
+            ]
           },
           {
             title: "First Kid Cavity",
@@ -373,7 +536,12 @@ JSON structure:
             body: "Show the child blowing bubbles, selecting toys, laughing, and showing off her clean teeth. Removes childhood fear.",
             cta: "Share this with parents who have anxious kids!",
             format: "Patient Testimonial",
-            audio: "Cute Playful Whistling"
+            audio: "Cute Playful Whistling",
+            whyItWorked: [
+              "🎬 Warm cute child reaction dynamic",
+              "🧠 Comforts parents who fear child dental fights",
+              "💬 Direct booking from mothers"
+            ]
           },
           {
             title: "Anesthesia Wears Off React",
@@ -381,7 +549,12 @@ JSON structure:
             body: "Record hilarious and sweet patient reactions after waking up from implant surgeries under conscious sedation.",
             cta: "Comment your funny dentist stories below!",
             format: "Patient Testimonial",
-            audio: "Upbeat Acoustic Guitar"
+            audio: "Upbeat Acoustic Guitar",
+            whyItWorked: [
+              "🎬 Active creator vlog format",
+              "🧠 Shows dentist consultation and immediate bleaching",
+              "💬 Attracts local foodies and lifestyle segment"
+            ]
           },
           {
             title: "Full reconstruction grandmother",
@@ -389,7 +562,12 @@ JSON structure:
             body: "Show a sweet elderly patient talking about how much she missed chewing nuts, followed by her implant restoration.",
             cta: "Book an implant evaluation for your parents.",
             format: "Patient Testimonial",
-            audio: "Warm Acoustic Vibe"
+            audio: "Warm Acoustic Vibe",
+            whyItWorked: [
+              "🎬 Warm family emotion connection",
+              "🧠 Practical explanation of chewing bite load",
+              "💬 Direct booking from caring children"
+            ]
           }
         ]
       };
@@ -410,6 +588,74 @@ JSON structure:
     navigate(`/reel-generator?${params.toString()}`);
   };
 
+  // Save to Calendar function (Creates a standard ContentItem in localStorage)
+  const handleSaveToCalendar = (idea: any, category: string) => {
+    try {
+      const savedItems = localStorage.getItem('ca_content_workspace_items');
+      let itemsList: any[] = [];
+      if (savedItems) {
+        itemsList = JSON.parse(savedItems);
+      }
+      
+      const nextDay = itemsList.length + 1;
+      const nextWeek = Math.ceil(nextDay / 7);
+
+      const newCalendarItem = {
+        id: crypto.randomUUID(),
+        day: nextDay,
+        week: nextWeek,
+        type: 'Reel',
+        topic: idea.topic || idea.title || 'Untitled Dental Reel',
+        status: 'Draft',
+        details: idea.body || `Proven viral idea from Dental Trend Finder category ${category}.`,
+        hook: idea.hook || '',
+        script: idea.body || '',
+        caption: idea.cta ? `🦷 ${idea.hook}\n\n${idea.cta} @your.dentist.patna` : '',
+        source: 'Dental Trend Finder',
+        createdAt: Date.now()
+      };
+
+      itemsList.push(newCalendarItem);
+      localStorage.setItem('ca_content_workspace_items', JSON.stringify(itemsList));
+      toast.success(`Successfully saved "${newCalendarItem.topic}" to Content Workspace Calendar (Day ${nextDay})!`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save to Content Workspace Calendar.');
+    }
+  };
+
+  // Save to Vault function (Saves to ca_content_vault)
+  const handleSaveToVault = (idea: any, category: string) => {
+    try {
+      const savedVault = localStorage.getItem('ca_content_vault');
+      let vaultList: any[] = [];
+      if (savedVault) {
+        vaultList = JSON.parse(savedVault);
+      }
+
+      const newVaultItem = {
+        id: crypto.randomUUID(),
+        topic: idea.topic || idea.title || 'Untitled Dental Reel',
+        hook: idea.hook || '',
+        format: idea.format || 'Talking Head',
+        category: category,
+        difficulty: idea.difficulty || 'Easy',
+        shootTime: idea.shootTime || '15 mins',
+        whyItWorked: idea.whyItWorked || [],
+        views: idea.views || 0,
+        source: 'Dental Trend Finder',
+        savedAt: Date.now()
+      };
+
+      vaultList.push(newVaultItem);
+      localStorage.setItem('ca_content_vault', JSON.stringify(vaultList));
+      toast.success(`Successfully saved "${newVaultItem.topic}" to Content Vault Library!`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to save to Content Vault.');
+    }
+  };
+
   // Copy idea to clipboard
   const handleCopyIdea = (idea: any, index: number) => {
     const textToCopy = `Title: ${idea.title || idea.topic}\nHook: ${idea.hook}\nBody: ${idea.body}\nCTA: ${idea.cta}\nFormat: ${idea.format}\nAudio: ${idea.audio}`;
@@ -426,10 +672,9 @@ JSON structure:
     return matchesCat && matchesDiff && matchesFormat;
   });
 
-  // Gated logic: first 6 are free, remaining are locked if user is logged out
+  // Gating logic: first 6 are free, remaining are locked if user is logged out
   const displayReels = filteredReels.slice(0, 6);
   const lockedReels = filteredReels.slice(6);
-  const totalCount = filteredReels.length;
 
   return (
     <div className="min-h-screen bg-[#020504] text-white font-outfit pb-24 relative overflow-hidden">
@@ -451,31 +696,32 @@ JSON structure:
         <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white max-w-4xl mx-auto leading-tight">
           What Content Is <span className="text-emerald-400 italic">Actually Working</span> On Dental Instagram?
         </h1>
-        <p className="text-base md:text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-          Stop guessing your hooks. We analyzed 500+ dental clinic reels in India to bring you the exact topics, formats, and scripts that generate patient appointments.
-        </p>
-
-        {/* Global Stats Badge */}
-        <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs font-bold uppercase tracking-wider text-white/50">
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
-            <Eye className="w-4 h-4 text-emerald-400" />
-            <span>500+ Reels Analyzed</span>
+        
+        {/* Metric Grid instead of standard taglines */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-6">
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <span className="block text-2xl font-black text-emerald-400">500+</span>
+            <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider">Viral Dental Reels</span>
           </div>
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
-            <Heart className="w-4 h-4 text-emerald-400" />
-            <span>Avg. 8.4% Engagement</span>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <span className="block text-2xl font-black text-emerald-400">7</span>
+            <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider">Categories</span>
           </div>
-          <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
-            <MessageCircle className="w-4 h-4 text-emerald-400" />
-            <span>50+ Curated Ideas</span>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <span className="block text-2xl font-black text-emerald-400">50+</span>
+            <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider">Proven Hooks</span>
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <span className="block text-2xl font-black text-emerald-400">100%</span>
+            <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider">Ready-to-Use Scripts</span>
           </div>
         </div>
       </div>
 
-      {/* Trending Topics Pills */}
+      {/* Most Requested Topics Section */}
       <div className="max-w-4xl mx-auto px-6 mt-12 bg-neutral-900/40 border border-white/5 p-6 rounded-3xl backdrop-blur-md">
         <h2 className="text-xs font-black text-emerald-400 tracking-widest uppercase mb-4 flex items-center gap-2 justify-center">
-          <Flame className="w-4 h-4 fill-emerald-400" /> Trending Topics This Month
+          <Flame className="w-4 h-4 fill-emerald-400 animate-bounce" /> 🔥 Most Requested Topics This Month
         </h2>
         <div className="flex flex-wrap items-center justify-center gap-3">
           {TRENDING_THIS_MONTH.map((item) => (
@@ -497,7 +743,7 @@ JSON structure:
 
       <div className="max-w-7xl mx-auto px-6 mt-16 grid grid-cols-1 lg:grid-cols-12 gap-10">
         
-        {/* HEATMAP SECTION (12 Cols on small, 5 Cols on large) */}
+        {/* HEATMAP SECTION */}
         <div className="lg:col-span-5 space-y-6">
           <div className="p-6 md:p-8 rounded-[32px] bg-neutral-900/40 border border-white/5 backdrop-blur-md space-y-6">
             <div>
@@ -511,7 +757,6 @@ JSON structure:
 
             <div className="space-y-4">
               {DENTAL_TOPIC_CLUSTERS.map((cluster) => {
-                // Calculate percentage relative to max views (620k)
                 const percentage = Math.min((cluster.avgViews / 620000) * 100, 100);
                 return (
                   <div key={cluster.id} className="space-y-1.5 group">
@@ -547,7 +792,7 @@ JSON structure:
           </div>
         </div>
 
-        {/* AI GENERATOR SECTION (12 Cols on small, 7 Cols on large) */}
+        {/* AI GENERATOR SECTION */}
         <div className="lg:col-span-7 space-y-6">
           <div className="p-6 md:p-8 rounded-[32px] bg-gradient-to-br from-emerald-950/20 to-teal-950/10 border border-emerald-500/10 relative overflow-hidden backdrop-blur-md">
             <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
@@ -645,22 +890,50 @@ JSON structure:
                     <p className="text-xs text-white/50 leading-relaxed">
                       📢 <strong>CTA:</strong> {idea.cta}
                     </p>
+
+                    {/* Styled Why it worked list */}
+                    {idea.whyItWorked && idea.whyItWorked.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">Why It Worked</span>
+                        <ul className="space-y-1">
+                          {idea.whyItWorked.map((bullet: string, bIdx: number) => (
+                            <li key={bIdx} className="text-[11px] font-medium text-neutral-300 flex items-center gap-1.5">
+                              {bullet}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex gap-2 pt-2 border-t border-white/5">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
                     <button
                       onClick={() => handleCopyIdea(idea, idx)}
-                      className="flex-1 p-2.5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-white/5"
+                      className="flex-1 min-w-[100px] p-2.5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-white/5"
                     >
                       {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      Copy Script
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => handleSaveToVault(idea, aiCategory)}
+                      className="flex-1 min-w-[100px] p-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <FolderHeart className="w-3.5 h-3.5 text-rose-400" />
+                      Save to Vault
+                    </button>
+                    <button
+                      onClick={() => handleSaveToCalendar(idea, aiCategory)}
+                      className="flex-1 min-w-[100px] p-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-cyan-500/20"
+                    >
+                      <Calendar className="w-3.5 h-3.5" />
+                      Save to Calendar
                     </button>
                     <button
                       onClick={() => handleUseIdea(idea, aiCategory)}
-                      className="flex-1 p-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                      className="flex-1 min-w-[100px] p-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
                     >
                       <Video className="w-3.5 h-3.5 fill-black" />
-                      Open in Studio
+                      Open Studio
                     </button>
                   </div>
                 </div>
@@ -684,7 +957,6 @@ JSON structure:
 
           {/* Filters Bar */}
           <div className="flex flex-wrap items-center gap-3 bg-neutral-900/60 p-2 rounded-2xl border border-white/5">
-            {/* Category Filter */}
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl hover:bg-white/5 text-xs text-white/80">
               <Filter className="w-3.5 h-3.5 text-white/40" />
               <select
@@ -703,7 +975,6 @@ JSON structure:
               </select>
             </div>
 
-            {/* Difficulty Filter */}
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl hover:bg-white/5 text-xs text-white/80 border-l border-white/10">
               <Clock className="w-3.5 h-3.5 text-white/40" />
               <select
@@ -712,13 +983,12 @@ JSON structure:
                 className="bg-transparent border-none text-white focus:outline-none cursor-pointer font-bold"
               >
                 <option value="All" className="bg-neutral-900">All Difficulties</option>
-                <option value="Easy" className="bg-neutral-900">Easy (Simple)</option>
-                <option value="Medium" className="bg-neutral-900">Medium (Editing)</option>
-                <option value="Hard" className="bg-neutral-900">Hard (Setup)</option>
+                <option value="Easy" className="bg-neutral-900">Easy Shoot</option>
+                <option value="Medium" className="bg-neutral-900">Medium Shoot</option>
+                <option value="Hard" className="bg-neutral-900">Hard Shoot</option>
               </select>
             </div>
 
-            {/* Format Filter */}
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl hover:bg-white/5 text-xs text-white/80 border-l border-white/10">
               <Coins className="w-3.5 h-3.5 text-white/40" />
               <select
@@ -742,50 +1012,86 @@ JSON structure:
             {displayReels.map((reel) => (
               <div 
                 key={reel.id} 
-                className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between h-[280px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
+                className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between min-h-[360px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
                     <span>{reel.category}</span>
                     <span className="text-emerald-400 font-black">{reel.engagementScore}% Engagement</span>
                   </div>
-                  <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
-                    "{reel.hook}"
-                  </h3>
+
+                  {/* Execution Badges */}
                   <div className="flex flex-wrap gap-2 pt-1">
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400 uppercase tracking-wider">
+                      {reel.difficulty} Shoot
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
+                      {reel.shootTime}
+                    </span>
                     <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
                       {reel.format}
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      Diff: {reel.difficulty}
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      {reel.shootTime} shoot
-                    </span>
                   </div>
-                </div>
 
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-white/40 uppercase font-black tracking-wider">Est. Views</span>
-                    <span className="text-sm font-black text-white">
-                      {reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`}
-                    </span>
-                  </div>
-                  
-                  {reel.generatedAppointments && (
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] text-emerald-400/70 uppercase font-black tracking-wider">Patients</span>
-                      <span className="text-sm font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                  <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+                    "{reel.hook}"
+                  </h3>
+
+                  {/* Styled Emoji Bullets for Why It Worked */}
+                  {reel.whyItWorked && (
+                    <div className="space-y-1 pt-1.5">
+                      <span className="text-[8px] font-black uppercase tracking-wider text-neutral-500">Why It Worked</span>
+                      <ul className="space-y-0.5">
+                        {reel.whyItWorked.map((bullet, idx) => (
+                          <li key={idx} className="text-[10px] font-medium text-neutral-400 flex items-center gap-1.5">
+                            {bullet}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
+                </div>
 
-                  <button
-                    onClick={() => handleUseIdea(reel, reel.category)}
-                    className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
-                  >
-                    Use Hook <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                <div className="space-y-3 pt-3 border-t border-white/5">
+                  {/* Detailed Source attribution block */}
+                  <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
+                    <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
+                    <span>{reel.sourceCreator}</span>
+                    <span>Last Seen: {reel.lastSeen}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    {/* Left stats */}
+                    {reel.generatedAppointments && (
+                      <div className="flex flex-col">
+                        <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
+                        <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-1.5 ml-auto">
+                      <button
+                        onClick={() => handleSaveToVault(reel, reel.category)}
+                        className="p-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl flex items-center justify-center transition-all"
+                        title="Save to Vault"
+                      >
+                        <FolderHeart className="w-4 h-4 text-rose-400" />
+                      </button>
+                      <button
+                        onClick={() => handleSaveToCalendar(reel, reel.category)}
+                        className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-xl flex items-center justify-center transition-all"
+                        title="Save to Calendar"
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleUseIdea(reel, reel.category)}
+                        className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
+                      >
+                        Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -794,50 +1100,86 @@ JSON structure:
             {isLoggedIn && lockedReels.map((reel) => (
               <div 
                 key={reel.id} 
-                className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between h-[280px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
+                className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between min-h-[360px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
                     <span>{reel.category}</span>
                     <span className="text-emerald-400 font-black">{reel.engagementScore}% Engagement</span>
                   </div>
-                  <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
-                    "{reel.hook}"
-                  </h3>
+
+                  {/* Execution Badges */}
                   <div className="flex flex-wrap gap-2 pt-1">
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400 uppercase tracking-wider">
+                      {reel.difficulty} Shoot
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
+                      {reel.shootTime}
+                    </span>
                     <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
                       {reel.format}
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      Diff: {reel.difficulty}
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      {reel.shootTime} shoot
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-white/40 uppercase font-black tracking-wider">Est. Views</span>
-                    <span className="text-sm font-black text-white">
-                      {reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`}
-                    </span>
                   </div>
 
-                  {reel.generatedAppointments && (
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] text-emerald-400/70 uppercase font-black tracking-wider">Patients</span>
-                      <span className="text-sm font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                  <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+                    "{reel.hook}"
+                  </h3>
+
+                  {/* Styled Emoji Bullets for Why It Worked */}
+                  {reel.whyItWorked && (
+                    <div className="space-y-1 pt-1.5">
+                      <span className="text-[8px] font-black uppercase tracking-wider text-neutral-500">Why It Worked</span>
+                      <ul className="space-y-0.5">
+                        {reel.whyItWorked.map((bullet, idx) => (
+                          <li key={idx} className="text-[10px] font-medium text-neutral-400 flex items-center gap-1.5">
+                            {bullet}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
+                </div>
 
-                  <button
-                    onClick={() => handleUseIdea(reel, reel.category)}
-                    className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
-                  >
-                    Use Hook <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                <div className="space-y-3 pt-3 border-t border-white/5">
+                  {/* Detailed Source attribution block */}
+                  <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
+                    <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
+                    <span>{reel.sourceCreator}</span>
+                    <span>Last Seen: {reel.lastSeen}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    {/* Left stats */}
+                    {reel.generatedAppointments && (
+                      <div className="flex flex-col">
+                        <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
+                        <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-1.5 ml-auto">
+                      <button
+                        onClick={() => handleSaveToVault(reel, reel.category)}
+                        className="p-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl flex items-center justify-center transition-all"
+                        title="Save to Vault"
+                      >
+                        <FolderHeart className="w-4 h-4 text-rose-400" />
+                      </button>
+                      <button
+                        onClick={() => handleSaveToCalendar(reel, reel.category)}
+                        className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-xl flex items-center justify-center transition-all"
+                        title="Save to Calendar"
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleUseIdea(reel, reel.category)}
+                        className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
+                      >
+                        Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -845,7 +1187,7 @@ JSON structure:
 
           {/* Gating Overlay for logged out users */}
           {!isLoggedIn && lockedReels.length > 0 && (
-            <div className="absolute bottom-0 left-0 right-0 top-[280px] bg-gradient-to-t from-[#020504] via-[#020504]/95 to-transparent flex flex-col items-center justify-center pt-24 pb-8 text-center z-20">
+            <div className="absolute bottom-0 left-0 right-0 top-[360px] bg-gradient-to-t from-[#020504] via-[#020504]/95 to-transparent flex flex-col items-center justify-center pt-24 pb-8 text-center z-20">
               <div className="p-8 rounded-[32px] bg-neutral-900/90 border border-white/10 max-w-md space-y-6 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.9)] backdrop-blur-md mx-6 ring-1 ring-white/10">
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center mx-auto">
                   <Lock className="w-5 h-5 text-emerald-400" />

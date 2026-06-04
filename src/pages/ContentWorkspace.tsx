@@ -242,7 +242,7 @@ export default function ContentWorkspace() {
 
   // Content planner database
   const [items, setItems] = useState<ContentItem[]>(() => {
-    const saved = localStorage.getItem('ca_workspace_items');
+    const saved = localStorage.getItem('ca_content_workspace_items');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -254,7 +254,7 @@ export default function ContentWorkspace() {
 
   // Shoot Checklist with Due Dates
   const [shootTasks, setShootTasks] = useState<Array<{ id: number; text: string; dueDate: string; checked: boolean }>>(() => {
-    const saved = localStorage.getItem('ca_workspace_tasks');
+    const saved = localStorage.getItem('ca_content_workspace_tasks');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -276,11 +276,11 @@ export default function ContentWorkspace() {
 
   // Sync to localStorage
   React.useEffect(() => {
-    localStorage.setItem('ca_workspace_items', JSON.stringify(items));
+    localStorage.setItem('ca_content_workspace_items', JSON.stringify(items));
   }, [items]);
 
   React.useEffect(() => {
-    localStorage.setItem('ca_workspace_tasks', JSON.stringify(shootTasks));
+    localStorage.setItem('ca_content_workspace_tasks', JSON.stringify(shootTasks));
   }, [shootTasks]);
 
   const handleStatusChange = (dayNum: number, nextStatus: ContentItem['status']) => {
@@ -1435,6 +1435,16 @@ export default function ContentWorkspace() {
                         <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">🎯 Objective</span>
                         <p className="text-xs text-neutral-300 leading-relaxed mt-2 font-medium">{selectedItem.details}</p>
                       </div>
+
+                      {/* Source Attribution */}
+                      {(selectedItem as any).source && (
+                        <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
+                          <span className="text-[8px] font-black uppercase text-purple-400 tracking-wider">🔗 Source Attribution</span>
+                          <p className="text-xs text-purple-300 leading-relaxed mt-2 font-bold flex items-center gap-1.5">
+                            ✨ Generated from {(selectedItem as any).source}
+                          </p>
+                        </div>
+                      )}
 
                       {/* Hook */}
                       {selectedItem.hook && (
