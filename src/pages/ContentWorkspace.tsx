@@ -705,6 +705,62 @@ export default function ContentWorkspace() {
                     </div>
                   )}
                 </div>
+
+                {/* Draft Ideas Queue Panel */}
+                <div className="bg-[#090d16] border border-white/[0.06] rounded-2xl p-6 space-y-4">
+                  <div className="flex justify-between items-center border-b border-white/[0.06] pb-3">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
+                      <ListTodo className="h-4.5 w-4.5 text-purple-400" /> Draft Ideas Queue
+                    </h3>
+                    <span className="text-[9px] text-neutral-500 uppercase font-mono bg-white/5 px-2 py-0.5 rounded">
+                      {items.filter(item => item.day === null).length} Ideas
+                    </span>
+                  </div>
+
+                  {items.filter(item => item.day === null).length === 0 ? (
+                    <p className="text-[10px] text-neutral-500 italic text-center py-4">
+                      No draft ideas saved yet. Save ideas from the Dental Trend Finder to plan them here!
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {items.filter(item => item.day === null).map((item) => (
+                        <div 
+                          key={item.id}
+                          onClick={() => setSelectedItem(item)}
+                          className="border border-white/[0.06] bg-white/[0.01] hover:border-cyan-500/40 p-4 rounded-xl cursor-pointer hover:bg-white/[0.02] transition-all flex flex-col justify-between h-[130px] group border-l-2 border-l-purple-500/80"
+                        >
+                          <div className="min-w-0">
+                            <span className="text-[8px] font-mono font-black text-purple-400 block uppercase">
+                              {item.sourceType === 'trend-finder' ? '⚡ TREND FINDER DRAFT' : 'DRAFT IDEA'}
+                            </span>
+                            <h4 className="text-xs font-black uppercase text-white truncate leading-tight mt-1">
+                              {getTypeIcon(item.type)} {item.topic}
+                            </h4>
+                            <p className="text-[10px] text-neutral-400 line-clamp-2 mt-1 font-medium leading-tight">
+                              {item.details}
+                            </p>
+                          </div>
+                          
+                          <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const maxDay = items.reduce((max, i) => i.day && i.day > max ? i.day : max, 0);
+                                const nextDay = maxDay + 1;
+                                const nextWeek = Math.ceil(nextDay / 7);
+                                setItems(prev => prev.map(i => i.id === item.id ? { ...i, day: nextDay, week: nextWeek } : i));
+                                toast.success(`Scheduled "${item.topic}" to Calendar (Day ${nextDay})!`);
+                              }}
+                              className="text-[9px] font-black text-cyan-400 hover:text-cyan-300 uppercase tracking-wider"
+                            >
+                              Schedule to Calendar →
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Right Column: Tasks and Approvals (35%) */}

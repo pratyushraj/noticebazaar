@@ -30,6 +30,7 @@ export interface TrendIdea {
   whyItWorked: string[];
   sourceCreator: string;
   lastSeen: string;
+  industry: string;
 }
 
 export interface TopicCluster {
@@ -171,7 +172,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 High comment volume debating teeth stability"
     ],
     sourceCreator: "Dr. Rohan's Dental Hub",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r002",
@@ -191,7 +193,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Visual side-by-side sandpaper explanation"
     ],
     sourceCreator: "Mumbai Smile Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r003",
@@ -211,7 +214,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 High debate and share rate"
     ],
     sourceCreator: "Dr. Nidhi's Dental Care",
-    lastSeen: "April 2026"
+    lastSeen: "April 2026",
+    industry: "dental"
   },
   {
     id: "r004",
@@ -231,7 +235,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Generates high 'Inquire for cost' comments"
     ],
     sourceCreator: "Smile Designers Delhi",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r005",
@@ -251,7 +256,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "🪥 Practical advice drives high bookmark/save rates"
     ],
     sourceCreator: "Healthy Smiles India",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r006",
@@ -271,7 +277,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Generates direct consultation inquiries"
     ],
     sourceCreator: "Dr. Kunal Orthodontics",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r007",
@@ -291,7 +298,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Sympathetic tone builds local clinic trust"
     ],
     sourceCreator: "Aesthetic Dental Care",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r008",
@@ -311,7 +319,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "✨ High social proof values"
     ],
     sourceCreator: "Dr. Pooja's Dental Clinic",
-    lastSeen: "April 2026"
+    lastSeen: "April 2026",
+    industry: "dental"
   },
   {
     id: "r009",
@@ -331,7 +340,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Saves/shares fueled by surprise factor"
     ],
     sourceCreator: "Tooth Studio Pune",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r010",
@@ -351,7 +361,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Visual demonstration of correct process"
     ],
     sourceCreator: "Elite Dentistry Bangalore",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r011",
@@ -371,7 +382,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Strong validation from families booking for parents"
     ],
     sourceCreator: "Advance Dental & Implant Centre",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r012",
@@ -391,7 +403,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Extremely relatable to young adults"
     ],
     sourceCreator: "Maxilla Dental Care",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r013",
@@ -411,7 +424,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Drives clinical orthondotic checkup bookings"
     ],
     sourceCreator: "Perfect Smile Jaipur",
-    lastSeen: "March 2026"
+    lastSeen: "March 2026",
+    industry: "dental"
   },
   {
     id: "r014",
@@ -431,7 +445,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ High conversion rate for older patients"
     ],
     sourceCreator: "Apex Implants India",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r015",
@@ -451,7 +466,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Urgency triggers direct DM inquiries"
     ],
     sourceCreator: "The Dental Lounge",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r016",
@@ -471,7 +487,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "🪥 Encourages correct light circular flossing"
     ],
     sourceCreator: "Dr. Shruti's Dental Art",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r017",
@@ -491,7 +508,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Generates massive debate in comment section"
     ],
     sourceCreator: "Clove Dental Inspired",
-    lastSeen: "April 2026"
+    lastSeen: "April 2026",
+    industry: "dental"
   },
   {
     id: "r018",
@@ -511,7 +529,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Captures brides/groom prospects"
     ],
     sourceCreator: "Dentistry & Beyond",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r019",
@@ -531,7 +550,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Explains roots choking under gum pressure"
     ],
     sourceCreator: "Modern Dental Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r020",
@@ -551,7 +571,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Attracts high-intent aligner prospects"
     ],
     sourceCreator: "Aligner Experts India",
-    lastSeen: "April 2026"
+    lastSeen: "April 2026",
+    industry: "dental"
   },
   {
     id: "r021",
@@ -571,7 +592,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Direct booking from caring children"
     ],
     sourceCreator: "Care Dental Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r022",
@@ -591,7 +613,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "🪥 High bookmark count for evening routines"
     ],
     sourceCreator: "Smile Studio Patna",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r023",
@@ -611,7 +634,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Sparks logical hygiene discussion"
     ],
     sourceCreator: "Dr. Vikas's Preventive Care",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r024",
@@ -631,7 +655,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Attracts high-value cosmetic requests"
     ],
     sourceCreator: "Veneer Artistry Delhi",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r025",
@@ -651,7 +676,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💰 Sells actual clinic whitening treatments"
     ],
     sourceCreator: "Radiant Smiles Pune",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r026",
@@ -671,7 +697,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Connects with Series-A / high income patients"
     ],
     sourceCreator: "Orthodontic Centre India",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r027",
@@ -691,7 +718,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Generates massive shares from worried parents"
     ],
     sourceCreator: "Dr. Neha's Dental World",
-    lastSeen: "April 2026"
+    lastSeen: "April 2026",
+    industry: "dental"
   },
   {
     id: "r028",
@@ -711,7 +739,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Direct booking conversion mechanism"
     ],
     sourceCreator: "Healthy Tooth Care",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r029",
@@ -731,7 +760,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Direct booking from mothers"
     ],
     sourceCreator: "Junior Smiles Pediatric",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r030",
@@ -751,7 +781,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Relatable to tech-loving crowd"
     ],
     sourceCreator: "Smile Innovations",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r031",
@@ -771,7 +802,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Leads to night guard custom molds bookings"
     ],
     sourceCreator: "Dr. Abhishek's Aesthetics",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r032",
@@ -791,7 +823,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Converts mature corporate clientele"
     ],
     sourceCreator: "Perfect Aligners Chennai",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r033",
@@ -811,7 +844,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Explodes with saves/shares metrics"
     ],
     sourceCreator: "Dr. Pooja's Dental Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r034",
@@ -826,12 +860,13 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     source: "Maxilla Dental Care",
     engagementScore: 8.8,
     whyItWorked: [
-      "🧠 Clarifies alignment extraction necessity",
+      "🧠 Clarifies necessity of tooth extraction",
       "⚠️ Relieves extraction paranoia",
       "⚡ Simple diagnostic x-ray display visual"
     ],
     sourceCreator: "Maxilla Dental Care",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r035",
@@ -851,7 +886,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Excellent informational baseline"
     ],
     sourceCreator: "Tooth Studio Pune",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r036",
@@ -871,7 +907,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Sells clinic safe gems procedures"
     ],
     sourceCreator: "Elite Dentistry Bangalore",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r037",
@@ -891,7 +928,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Highly successful in converting phobic patients"
     ],
     sourceCreator: "Apex Implants India",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r038",
@@ -911,7 +949,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Encourages Patna locals to DM"
     ],
     sourceCreator: "Smile Studio Patna",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r039",
@@ -931,7 +970,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ ASMR scraping visual drives high retention"
     ],
     sourceCreator: "Dr. Nidhi's Dental Care",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r040",
@@ -951,7 +991,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Highly shared in family chats"
     ],
     sourceCreator: "Mumbai Smile Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r041",
@@ -971,7 +1012,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Pre-filters premium cosmetic target"
     ],
     sourceCreator: "Veneer Artistry Delhi",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r042",
@@ -991,7 +1033,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Direct conversion logic"
     ],
     sourceCreator: "Dr. Shruti's Dental Art",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r043",
@@ -1011,7 +1054,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Massive save & share numbers"
     ],
     sourceCreator: "Healthy Smiles India",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r044",
@@ -1031,7 +1075,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Generates massive booking consult volume"
     ],
     sourceCreator: "Dr. Rohan's Dental Hub",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r045",
@@ -1051,7 +1096,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Converts young aesthetic seekers"
     ],
     sourceCreator: "Smile Designers Delhi",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r046",
@@ -1071,7 +1117,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Saves driven by common cold trigger symptoms"
     ],
     sourceCreator: "Tooth Studio Pune",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r047",
@@ -1091,7 +1138,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Highly shared warning to family"
     ],
     sourceCreator: "Modern Dental Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r048",
@@ -1111,7 +1159,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Save rate spikes from consumer cost warnings"
     ],
     sourceCreator: "Dr. Neha's Dental World",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r049",
@@ -1131,7 +1180,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Direct booking lead generator"
     ],
     sourceCreator: "Clove Dental Inspired",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r050",
@@ -1151,7 +1201,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "⚡ Honest expectation builder"
     ],
     sourceCreator: "Radiant Smiles Pune",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   },
   {
     id: "r051",
@@ -1171,6 +1222,7 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
       "💬 Highly shared locally"
     ],
     sourceCreator: "Care Dental Clinic",
-    lastSeen: "May 2026"
+    lastSeen: "May 2026",
+    industry: "dental"
   }
 ];

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
@@ -52,6 +52,33 @@ export default function DentalTrendFinder() {
   const [aiTone, setAiTone] = useState<string>('Educational');
   const [generatedIdeas, setGeneratedIdeas] = useState<any[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Persistence Save State UI lists (pre-fill from localStorage on mount)
+  const [savedCalendarTopics, setSavedCalendarTopics] = useState<string[]>(() => {
+    try {
+      const items = localStorage.getItem('ca_content_workspace_items');
+      if (items) {
+        const parsed = JSON.parse(items);
+        return parsed.map((item: any) => item.sourceTopic).filter(Boolean);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [];
+  });
+
+  const [savedVaultTopics, setSavedVaultTopics] = useState<string[]>(() => {
+    try {
+      const items = localStorage.getItem('ca_content_vault');
+      if (items) {
+        const parsed = JSON.parse(items);
+        return parsed.map((item: any) => item.topic).filter(Boolean);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return [];
+  });
 
   const { generateText, isGenerating } = useLocalLLM({
     temperature: 0.8,
@@ -588,7 +615,7 @@ JSON structure:
     navigate(`/reel-generator?${params.toString()}`);
   };
 
-  // Save to Calendar function (Creates a standard ContentItem in localStorage)
+  // Save to Calendar function (Creates a standard ContentItem in localStorage - Day: null for drafts queue)
   const handleSaveToCalendar = (idea: any, category: string) => {
     try {
       const savedItems = localStorage.getItem('ca_content_workspace_items');
@@ -597,34 +624,38 @@ JSON structure:
         itemsList = JSON.parse(savedItems);
       }
       
-      const nextDay = itemsList.length + 1;
-      const nextWeek = Math.ceil(nextDay / 7);
+      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
 
       const newCalendarItem = {
         id: crypto.randomUUID(),
-        day: nextDay,
-        week: nextWeek,
+        day: null, // Draft Ideas Queue (does not auto-assign days)
+        week: null, // Draft Ideas Queue
         type: 'Reel',
-        topic: idea.topic || idea.title || 'Untitled Dental Reel',
+        topic: topicTitle,
         status: 'Draft',
         details: idea.body || `Proven viral idea from Dental Trend Finder category ${category}.`,
         hook: idea.hook || '',
         script: idea.body || '',
         caption: idea.cta ? `🦷 ${idea.hook}\n\n${idea.cta} @your.dentist.patna` : '',
         source: 'Dental Trend Finder',
+        sourceType: 'trend-finder',
+        sourceTopic: topicTitle,
+        industry: 'dental',
+        scheduledDate: null,
         createdAt: Date.now()
       };
 
       itemsList.push(newCalendarItem);
       localStorage.setItem('ca_content_workspace_items', JSON.stringify(itemsList));
-      toast.success(`Successfully saved "${newCalendarItem.topic}" to Content Workspace Calendar (Day ${nextDay})!`);
+      setSavedCalendarTopics(prev => [...prev, topicTitle]);
+      toast.success(`Successfully saved "${newCalendarItem.topic}" to Content Workspace Draft Queue!`);
     } catch (err) {
       console.error(err);
       toast.error('Failed to save to Content Workspace Calendar.');
     }
   };
 
-  // Save to Vault function (Saves to ca_content_vault)
+  // Save to Vault function (Saves to ca_content_vault - lightweight structure)
   const handleSaveToVault = (idea: any, category: string) => {
     try {
       const savedVault = localStorage.getItem('ca_content_vault');
@@ -633,22 +664,22 @@ JSON structure:
         vaultList = JSON.parse(savedVault);
       }
 
+      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
+
       const newVaultItem = {
         id: crypto.randomUUID(),
-        topic: idea.topic || idea.title || 'Untitled Dental Reel',
+        topic: topicTitle,
         hook: idea.hook || '',
-        format: idea.format || 'Talking Head',
         category: category,
         difficulty: idea.difficulty || 'Easy',
-        shootTime: idea.shootTime || '15 mins',
-        whyItWorked: idea.whyItWorked || [],
-        views: idea.views || 0,
+        savedAt: Date.now(),
         source: 'Dental Trend Finder',
-        savedAt: Date.now()
+        industry: 'dental'
       };
 
       vaultList.push(newVaultItem);
       localStorage.setItem('ca_content_vault', JSON.stringify(vaultList));
+      setSavedVaultTopics(prev => [...prev, topicTitle]);
       toast.success(`Successfully saved "${newVaultItem.topic}" to Content Vault Library!`);
     } catch (err) {
       console.error(err);
@@ -868,76 +899,110 @@ JSON structure:
             <div className="space-y-4 animate-[reelSlideUp_0.4s_ease-out]">
               <h3 className="text-xs font-black text-emerald-400 tracking-widest uppercase">✨ Generated Reels for your clinic</h3>
               
-              {generatedIdeas.map((idea, idx) => (
-                <div key={idx} className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 space-y-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-xs font-black tracking-wider text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-1 rounded-lg">
-                      Idea {idx + 1}: {idea.format || 'Talking Head'}
-                    </span>
-                    <span className="text-[10px] text-white/40 font-bold italic">
-                      🎵 {idea.audio || 'Trending Audio'}
-                    </span>
-                  </div>
+              {generatedIdeas.map((idea, idx) => {
+                const topicTitle = idea.title || idea.topic || `Viral ${aiCategory} Idea`;
+                const isSavedToCalendar = savedCalendarTopics.includes(topicTitle);
+                const isSavedToVault = savedVaultTopics.includes(topicTitle);
 
-                  <div className="space-y-2">
-                    <h4 className="text-lg font-black text-white">{idea.title || `Viral ${aiCategory} Idea`}</h4>
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      💡 <strong>Hook:</strong> <span className="text-white italic">"{idea.hook}"</span>
-                    </p>
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      🎬 <strong>Body Visuals:</strong> {idea.body}
-                    </p>
-                    <p className="text-xs text-white/50 leading-relaxed">
-                      📢 <strong>CTA:</strong> {idea.cta}
-                    </p>
+                return (
+                  <div key={idx} className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 space-y-4 animate-fadeIn">
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="text-xs font-black tracking-wider text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-1 rounded-lg">
+                        Idea {idx + 1}: {idea.format || 'Talking Head'}
+                      </span>
+                      <span className="text-[10px] text-white/40 font-bold italic">
+                        🎵 {idea.audio || 'Trending Audio'}
+                      </span>
+                    </div>
 
-                    {/* Styled Why it worked list */}
-                    {idea.whyItWorked && idea.whyItWorked.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
-                        <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">Why It Worked</span>
-                        <ul className="space-y-1">
-                          {idea.whyItWorked.map((bullet: string, bIdx: number) => (
-                            <li key={bIdx} className="text-[11px] font-medium text-neutral-300 flex items-center gap-1.5">
-                              {bullet}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
+                    <div className="space-y-2">
+                      <h4 className="text-lg font-black text-white">{topicTitle}</h4>
+                      <p className="text-xs text-white/50 leading-relaxed">
+                        💡 <strong>Hook:</strong> <span className="text-white italic">"{idea.hook}"</span>
+                      </p>
+                      <p className="text-xs text-white/50 leading-relaxed">
+                        🎬 <strong>Body Visuals:</strong> {idea.body}
+                      </p>
+                      <p className="text-xs text-white/50 leading-relaxed">
+                        📢 <strong>CTA:</strong> {idea.cta}
+                      </p>
 
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
-                    <button
-                      onClick={() => handleCopyIdea(idea, idx)}
-                      className="flex-1 min-w-[100px] p-2.5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-white/5"
-                    >
-                      {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      Copy
-                    </button>
-                    <button
-                      onClick={() => handleSaveToVault(idea, aiCategory)}
-                      className="flex-1 min-w-[100px] p-2.5 bg-neutral-800 hover:bg-neutral-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
-                    >
-                      <FolderHeart className="w-3.5 h-3.5 text-rose-400" />
-                      Save to Vault
-                    </button>
-                    <button
-                      onClick={() => handleSaveToCalendar(idea, aiCategory)}
-                      className="flex-1 min-w-[100px] p-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-cyan-500/20"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      Save to Calendar
-                    </button>
-                    <button
-                      onClick={() => handleUseIdea(idea, aiCategory)}
-                      className="flex-1 min-w-[100px] p-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
-                    >
-                      <Video className="w-3.5 h-3.5 fill-black" />
-                      Open Studio
-                    </button>
+                      {/* Styled Why it worked list */}
+                      {idea.whyItWorked && idea.whyItWorked.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/5 space-y-1">
+                          <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">Why It Worked</span>
+                          <ul className="space-y-1">
+                            {idea.whyItWorked.map((bullet: string, bIdx: number) => (
+                              <li key={bIdx} className="text-[11px] font-medium text-neutral-300 flex items-center gap-1.5">
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+                      <button
+                        onClick={() => handleCopyIdea(idea, index)}
+                        className="flex-1 min-w-[100px] p-2.5 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all border border-white/5"
+                      >
+                        {copiedIndex === idx ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        Copy
+                      </button>
+                      <button
+                        onClick={() => handleSaveToVault(idea, aiCategory)}
+                        disabled={isSavedToVault}
+                        className={`flex-1 min-w-[100px] p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border ${
+                          isSavedToVault 
+                            ? 'bg-neutral-900 border-white/5 text-neutral-500 cursor-not-allowed' 
+                            : 'bg-neutral-800 border-white/5 text-white hover:bg-neutral-700'
+                        }`}
+                      >
+                        {isSavedToVault ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-rose-400" />
+                            Saved to Vault
+                          </>
+                        ) : (
+                          <>
+                            <FolderHeart className="w-3.5 h-3.5 text-rose-400" />
+                            Save to Vault
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleSaveToCalendar(idea, aiCategory)}
+                        disabled={isSavedToCalendar}
+                        className={`flex-1 min-w-[100px] p-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border ${
+                          isSavedToCalendar
+                            ? 'bg-neutral-900 border-white/5 text-neutral-500 cursor-not-allowed'
+                            : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20'
+                        }`}
+                      >
+                        {isSavedToCalendar ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-cyan-400" />
+                            Saved to Calendar
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="w-3.5 h-3.5" />
+                            Save to Calendar
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleUseIdea(idea, aiCategory)}
+                        className="flex-1 min-w-[100px] p-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <Video className="w-3.5 h-3.5 fill-black" />
+                        Open Studio
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -1009,180 +1074,210 @@ JSON structure:
         {/* Database Cards Grid */}
         <div className="relative">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayReels.map((reel) => (
-              <div 
-                key={reel.id} 
-                className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between min-h-[360px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
-                    <span>{reel.category}</span>
-                    <span className="text-emerald-400 font-black">{reel.engagementScore}% Engagement</span>
-                  </div>
+            {displayReels.map((reel) => {
+              const isSavedToCalendar = savedCalendarTopics.includes(reel.topic);
+              const isSavedToVault = savedVaultTopics.includes(reel.topic);
 
-                  {/* Execution Badges */}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400 uppercase tracking-wider">
-                      {reel.difficulty} Shoot
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      {reel.shootTime}
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      {reel.format}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
-                    "{reel.hook}"
-                  </h3>
-
-                  {/* Styled Emoji Bullets for Why It Worked */}
-                  {reel.whyItWorked && (
-                    <div className="space-y-1 pt-1.5">
-                      <span className="text-[8px] font-black uppercase tracking-wider text-neutral-500">Why It Worked</span>
-                      <ul className="space-y-0.5">
-                        {reel.whyItWorked.map((bullet, idx) => (
-                          <li key={idx} className="text-[10px] font-medium text-neutral-400 flex items-center gap-1.5">
-                            {bullet}
-                          </li>
-                        ))}
-                      </ul>
+              return (
+                <div 
+                  key={reel.id} 
+                  className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between min-h-[360px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
+                      <span>{reel.category}</span>
+                      <span className="text-emerald-400 font-black">{reel.engagementScore}% Engagement</span>
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-3 pt-3 border-t border-white/5">
-                  {/* Detailed Source attribution block */}
-                  <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
-                    <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
-                    <span>{reel.sourceCreator}</span>
-                    <span>Last Seen: {reel.lastSeen}</span>
-                  </div>
+                    {/* Execution Badges */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400 uppercase tracking-wider">
+                        {reel.difficulty} Shoot
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
+                        {reel.shootTime}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
+                        {reel.format}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center justify-between pt-1">
-                    {/* Left stats */}
-                    {reel.generatedAppointments && (
-                      <div className="flex flex-col">
-                        <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
-                        <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                    <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+                      "{reel.hook}"
+                    </h3>
+
+                    {/* Styled Emoji Bullets for Why It Worked */}
+                    {reel.whyItWorked && (
+                      <div className="space-y-1 pt-1.5">
+                        <span className="text-[8px] font-black uppercase tracking-wider text-neutral-500">Why It Worked</span>
+                        <ul className="space-y-0.5">
+                          {reel.whyItWorked.map((bullet, idx) => (
+                            <li key={idx} className="text-[10px] font-medium text-neutral-400 flex items-center gap-1.5">
+                              {bullet}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
+                  </div>
 
-                    <div className="flex gap-1.5 ml-auto">
-                      <button
-                        onClick={() => handleSaveToVault(reel, reel.category)}
-                        className="p-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl flex items-center justify-center transition-all"
-                        title="Save to Vault"
-                      >
-                        <FolderHeart className="w-4 h-4 text-rose-400" />
-                      </button>
-                      <button
-                        onClick={() => handleSaveToCalendar(reel, reel.category)}
-                        className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-xl flex items-center justify-center transition-all"
-                        title="Save to Calendar"
-                      >
-                        <Calendar className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleUseIdea(reel, reel.category)}
-                        className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
-                      >
-                        Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
-                      </button>
+                  <div className="space-y-3 pt-3 border-t border-white/5">
+                    {/* Detailed Source attribution block */}
+                    <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
+                      <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
+                      <span>{reel.sourceCreator}</span>
+                      <span>Last Seen: {reel.lastSeen}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {/* Left stats */}
+                      {reel.generatedAppointments && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
+                          <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                        </div>
+                      )}
+
+                      <div className="flex gap-1.5 ml-auto">
+                        <button
+                          onClick={() => handleSaveToVault(reel, reel.category)}
+                          disabled={isSavedToVault}
+                          className={`p-2 rounded-xl flex items-center justify-center transition-all ${
+                            isSavedToVault 
+                              ? 'bg-neutral-900 border border-white/5 text-neutral-600 cursor-not-allowed' 
+                              : 'bg-neutral-800 hover:bg-neutral-700 text-white'
+                          }`}
+                          title={isSavedToVault ? "Saved to Vault" : "Save to Vault"}
+                        >
+                          {isSavedToVault ? <Check className="w-4 h-4 text-emerald-400" /> : <FolderHeart className="w-4 h-4 text-rose-400" />}
+                        </button>
+                        <button
+                          onClick={() => handleSaveToCalendar(reel, reel.category)}
+                          disabled={isSavedToCalendar}
+                          className={`p-2 rounded-xl flex items-center justify-center transition-all ${
+                            isSavedToCalendar
+                              ? 'bg-neutral-900 border border-white/5 text-neutral-600 cursor-not-allowed'
+                              : 'bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400'
+                          }`}
+                          title={isSavedToCalendar ? "Saved to Calendar" : "Save to Calendar"}
+                        >
+                          {isSavedToCalendar ? <Check className="w-4 h-4 text-emerald-400" /> : <Calendar className="w-4 h-4" />}
+                        </button>
+                        <button
+                          onClick={() => handleUseIdea(reel, reel.category)}
+                          className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
+                        >
+                          Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* If logged in, render the remaining cards */}
-            {isLoggedIn && lockedReels.map((reel) => (
-              <div 
-                key={reel.id} 
-                className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between min-h-[360px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
-                    <span>{reel.category}</span>
-                    <span className="text-emerald-400 font-black">{reel.engagementScore}% Engagement</span>
-                  </div>
+            {isLoggedIn && lockedReels.map((reel) => {
+              const isSavedToCalendar = savedCalendarTopics.includes(reel.topic);
+              const isSavedToVault = savedVaultTopics.includes(reel.topic);
 
-                  {/* Execution Badges */}
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400 uppercase tracking-wider">
-                      {reel.difficulty} Shoot
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      {reel.shootTime}
-                    </span>
-                    <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
-                      {reel.format}
-                    </span>
-                  </div>
-
-                  <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
-                    "{reel.hook}"
-                  </h3>
-
-                  {/* Styled Emoji Bullets for Why It Worked */}
-                  {reel.whyItWorked && (
-                    <div className="space-y-1 pt-1.5">
-                      <span className="text-[8px] font-black uppercase tracking-wider text-neutral-500">Why It Worked</span>
-                      <ul className="space-y-0.5">
-                        {reel.whyItWorked.map((bullet, idx) => (
-                          <li key={idx} className="text-[10px] font-medium text-neutral-400 flex items-center gap-1.5">
-                            {bullet}
-                          </li>
-                        ))}
-                      </ul>
+              return (
+                <div 
+                  key={reel.id} 
+                  className="p-6 rounded-3xl bg-neutral-900/40 border border-white/5 flex flex-col justify-between min-h-[360px] hover:border-emerald-500/20 hover:bg-emerald-500/[0.01] transition-all duration-300 group"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
+                      <span>{reel.category}</span>
+                      <span className="text-emerald-400 font-black">{reel.engagementScore}% Engagement</span>
                     </div>
-                  )}
-                </div>
 
-                <div className="space-y-3 pt-3 border-t border-white/5">
-                  {/* Detailed Source attribution block */}
-                  <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
-                    <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
-                    <span>{reel.sourceCreator}</span>
-                    <span>Last Seen: {reel.lastSeen}</span>
-                  </div>
+                    {/* Execution Badges */}
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-black text-emerald-400 uppercase tracking-wider">
+                        {reel.difficulty} Shoot
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
+                        {reel.shootTime}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-white/70">
+                        {reel.format}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center justify-between pt-1">
-                    {/* Left stats */}
-                    {reel.generatedAppointments && (
-                      <div className="flex flex-col">
-                        <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
-                        <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                    <h3 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+                      "{reel.hook}"
+                    </h3>
+
+                    {/* Styled Emoji Bullets for Why It Worked */}
+                    {reel.whyItWorked && (
+                      <div className="space-y-1 pt-1.5">
+                        <span className="text-[8px] font-black uppercase tracking-wider text-neutral-500">Why It Worked</span>
+                        <ul className="space-y-0.5">
+                          {reel.whyItWorked.map((bullet, idx) => (
+                            <li key={idx} className="text-[10px] font-medium text-neutral-400 flex items-center gap-1.5">
+                              {bullet}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
+                  </div>
 
-                    <div className="flex gap-1.5 ml-auto">
-                      <button
-                        onClick={() => handleSaveToVault(reel, reel.category)}
-                        className="p-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl flex items-center justify-center transition-all"
-                        title="Save to Vault"
-                      >
-                        <FolderHeart className="w-4 h-4 text-rose-400" />
-                      </button>
-                      <button
-                        onClick={() => handleSaveToCalendar(reel, reel.category)}
-                        className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 rounded-xl flex items-center justify-center transition-all"
-                        title="Save to Calendar"
-                      >
-                        <Calendar className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleUseIdea(reel, reel.category)}
-                        className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
-                      >
-                        Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
-                      </button>
+                  <div className="space-y-3 pt-3 border-t border-white/5">
+                    {/* Detailed Source attribution block */}
+                    <div className="flex items-center justify-between text-[9px] text-white/40 uppercase font-mono font-bold">
+                      <span>Based on: <strong className="text-white">{reel.views >= 1000000 ? `${(reel.views / 1000000).toFixed(1)}M` : `${reel.views / 1000}K`} Views</strong></span>
+                      <span>{reel.sourceCreator}</span>
+                      <span>Last Seen: {reel.lastSeen}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {/* Left stats */}
+                      {reel.generatedAppointments && (
+                        <div className="flex flex-col">
+                          <span className="text-[9px] text-emerald-400/70 uppercase font-black tracking-wider leading-none">Patients</span>
+                          <span className="text-base font-black text-emerald-400">+{reel.generatedAppointments}</span>
+                        </div>
+                      )}
+
+                      <div className="flex gap-1.5 ml-auto">
+                        <button
+                          onClick={() => handleSaveToVault(reel, reel.category)}
+                          disabled={isSavedToVault}
+                          className={`p-2 rounded-xl flex items-center justify-center transition-all ${
+                            isSavedToVault 
+                              ? 'bg-neutral-900 border border-white/5 text-neutral-600 cursor-not-allowed' 
+                              : 'bg-neutral-800 hover:bg-neutral-700 text-white'
+                          }`}
+                          title={isSavedToVault ? "Saved to Vault" : "Save to Vault"}
+                        >
+                          {isSavedToVault ? <Check className="w-4 h-4 text-emerald-400" /> : <FolderHeart className="w-4 h-4 text-rose-400" />}
+                        </button>
+                        <button
+                          onClick={() => handleSaveToCalendar(reel, reel.category)}
+                          disabled={isSavedToCalendar}
+                          className={`p-2 rounded-xl flex items-center justify-center transition-all ${
+                            isSavedToCalendar
+                              ? 'bg-neutral-900 border border-white/5 text-neutral-600 cursor-not-allowed'
+                              : 'bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400'
+                          }`}
+                          title={isSavedToCalendar ? "Saved to Calendar" : "Save to Calendar"}
+                        >
+                          {isSavedToCalendar ? <Check className="w-4 h-4 text-emerald-400" /> : <Calendar className="w-4 h-4" />}
+                        </button>
+                        <button
+                          onClick={() => handleUseIdea(reel, reel.category)}
+                          className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
+                        >
+                          Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Gating Overlay for logged out users */}
