@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
-import { generateBriefForTopic, BriefVariant } from '@/utils/briefGenerator';
+import { generateBriefForTopic, generateScriptWithGemini, BriefVariant } from '@/utils/briefGenerator';
 import { 
   CheckCircle2, 
   Clock, 
@@ -110,6 +110,7 @@ export default function ContentWorkspace() {
   // Custom script editing state
   const [isEditingScript, setIsEditingScript] = useState(false);
   const [customScriptText, setCustomScriptText] = useState('');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   // ── June demo seed data (YOUR DENTIST, Patna) ────────────────────────────
   const DEFAULT_ITEMS: ContentItem[] = [];
@@ -198,6 +199,40 @@ export default function ContentWorkspace() {
     }));
 
     toast.success(`Brief regenerated using option: ${variant.toUpperCase()}!`);
+  };
+
+  const handleGenerateWithAI = async (variant: BriefVariant) => {
+    if (!selectedItem) return;
+    setIsAiGenerating(true);
+    toast.loading('Generating with Gemini AI...', { id: 'ai-gen' });
+    try {
+      const brief = await generateScriptWithGemini(
+        selectedItem.topic,
+        selectedItem.hook || selectedItem.topic,
+        variant,
+      );
+      if (brief) {
+        setItems(prev => prev.map(item => {
+          const match = selectedItem.id ? item.id === selectedItem.id : item.topic === selectedItem.topic;
+          if (match) {
+            const updated = { ...item, hook: brief.hook, script: brief.script, caption: brief.caption, assets: brief.shotList };
+            setSelectedItem(updated);
+            return updated;
+          }
+          return item;
+        }));
+        toast.success('AI script generated!', { id: 'ai-gen' });
+      } else {
+        // Fall back to template
+        handleRegenerateScript(variant);
+        toast.warning('Gemini unavailable — used template instead', { id: 'ai-gen' });
+      }
+    } catch {
+      handleRegenerateScript(variant);
+      toast.error('AI error — used template instead', { id: 'ai-gen' });
+    } finally {
+      setIsAiGenerating(false);
+    }
   };
 
   const handleSendAiMessage = () => {
@@ -1439,10 +1474,33 @@ export default function ContentWorkspace() {
                   {/* SCRIPT TAB */}
                   {briefTab === 'script' && (
                     <>
-                      {/* One-click Regeneration Options */}
+                      {/* AI Generate Button */}
+                      <div className="bg-gradient-to-r from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-3.5 space-y-2.5">
+                        <span className="text-[8px] font-black uppercase text-purple-300 tracking-wider flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Gemini AI Script Generator
+                        </span>
+                        <p className="text-[9px] text-neutral-400 leading-relaxed">
+                          Pick a style — Gemini writes a fresh script for <span className="text-white font-semibold">{selectedItem.topic}</span> in seconds.
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(['hinglish', 'shorter', 'viral', 'professional', 'hindi', 'english'] as const).map(variant => (
+                            <button
+                              key={`ai-${variant}`}
+                              disabled={isAiGenerating}
+                              onClick={() => handleGenerateWithAI(variant)}
+                              className="px-2.5 py-1.5 bg-purple-500/20 hover:bg-purple-500/40 disabled:opacity-40 disabled:cursor-not-allowed border border-purple-500/30 rounded-lg text-[9px] font-black uppercase tracking-wider text-purple-200 transition-all flex items-center gap-1"
+                            >
+                              {isAiGenerating ? <span className="animate-pulse">...</span> : <Sparkles className="w-2.5 h-2.5" />}
+                              {variant}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* One-click Template Options */}
                       <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-3.5 space-y-2">
                         <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> One-Click AI Script Transformation
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Template Script (Instant)
                         </span>
                         <div className="flex flex-wrap gap-1.5">
                           {(['hinglish', 'shorter', 'viral', 'professional', 'hindi', 'english'] as const).map(variant => (

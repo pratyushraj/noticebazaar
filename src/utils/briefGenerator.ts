@@ -7,6 +7,118 @@ export interface GeneratedBrief {
 
 export type BriefVariant = 'hinglish' | 'shorter' | 'viral' | 'professional' | 'hindi' | 'english';
 
+// ── AI Script Generator (NVIDIA) ─────────────────────────────────────────────
+
+const NVIDIA_API_KEY = import.meta.env.VITE_NVIDIA_API_KEY;
+const NVIDIA_MODEL   = 'nvidia/llama-3.1-nemotron-70b-instruct';
+
+const VARIANT_STYLE: Record<BriefVariant, string> = {
+  hinglish:     'Hinglish (mix of Hindi and English) — casual, relatable, local Indian tone',
+  shorter:      'Ultra-short punchy English — 10–15 second reel format, fast-cut style',
+  viral:        'Viral fear-hook English/Hinglish — shocking opener, high urgency, trending audio cues',
+  professional: 'Formal clinical English — evidence-based, trust-building, educational tone',
+  hindi:        'Pure conversational Hindi in Devanagari script — warm and approachable',
+  english:      'Clean modern English — friendly but authoritative dental-professional voice',
+};
+
+function buildDentalPrompt(
+  topic: string, hook: string, variant: BriefVariant,
+  doctorName: string, clinicName: string, city: string,
+): string {
+  return `You are an expert Indian dental marketing scriptwriter.
+Generate a high-converting Instagram Reel script for a dental clinic.
+
+Topic: ${topic}
+Opening Hook: ${hook}
+Script Style: ${VARIANT_STYLE[variant]}
+Doctor: ${doctorName}
+Clinic: ${clinicName}, ${city}
+
+Respond with ONLY a raw JSON object (no markdown, no code fences, no explanation):
+{
+  "hook": "one sentence scroll-stopping opening line",
+  "script": "full shot-by-shot script with [Shot 1:] [Shot 2:] labels, 80-130 words",
+  "caption": "Instagram caption with emojis and hashtags, 60-90 words",
+  "shotList": ["A-roll: description (0-3s)", "B-roll: description (3-7s)", "A-roll: CTA (7-12s)"]
+}
+
+Rules: scripts 80-130 words, end with CTA, include clinic name and city, shotList 3-4 items with timestamps.`;
+}
+
+function parseJsonFromText(raw: string): GeneratedBrief | null {
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (!match) return null;
+  try {
+    const parsed: GeneratedBrief = JSON.parse(match[0]);
+    if (parsed.hook && parsed.script && parsed.caption && Array.isArray(parsed.shotList)) return parsed;
+  } catch { /* fall through */ }
+  return null;
+}
+
+/** Generate a dental reel script via Supabase Edge Function → NVIDIA llama-3.1-nemotron-70b. */
+export async function generateScriptWithGemini(
+  topic: string,
+  hook: string,
+  variant: BriefVariant,
+  doctorName = 'Dr. Aryan Parmar',
+  clinicName = 'YOUR DENTIST',
+  city = 'Patna',
+): Promise<GeneratedBrief | null> {
+  if (!NVIDIA_API_KEY) {
+    console.error('[AI Script] VITE_NVIDIA_API_KEY is not set');
+    return null;
+  }
+
+  const supabaseUrl     = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[AI Script] Supabase env vars missing');
+    return null;
+  }
+
+  const prompt = buildDentalPrompt(topic, hook, variant, doctorName, clinicName, city);
+
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/generate-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        prompt,
+        provider: 'nvidia',
+        model: NVIDIA_MODEL,
+        apiKey: NVIDIA_API_KEY,
+        temperature: 0.85,
+        maxTokens: 800,
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error(`[AI Script] Edge function HTTP ${res.status}:`, errBody);
+      return null;
+    }
+
+    const data = await res.json();
+    const raw = data?.text || '';
+    if (!raw) {
+      console.error('[AI Script] Empty response from edge function');
+      return null;
+    }
+
+    const parsed = parseJsonFromText(raw);
+    if (!parsed) console.error('[AI Script] Could not parse JSON from:', raw);
+    return parsed;
+  } catch (err) {
+    console.error('[AI Script] Error:', err);
+    return null;
+  }
+}
+
+
+
 const DENTAL_TEMPLATES: Record<string, Record<BriefVariant, GeneratedBrief>> = {
   'scaling': {
     hinglish: {
