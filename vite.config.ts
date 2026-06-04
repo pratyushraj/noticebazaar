@@ -18,8 +18,7 @@ export default defineConfig(() => ({
     },
     headers: {
       'Permissions-Policy': 'accelerometer=(self "https://api.razorpay.com"), gyroscope=(self "https://api.razorpay.com"), magnetometer=(self "https://api.razorpay.com"), payment=(self)',
-      'Cross-Origin-Resource-Policy': 'cross-origin',
-      'Cross-Origin-Embedder-Policy': 'credentialless'
+      'Cross-Origin-Resource-Policy': 'cross-origin'
     },
     proxy: {
       '/api': {
@@ -50,6 +49,27 @@ export default defineConfig(() => ({
         drop_debugger: true,
       },
     },
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('lucide-react')) {
+              return 'vendor-lucide';
+            }
+            if (id.includes('framer-motion')) {
+              return 'vendor-framer';
+            }
+            if (id.includes('react') || id.includes('scheduler')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@tanstack')) {
+              return 'vendor-query';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
   plugins: [react()],
   resolve: {

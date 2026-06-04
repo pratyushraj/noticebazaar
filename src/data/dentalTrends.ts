@@ -31,6 +31,7 @@ export interface TrendIdea {
   sourceCreator: string;
   lastSeen: string;
   industry: string;
+  videoUrl?: string;
 }
 
 export interface TopicCluster {
@@ -173,7 +174,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Rohan's Dental Hub",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/sbLkVniGnhE"
   },
   {
     id: "r002",
@@ -194,7 +196,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Mumbai Smile Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/XLHV4KHMqDc"
   },
   {
     id: "r003",
@@ -215,7 +218,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Nidhi's Dental Care",
     lastSeen: "April 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/3CnjMJ5OvVI"
   },
   {
     id: "r004",
@@ -236,7 +240,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Smile Designers Delhi",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/0IaszYGA37o"
   },
   {
     id: "r005",
@@ -257,7 +262,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Healthy Smiles India",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/1MllB7y-LL4"
   },
   {
     id: "r006",
@@ -278,7 +284,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Kunal Orthodontics",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/33CsrItmWwY"
   },
   {
     id: "r007",
@@ -299,7 +306,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Aesthetic Dental Care",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/2m3UYWf869c"
   },
   {
     id: "r008",
@@ -320,7 +328,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Pooja's Dental Clinic",
     lastSeen: "April 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/o8y8dlkZvFc"
   },
   {
     id: "r009",
@@ -341,7 +350,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Tooth Studio Pune",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/1KhCelXWo_Q"
   },
   {
     id: "r010",
@@ -362,7 +372,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Elite Dentistry Bangalore",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/_YH9BF5DTL4"
   },
   {
     id: "r011",
@@ -383,7 +394,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Advance Dental & Implant Centre",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/prhbjuhcerc"
   },
   {
     id: "r012",
@@ -404,7 +416,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Maxilla Dental Care",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/3SE3XTDTzgA"
   },
   {
     id: "r013",
@@ -425,7 +438,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Perfect Smile Jaipur",
     lastSeen: "March 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/QlOPyzKiZds"
   },
   {
     id: "r014",
@@ -446,7 +460,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Apex Implants India",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/0ub6yYviq18"
   },
   {
     id: "r015",
@@ -467,7 +482,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "The Dental Lounge",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/oY0EKLPoQYo"
   },
   {
     id: "r016",
@@ -488,7 +504,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Shruti's Dental Art",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/jeviYt1Eaow"
   },
   {
     id: "r017",
@@ -509,7 +526,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Clove Dental Inspired",
     lastSeen: "April 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/1WW5L7XZr2s"
   },
   {
     id: "r018",
@@ -530,7 +548,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dentistry & Beyond",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/29dHjCRD7lU"
   },
   {
     id: "r019",
@@ -551,7 +570,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Modern Dental Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/ll9C6FxK9bc"
   },
   {
     id: "r020",
@@ -572,7 +592,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Aligner Experts India",
     lastSeen: "April 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/0jBgc_jahbw"
   },
   {
     id: "r021",
@@ -593,7 +614,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Care Dental Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/aaU2ZSLn_XA"
   },
   {
     id: "r022",
@@ -614,7 +636,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Smile Studio Patna",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/cssLro3i4oY"
   },
   {
     id: "r023",
@@ -635,7 +658,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Vikas's Preventive Care",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/ifKfysi-Y6Y"
   },
   {
     id: "r024",
@@ -656,7 +680,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Veneer Artistry Delhi",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/BJSzOfCfJjs"
   },
   {
     id: "r025",
@@ -677,7 +702,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Radiant Smiles Pune",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/E64L4ge5PT4"
   },
   {
     id: "r026",
@@ -698,7 +724,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Orthodontic Centre India",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/6_J0G10gkmw"
   },
   {
     id: "r027",
@@ -719,7 +746,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Neha's Dental World",
     lastSeen: "April 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/h9IIzZLh4m0"
   },
   {
     id: "r028",
@@ -740,7 +768,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Healthy Tooth Care",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/24m8xGvkKIg"
   },
   {
     id: "r029",
@@ -761,7 +790,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Junior Smiles Pediatric",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/6iZtdbO58p0"
   },
   {
     id: "r030",
@@ -782,7 +812,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Smile Innovations",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/0pa2pdE8auY"
   },
   {
     id: "r031",
@@ -803,7 +834,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Abhishek's Aesthetics",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/z-G4ZL0q51A"
   },
   {
     id: "r032",
@@ -824,7 +856,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Perfect Aligners Chennai",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/5JVUy9tTE5E"
   },
   {
     id: "r033",
@@ -845,7 +878,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Pooja's Dental Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/QFO504cQ-Pk"
   },
   {
     id: "r034",
@@ -866,7 +900,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Maxilla Dental Care",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/rIHnW-O6trw"
   },
   {
     id: "r035",
@@ -887,7 +922,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Tooth Studio Pune",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/4MqVFAo-qrU"
   },
   {
     id: "r036",
@@ -908,7 +944,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Elite Dentistry Bangalore",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/gSzf-0xxyIk"
   },
   {
     id: "r037",
@@ -929,7 +966,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Apex Implants India",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/ihvGjcgT4DA"
   },
   {
     id: "r038",
@@ -950,7 +988,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Smile Studio Patna",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/u54fSwux6nM"
   },
   {
     id: "r039",
@@ -971,7 +1010,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Nidhi's Dental Care",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/Y1g3olbTDWw"
   },
   {
     id: "r040",
@@ -992,7 +1032,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Mumbai Smile Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/J1863N6M8zU"
   },
   {
     id: "r041",
@@ -1013,7 +1054,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Veneer Artistry Delhi",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/aAkaNY683Ng"
   },
   {
     id: "r042",
@@ -1034,7 +1076,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Shruti's Dental Art",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/TS1oLwyKUis"
   },
   {
     id: "r043",
@@ -1055,7 +1098,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Healthy Smiles India",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/wSuKznedIDI"
   },
   {
     id: "r044",
@@ -1076,7 +1120,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Rohan's Dental Hub",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/tM8nDQXv6_4"
   },
   {
     id: "r045",
@@ -1097,7 +1142,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Smile Designers Delhi",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/azZ61K9ciiU"
   },
   {
     id: "r046",
@@ -1118,7 +1164,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Tooth Studio Pune",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/1PL5nLSvZvI"
   },
   {
     id: "r047",
@@ -1139,7 +1186,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Modern Dental Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/r45jNPeqTBk"
   },
   {
     id: "r048",
@@ -1160,7 +1208,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Dr. Neha's Dental World",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/DTMiTG3PscY"
   },
   {
     id: "r049",
@@ -1181,7 +1230,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Clove Dental Inspired",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/86Xmq_ojNFY"
   },
   {
     id: "r050",
@@ -1202,7 +1252,8 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Radiant Smiles Pune",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/s1QARgulI18"
   },
   {
     id: "r051",
@@ -1223,6 +1274,7 @@ export const VIRAL_REEL_DATABASE: TrendIdea[] = [
     ],
     sourceCreator: "Care Dental Clinic",
     lastSeen: "May 2026",
-    industry: "dental"
+    industry: "dental",
+    videoUrl: "https://www.youtube.com/embed/Fi0nGmHKYf4"
   }
 ];
