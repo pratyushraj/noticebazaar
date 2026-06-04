@@ -1,43 +1,14 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from 'axios';
 
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const NVIDIA_KEY = import.meta.env.VITE_NVIDIA_API_KEY;
 
-const genAI = new GoogleGenerativeAI(GEMINI_KEY || "");
-
 export const scanChatScreenshot = async (base64Image: string) => {
-  // Prefer NVIDIA if key is present (higher quality for complex charts)
   if (NVIDIA_KEY) {
     return await scanWithNvidia(base64Image);
   }
-  
-  if (GEMINI_KEY) {
-    return await scanWithGemini(base64Image);
-  }
 
-  throw new Error("No AI API Key found (Gemini or NVIDIA).");
+  throw new Error("No AI API Key found (NVIDIA is required).");
 };
-
-async function scanWithGemini(base64Image: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const prompt = getSystemPrompt();
-
-  const result = await model.generateContent([
-    prompt,
-    {
-      inlineData: {
-        data: base64Image.split(",")[1],
-        mimeType: "image/jpeg",
-      },
-    },
-  ]);
-
-  const response = await result.response;
-  const text = response.text();
-  const jsonStr = text.replace(/```json|```/g, "").trim();
-  return JSON.parse(jsonStr);
-}
 
 async function scanWithNvidia(base64Image: string) {
   const response = await axios.post(

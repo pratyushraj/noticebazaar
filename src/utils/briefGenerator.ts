@@ -56,7 +56,7 @@ function parseJsonFromText(raw: string): GeneratedBrief | null {
 }
 
 /** Generate a dental reel script via Supabase Edge Function → NVIDIA llama-3.1-nemotron-70b. */
-export async function generateScriptWithGemini(
+export async function generateScriptWithAI(
   topic: string,
   hook: string,
   variant: BriefVariant,

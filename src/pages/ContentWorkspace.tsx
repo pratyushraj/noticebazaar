@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
-import { generateBriefForTopic, generateScriptWithGemini, BriefVariant } from '@/utils/briefGenerator';
+import { generateBriefForTopic, generateScriptWithAI, BriefVariant } from '@/utils/briefGenerator';
 import { 
   CheckCircle2, 
   Clock, 
@@ -204,9 +204,9 @@ export default function ContentWorkspace() {
   const handleGenerateWithAI = async (variant: BriefVariant) => {
     if (!selectedItem) return;
     setIsAiGenerating(true);
-    toast.loading('Generating with Gemini AI...', { id: 'ai-gen' });
+    toast.loading('Generating with NVIDIA AI...', { id: 'ai-gen' });
     try {
-      const brief = await generateScriptWithGemini(
+      const brief = await generateScriptWithAI(
         selectedItem.topic,
         selectedItem.hook || selectedItem.topic,
         variant,
@@ -225,7 +225,7 @@ export default function ContentWorkspace() {
       } else {
         // Fall back to template
         handleRegenerateScript(variant);
-        toast.warning('Gemini unavailable — used template instead', { id: 'ai-gen' });
+        toast.warning('AI generation unavailable — used template instead', { id: 'ai-gen' });
       }
     } catch {
       handleRegenerateScript(variant);
@@ -1477,10 +1477,10 @@ export default function ContentWorkspace() {
                       {/* AI Generate Button */}
                       <div className="bg-gradient-to-r from-purple-500/10 via-fuchsia-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-3.5 space-y-2.5">
                         <span className="text-[8px] font-black uppercase text-purple-300 tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Gemini AI Script Generator
+                          <Sparkles className="w-3.5 h-3.5 text-purple-400" /> NVIDIA AI Script Generator
                         </span>
                         <p className="text-[9px] text-neutral-400 leading-relaxed">
-                          Pick a style — Gemini writes a fresh script for <span className="text-white font-semibold">{selectedItem.topic}</span> in seconds.
+                          Pick a style — NVIDIA AI writes a fresh script for <span className="text-white font-semibold">{selectedItem.topic}</span> in seconds.
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {(['hinglish', 'shorter', 'viral', 'professional', 'hindi', 'english'] as const).map(variant => (
