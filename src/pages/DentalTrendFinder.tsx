@@ -758,8 +758,23 @@ JSON structure:
       <div className="absolute top-[-10%] left-[-20%] w-[50%] h-[50%] bg-emerald-500/10 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-25%] w-[60%] h-[60%] bg-teal-500/5 rounded-full blur-[150px] pointer-events-none" />
 
+      {/* Top Header Navigation */}
+      <div className="max-w-7xl mx-auto px-6 pt-6 flex justify-between items-center relative z-10">
+        <div className="flex items-center gap-2">
+          <span className="font-black tracking-widest text-xs uppercase text-neutral-400">Creator Armour</span>
+        </div>
+        <button
+          onClick={() => navigate('/dentist-proposal')}
+          className="group inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-black text-white transition-all uppercase tracking-wider"
+        >
+          <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+          <span>My Clinic Workspace</span>
+          <ArrowRight className="w-3 h-3 text-neutral-400 group-hover:translate-x-0.5 transition-transform" />
+        </button>
+      </div>
+
       {/* Page Header */}
-      <div className="max-w-7xl mx-auto px-6 pt-12 text-center space-y-4">
+      <div className="max-w-7xl mx-auto px-6 pt-6 text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-black tracking-widest uppercase">
           <Zap className="w-3.5 h-3.5 fill-emerald-400 animate-pulse" />
           <span>Dental Viral Content Engine</span>
