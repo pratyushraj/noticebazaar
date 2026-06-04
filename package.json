@@ -160,7 +160,9 @@
       "/barter-collab",
       "/patna-influencers",
       "/careers",
-      "/blog"
+      "/blog",
+      "/dentist-proposal",
+      "/dental-trends"
     ],
     "minifyHtml": {
       "collapseWhitespace": false,

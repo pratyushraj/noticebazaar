@@ -97,9 +97,50 @@ export const useLocalLLM = (options: LLMOptions = {}) => {
     });
   };
 
+  const generateText = async (prompt: string): Promise<string> => {
+    setIsGenerating(true);
+    setError(null);
+
+    try {
+      let generatedText = '';
+
+      switch (provider) {
+        case 'huggingface':
+          generatedText = await generateWithHuggingFace(model, prompt, apiKey, temperature, maxTokens);
+          break;
+        case 'groq':
+          generatedText = await generateWithGroq(model, prompt, apiKey, temperature, maxTokens);
+          break;
+        case 'together':
+          generatedText = await generateWithTogether(model, prompt, apiKey, temperature, maxTokens);
+          break;
+        case 'openai':
+          generatedText = await generateWithOpenAI(model, prompt, apiKey, temperature, maxTokens);
+          break;
+        case 'nvidia':
+          generatedText = await generateWithNvidia(model, prompt, apiKey, temperature, maxTokens);
+          break;
+        case 'ollama':
+        default:
+          generatedText = await generateWithOllama(model, prompt, temperature, maxTokens);
+          break;
+      }
+
+      return generatedText;
+    } catch (err: any) {
+      logger.error('LLM generation error', err);
+      const errorMessage = err.message || 'Failed to generate text. Please check your LLM configuration.';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return {
     generateEmail,
     generateEmailSuggestion,
+    generateText,
     isGenerating,
     error,
     provider, // Expose current provider

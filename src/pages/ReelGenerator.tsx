@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Sparkles, 
   Play, 
@@ -158,6 +159,7 @@ const PRESETS = [
 ];
 
 export default function ReelGenerator() {
+  const [searchParams] = useSearchParams();
   const [slides, setSlides] = useState([
     { text: "D2C BRANDS LOOKING FOR\n[100% BARTER COLLABS] 📦✨", delay: 2000 },
     { text: "TIRED OF SENDING PRODUCTS\n[AND GETTING NO CONTENT?] 🚫", delay: 2000 },
@@ -165,6 +167,27 @@ export default function ReelGenerator() {
     { text: "WE HANDLE CREATOR TRACKING,\n[ESCROW & DELIVERABLES] 🛡️", delay: 2000 },
     { text: "ZERO SETUP OR ONBOARDING COST.\n[TAP THE LINK IN BIO] 👇", delay: 2000 }
   ]);
+
+  useEffect(() => {
+    const hookParam = searchParams.get('hook');
+    if (hookParam) {
+      const topicParam = searchParams.get('topic') || '';
+      const formatParam = searchParams.get('format') || '';
+      const categoryParam = searchParams.get('category') || '';
+      
+      const newSlides = [
+        { text: `${hookParam}`, delay: 2500 },
+        { text: `TOPIC:\n[${topicParam}] 🦷`, delay: 2200 },
+        { text: `RECOMMENDED FORMAT:\n[${formatParam}] 🎥`, delay: 2200 },
+        { text: `CONTENT CATEGORY:\n[${categoryParam}] ⚡`, delay: 2000 },
+        { text: "TAP THE LINK IN BIO\n[TO SECURE YOUR VISIT] 👇", delay: 2200 }
+      ];
+      setSlides(newSlides);
+      setCurrentSlideIndex(0);
+      setIsPlaying(true);
+    }
+  }, [searchParams]);
+
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [themeId, setThemeId] = useState('midnight-emerald');

@@ -29,6 +29,7 @@ const staticPages = [
   { loc: '/barter-collab', priority: '0.9', changefreq: 'weekly' },
   { loc: '/salon-proposal', priority: '0.8', changefreq: 'weekly' },
   { loc: '/salons.html', priority: '0.8', changefreq: 'weekly' },
+  { loc: '/dental-trends', priority: '0.8', changefreq: 'weekly' },
   { loc: '/patna-influencers', priority: '0.8', changefreq: 'weekly' },
   { loc: '/careers', priority: '0.5', changefreq: 'monthly' },
   { loc: '/privacy-policy', priority: '0.3', changefreq: 'yearly' },

@@ -46,6 +46,7 @@ const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
 const BarterCollabPage = lazy(() => import("@/pages/BarterCollabPage"));
 const AutoplayDirectory = lazy(() => import("@/pages/AutoplayDirectory"));
 const ReelGenerator = lazy(() => import("@/pages/ReelGenerator"));
+const DentalTrendFinder = lazy(() => import("@/pages/DentalTrendFinder"));
 
 
 export const PublicRoutes = () => (
@@ -108,6 +109,8 @@ export const PublicRoutes = () => (
     <Route path="/dentist-proposal" element={<LazyRoute><ContentWorkspace /></LazyRoute>} />
     <Route path="/dentist-preview" element={<Navigate to="/dentist-proposal" replace />} />
     <Route path="/dentist-deck" element={<Navigate to="/dentist-proposal" replace />} />
+    <Route path="/dental-trends" element={<LazyRoute><DentalTrendFinder /></LazyRoute>} />
+    <Route path="/dentist-trends" element={<Navigate to="/dental-trends" replace />} />
     <Route path="/calculator/:platform/:niche" element={<LazyRoute><RateCalculatorDynamic /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
