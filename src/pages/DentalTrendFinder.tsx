@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
+import { generateBriefForTopic } from '@/utils/briefGenerator';
 import { 
   Sparkles, 
   TrendingUp, 
@@ -614,6 +615,7 @@ JSON structure:
       }
       
       const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
+      const brief = generateBriefForTopic(topicTitle, idea.body || '', idea.hook || '', 'hinglish');
 
       const clonedItem = {
         id: crypto.randomUUID(),
@@ -623,9 +625,10 @@ JSON structure:
         topic: topicTitle,
         status: 'Draft',
         details: idea.body || `Cloned proven viral idea from Dental Trend Finder category ${category}.`,
-        hook: idea.hook || '',
-        script: idea.body || '',
-        caption: idea.cta ? `🦷 ${idea.hook}\n\n${idea.cta} @your.dentist.patna` : '',
+        hook: brief.hook,
+        script: brief.script,
+        caption: brief.caption,
+        assets: brief.shotList,
         source: 'Dental Trend Finder (Cloned)',
         sourceType: 'trend-finder',
         sourceTopic: topicTitle,
@@ -640,7 +643,7 @@ JSON structure:
       toast.success(`Cloned "${topicTitle}" to My Clinic! Opening in Studio...`);
       
       const params = new URLSearchParams({
-        hook: idea.hook || '',
+        hook: brief.hook,
         topic: topicTitle,
         format: idea.format || 'Talking Head',
         category: category,
@@ -666,6 +669,7 @@ JSON structure:
       }
       
       const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
+      const brief = generateBriefForTopic(topicTitle, idea.body || '', idea.hook || '', 'hinglish');
 
       const newCalendarItem = {
         id: crypto.randomUUID(),
@@ -675,9 +679,10 @@ JSON structure:
         topic: topicTitle,
         status: 'Draft',
         details: idea.body || `Proven viral idea from Dental Trend Finder category ${category}.`,
-        hook: idea.hook || '',
-        script: idea.body || '',
-        caption: idea.cta ? `🦷 ${idea.hook}\n\n${idea.cta} @your.dentist.patna` : '',
+        hook: brief.hook,
+        script: brief.script,
+        caption: brief.caption,
+        assets: brief.shotList,
         source: 'Dental Trend Finder',
         sourceType: 'trend-finder',
         sourceTopic: topicTitle,

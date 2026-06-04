@@ -2273,13 +2273,14 @@ router.post('/:username/submit', collabSubmissionLimiter, async (req: Request, r
       });
     }
 
+    const isShippingOrBarter = requires_shipping === true || requires_shipping === 'true' || isBarterLikeCollab(collabTypeForDb);
     const normalizedProductImage = normalizeImageUrl(barter_product_image_url);
     const normalizedProductName = String(barter_product_name || '').trim();
     
-    if (!normalizedProductImage || !normalizedProductName) {
+    if (isShippingOrBarter && (!normalizedProductImage || !normalizedProductName)) {
       return res.status(400).json({
         success: false,
-        error: 'Product name and image are required for all collaborations',
+        error: 'Product name and image are required for collaborations involving product shipments',
       });
     }
 

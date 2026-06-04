@@ -514,7 +514,7 @@ const LandingPage = () => {
 
               {/* Floating Creator Profile Badge */}
               <div className="hidden md:flex absolute -left-16 md:-left-24 top-20 bg-white/90 backdrop-blur-md p-4 rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white/50 z-20 items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300 hover:scale-[1.03] transition-transform">
-                <img src={SARFARAZ_IMG} alt="Sarfaraz" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-white" />
+                <img src={SARFARAZ_IMG} alt="Travel and Photography Creator Sarfaraz Profile Photo" className="w-16 h-16 rounded-full object-cover shadow-md border-2 border-white" />
                 <div>
                   <div className="flex items-center gap-1.5 mb-1">
                     <h3 className="text-base font-black text-[#0F172A]">Sarfaraz</h3>
@@ -808,6 +808,7 @@ const LandingPage = () => {
                           <img
                             src={creator.img}
                             alt={creator.name}
+                            loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${creator.name}&background=DCFCE7&color=16A34A&size=72`;
@@ -947,7 +948,7 @@ const LandingPage = () => {
                 <p className="text-[15px] md:text-[16px] font-medium leading-7 text-[#0F172A]">"{item.quote}"</p>
                 <div className="mt-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <img src={item.img} alt={item.name} className="w-10 h-10 rounded-full object-cover border-2 border-[#E5E7EB]" />
+                    <img src={item.img} alt={item.name} loading="lazy" className="w-10 h-10 rounded-full object-cover border-2 border-[#E5E7EB]" />
                     <div>
                       <p className="font-black text-[#0F172A]">{item.name}</p>
                       <p className="text-[12px] font-medium text-[#64748B]">{item.meta}</p>
@@ -1082,7 +1083,7 @@ const LandingPage = () => {
                     <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#DCFCE7] to-transparent" />
 
                     <div className="relative z-10 text-center mb-6">
-                      <img src={SARFARAZ_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Sarfaraz" loading="lazy" />
+                      <img src={SARFARAZ_IMG} className="w-20 h-20 rounded-full mx-auto object-cover border-[3px] border-white shadow-sm mb-3" alt="Travel Creator Sarfaraz Profile Photo" loading="lazy" />
                       <h3 className="font-black text-lg text-[#0F172A] flex items-center justify-center gap-1">Sarfaraz <CheckCircle2 className="w-4 h-4 text-[#16A34A] fill-[#DCFCE7]" /></h3>
                       <p className="text-[12px] font-bold text-[#64748B] mb-3">11K Followers</p>
 
@@ -1130,7 +1131,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-[3rem] border border-slate-200 p-8 shadow-2xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
                <div className="flex items-center gap-4 mb-8 text-left">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
-                    <img src={ROHAN_IMG} className="w-full h-full object-cover" alt="POP" />
+                    <img src={ROHAN_IMG} className="w-full h-full object-cover" alt="UGC Creator Rohan Profile Photo" loading="lazy" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-slate-900">POP</h3>
@@ -1159,7 +1160,7 @@ const LandingPage = () => {
             <div className="bg-white rounded-[3rem] border border-slate-200 p-8 shadow-2xl shadow-slate-200/40 relative overflow-hidden group hover:-translate-y-2 transition-all duration-500">
                <div className="flex items-center gap-4 mb-8 text-left">
                   <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-lg">
-                    <img src="https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/avatar_real.jpg" className="w-full h-full object-cover" alt="Vidushi" />
+                    <img src="https://sqqocqujxlgoxbcnfbfb.supabase.co/storage/v1/object/public/creator-assets/whylittletreats/avatar_real.jpg" className="w-full h-full object-cover" alt="Food and Lifestyle Influencer Vidushi Profile Photo" loading="lazy" />
                   </div>
                   <div>
                     <h3 className="text-xl font-black text-slate-900">Vidushi</h3>
@@ -1448,9 +1449,9 @@ const LandingPage = () => {
               </div>
                             <div className="flex items-center gap-4 pt-6">
                 <div className="flex -space-x-3">
-                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Snehal Sachdeva Profile Photo" />
-                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Dilip Paliwal Profile Photo" />
-                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Shagufi Khan Profile Photo" />
+                  <img src={PRIYA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Snehal Sachdeva Profile Photo" loading="lazy" />
+                  <img src={ARJUN_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Dilip Paliwal Profile Photo" loading="lazy" />
+                  <img src={NEHA_IMG} className="w-10 h-10 rounded-full border-2 border-[#05070A] object-cover" alt="Shagufi Khan Profile Photo" loading="lazy" />
                 </div>
                 <p className="text-[15px] font-bold text-slate-300">Join <span className="text-white">500+</span> top creators</p>
               </div>

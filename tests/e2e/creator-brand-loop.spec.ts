@@ -23,6 +23,26 @@ test.describe('Creator Brand Loop', () => {
     creatorPage.on('pageerror', (error) => creatorErrors.push(error.message));
     brandPage.on('pageerror', (error) => brandErrors.push(error.message));
 
+    creatorPage.on('console', msg => console.log('CREATOR CONSOLE:', msg.text()));
+    brandPage.on('console', msg => console.log('BRAND CONSOLE:', msg.text()));
+
+    creatorPage.on('requestfailed', request => console.log('CREATOR REQ FAILED:', request.url(), request.failure()?.errorText));
+    brandPage.on('requestfailed', request => console.log('BRAND REQ FAILED:', request.url(), request.failure()?.errorText));
+
+    creatorPage.on('response', response => {
+      if (response.status() >= 400) {
+        console.log('CREATOR REQ ERROR:', response.url(), response.status());
+        response.text().then(text => console.log('CREATOR REQ ERROR BODY:', text)).catch(() => {});
+      }
+    });
+    brandPage.on('response', response => {
+      if (response.status() >= 400) {
+        console.log('BRAND REQ ERROR:', response.url(), response.status());
+        response.text().then(text => console.log('BRAND REQ ERROR BODY:', text)).catch(() => {});
+      }
+    });
+
+
     // Creator signup + onboarding
     await creatorPage.goto(`${BASE_URL}/signup`, { waitUntil: 'load' });
     // Dismiss any promotional modal that appears on page load
@@ -38,7 +58,7 @@ test.describe('Creator Brand Loop', () => {
     }
     await creatorPage.waitForSelector('#signup-name', { timeout: 15000 });
     await creatorPage.locator('#signup-name').fill(creatorName);
-    await creatorPage.locator('#signup-instagram-handle').fill(handle);
+    await creatorPage.locator('#signup-handle').fill(handle);
     await creatorPage.locator('input[type="email"]').fill(creatorEmail);
     await creatorPage.locator('input[type="password"]').fill(creatorPassword);
     await creatorPage.locator('button[type="submit"]').click();
@@ -46,17 +66,20 @@ test.describe('Creator Brand Loop', () => {
     await creatorPage.waitForURL(/creator-onboarding|creator-dashboard/, { timeout: 30000 });
 
     await creatorPage.goto(`${BASE_URL}/creator-dashboard`, { waitUntil: 'load' });
-    await expect(creatorPage.locator('h1')).toContainText(/offer inbox|new offer|active deal|completed deals/i);
+    await expect(creatorPage.locator('h1')).toContainText(/scale your influence|offer inbox|new offer|active deal|completed deals/i);
 
     // Brand sends public offer
     await brandPage.goto(`${BASE_URL}/${handle}`, { waitUntil: 'load' });
-    await brandPage.waitForSelector('[role="button"]:has-text("Choose"), [role="button"]:has-text("choose a service")', { timeout: 15000 }).catch(() => {});
-    const chooseThisServiceButton = brandPage.getByRole('button', { name: /choose this service/i }).first();
-    if (await chooseThisServiceButton.isVisible()) {
-      await chooseThisServiceButton.click();
+    await brandPage.waitForSelector('[role="button"]:has-text("Collab"), [role="button"]:has-text("Service")', { timeout: 15000 }).catch(() => {});
+    const selectServiceButton = brandPage.getByRole('button', { name: /select service/i }).first();
+    if (await selectServiceButton.isVisible()) {
+      await selectServiceButton.click();
     } else {
-      await brandPage.getByRole('button', { name: /choose a service/i }).first().click();
-      await brandPage.getByRole('button', { name: /choose this service/i }).first().click();
+      const startCollabButton = brandPage.getByRole('button', { name: /start collab/i }).first();
+      if (await startCollabButton.isVisible()) {
+        await startCollabButton.click();
+      }
+      await selectServiceButton.click();
     }
 
     await brandPage.locator('#brand-name-input').fill('QA Brand');
@@ -73,7 +96,7 @@ test.describe('Creator Brand Loop', () => {
       await deadlineInput.fill('2026-04-20');
     }
 
-    await brandPage.getByRole('button', { name: /send offer/i }).last().click();
+    await brandPage.getByRole('button', { name: /send.*offer/i }).filter({ visible: true }).first().click();
     await brandPage.waitForURL(new RegExp(`/${handle}/success`), { timeout: 30000 });
     await expect(brandPage.locator('h1')).toContainText(/has your offer|offer sent/i);
 

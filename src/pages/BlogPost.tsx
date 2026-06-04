@@ -162,38 +162,46 @@ const BlogPost = () => {
             </div>
           </div>
 
-          {/* Related Reading */}
-          <div className="mt-12 p-8 rounded-3xl border border-emerald-500/20 bg-emerald-500/5">
-            <div className="flex items-center gap-2 mb-5">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400">Related Reading</span>
+          {/* Related Reading & Internal Quick Links */}
+          {post.internalLinks && (
+            <div className="mt-12 p-8 rounded-3xl border border-emerald-500/20 bg-emerald-500/5">
+              <div className="flex items-center gap-2 mb-5">
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400">Core Platform Features</span>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                Use our free workspace tools to put these guide recommendations into action:
+              </p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {post.internalLinks.homepage && (
+                  <Link
+                    to="/"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-bold text-white hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all"
+                  >
+                    <span>Creator Armour Home</span>
+                    <ChevronRight className="w-4 h-4 text-emerald-400" />
+                  </Link>
+                )}
+                {post.internalLinks.contractTool && (
+                  <Link
+                    to="/free-influencer-contract"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-bold text-white hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all"
+                  >
+                    <span>Free Contract Builder</span>
+                    <ChevronRight className="w-4 h-4 text-emerald-400" />
+                  </Link>
+                )}
+                {post.internalLinks.collabLink && (
+                  <Link
+                    to="/barter-collab"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-bold text-white hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all"
+                  >
+                    <span>Barter Collab Links</span>
+                    <ChevronRight className="w-4 h-4 text-emerald-400" />
+                  </Link>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed mb-6">
-              Explore the core tools behind these guides: barter collaborations, brand discovery, and contract protection.
-            </p>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Link
-                to="/barter-collab"
-                className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-bold text-white hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all"
-              >
-                <span>Barter Collabs</span>
-                <ChevronRight className="w-4 h-4 text-emerald-400" />
-              </Link>
-              <Link
-                to="/brand-directory"
-                className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-bold text-white hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all"
-              >
-                <span>Brand Directory</span>
-                <ChevronRight className="w-4 h-4 text-emerald-400" />
-              </Link>
-              <Link
-                to="/free-influencer-contract"
-                className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-4 text-sm font-bold text-white hover:border-emerald-500/40 hover:bg-emerald-500/10 transition-all"
-              >
-                <span>Contract Tools</span>
-                <ChevronRight className="w-4 h-4 text-emerald-400" />
-              </Link>
-            </div>
-          </div>
+          )}
         </article>
 
         {/* Sidebar */}

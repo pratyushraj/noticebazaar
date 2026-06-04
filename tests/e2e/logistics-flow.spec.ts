@@ -16,7 +16,7 @@ async function login(page: Page, email: string, password: string) {
   await page.goto(`${BASE_URL}/login`);
   await page.setViewportSize({ width: 390, height: 844 });
 
-  const emailInput = page.locator('input[type="email"]').first();
+  const emailInput = page.locator('input#identifier, input[type="email"]').first();
   const passInput = page.locator('input[type="password"]').first();
   const submitButton = page.locator('button[type="submit"]').first();
 

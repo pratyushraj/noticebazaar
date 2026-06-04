@@ -5,8 +5,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Messaging Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Login as creator
-    await page.goto('http://localhost:5173/login');
-    await page.fill('input[type="email"]', 'pratyushraj@outlook.com');
+    await page.goto('/login');
+    await page.fill('input#identifier, input[type="email"]', 'pratyushraj@outlook.com');
     await page.fill('input[type="password"]', 'test-password');
     await page.click('button[type="submit"]');
     await page.waitForURL('**/creator-dashboard');
@@ -37,25 +37,25 @@ test.describe('Messaging Flow', () => {
     const advisorPage = await advisorContext.newPage();
 
     // Login creator
-    await creatorPage.goto('http://localhost:5173/login');
-    await creatorPage.fill('input[type="email"]', 'pratyushraj@outlook.com');
+    await creatorPage.goto('/login');
+    await creatorPage.fill('input#identifier, input[type="email"]', 'pratyushraj@outlook.com');
     await creatorPage.fill('input[type="password"]', 'test-password');
     await creatorPage.click('button[type="submit"]');
 
     // Login advisor
-    await advisorPage.goto('http://localhost:5173/login');
-    await advisorPage.fill('input[type="email"]', 'prateek.sharma@creatorarmour.com');
+    await advisorPage.goto('/login');
+    await advisorPage.fill('input#identifier, input[type="email"]', 'prateek.sharma@creatorarmour.com');
     await advisorPage.fill('input[type="password"]', 'advisor123');
     await advisorPage.click('button[type="submit"]');
 
     // Creator sends message
-    await creatorPage.goto('http://localhost:5173/messages');
+    await creatorPage.goto('/messages');
     await creatorPage.click('text=Prateek Sharma');
     await creatorPage.fill('textarea[placeholder*="message"]', 'Test realtime message');
     await creatorPage.click('button[aria-label="Send message"]');
 
     // Advisor should see message (with retry for realtime delay)
-    await advisorPage.goto('http://localhost:5173/advisor-dashboard');
+    await advisorPage.goto('/advisor-dashboard');
     await expect(advisorPage.locator('text=Test realtime message')).toBeVisible({ timeout: 10000 });
 
     await creatorContext.close();
@@ -63,7 +63,7 @@ test.describe('Messaging Flow', () => {
   });
 
   test('attachment upload and download flow', async ({ page }) => {
-    await page.goto('http://localhost:5173/messages');
+    await page.goto('/messages');
     await page.click('text=Prateek Sharma');
 
     // Click attachment button
@@ -91,7 +91,7 @@ test.describe('Messaging Flow', () => {
 
 test.describe('Payment Flow', () => {
   test('mark payment as received with undo', async ({ page }) => {
-    await page.goto('http://localhost:5173/creator-payments');
+    await page.goto('/creator-payments');
 
     // Find a payment card
     const paymentCard = page.locator('[data-testid="payment-card"]').first();

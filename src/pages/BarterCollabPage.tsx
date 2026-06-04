@@ -216,6 +216,9 @@ const BarterCollabPage = () => {
   }, []);
 
   const fetchBarterCreators = async () => {
+    if (typeof window !== 'undefined' && (window as any).__PRERENDER__) {
+      return;
+    }
     try {
       const response = await withRetry(() =>
         fetch(`${getApiBaseUrl()}/api/creators?limit=100`)

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
+import { generateBriefForTopic, BriefVariant } from '@/utils/briefGenerator';
 import { 
   CheckCircle2, 
   Clock, 
@@ -52,8 +53,9 @@ import {
 } from 'lucide-react';
 
 interface ContentItem {
-  day: number;
-  week: number;
+  id?: string;
+  day: number | null;
+  week: number | null;
   type: 'Reel' | 'Carousel' | 'Review' | 'Educational' | 'Influencer' | 'Photo Post' | 'Case Study';
   topic: string;
   status: 'Draft' | 'Review' | 'Approved' | 'Scheduled' | 'Published';
@@ -68,6 +70,7 @@ interface ContentItem {
   publishDate?: string;
   thumbnailUrl?: string;
   priority?: 'Low' | 'Medium' | 'High';
+  sourceType?: string;
 }
 
 export default function ContentWorkspace() {
@@ -161,6 +164,31 @@ export default function ContentWorkspace() {
     setShootTasks(prev => prev.map(task => 
       task.id === taskId ? { ...task, checked: !task.checked } : task
     ));
+  };
+
+  const handleRegenerateScript = (variant: BriefVariant) => {
+    if (!selectedItem) return;
+    const brief = generateBriefForTopic(selectedItem.topic, selectedItem.details || '', selectedItem.hook || '', variant);
+    
+    // Update in items list
+    setItems(prev => prev.map(item => {
+      const match = selectedItem.id ? item.id === selectedItem.id : item.topic === selectedItem.topic;
+      if (match) {
+        const updated = {
+          ...item,
+          hook: brief.hook,
+          script: brief.script,
+          caption: brief.caption,
+          assets: brief.shotList
+        };
+        // Also update selected item
+        setSelectedItem(updated);
+        return updated;
+      }
+      return item;
+    }));
+
+    toast.success(`Brief regenerated using option: ${variant.toUpperCase()}!`);
   };
 
   const handleSendAiMessage = () => {
@@ -1392,6 +1420,24 @@ export default function ContentWorkspace() {
                   {/* SCRIPT TAB */}
                   {briefTab === 'script' && (
                     <>
+                      {/* One-click Regeneration Options */}
+                      <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-3.5 space-y-2">
+                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> One-Click AI Script Transformation
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(['hinglish', 'shorter', 'viral', 'professional', 'hindi', 'english'] as const).map(variant => (
+                            <button
+                              key={variant}
+                              onClick={() => handleRegenerateScript(variant)}
+                              className="px-2.5 py-1 bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-wider text-neutral-300 transition-all"
+                            >
+                              {variant}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       {selectedItem.script ? (
                         <div className="bg-[#070b16] border border-white/5 rounded-xl p-4">
                           <span className="text-[8px] font-black uppercase text-purple-400 tracking-wider">📝 Full Script / Slide Layout</span>
@@ -1469,6 +1515,33 @@ export default function ContentWorkspace() {
                           <p className="text-[10px] text-neutral-300 font-medium">Raw footage submitted within 48h of shoot</p>
                         </div>
                       )}
+
+                      {/* Submit Raw Video Footages */}
+                      <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-4 space-y-2.5">
+                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1">
+                          <Video className="w-3.5 h-3.5 text-cyan-400" /> Submit Raw Video Footage
+                        </span>
+                        <p className="text-[10px] text-neutral-400 font-medium leading-normal">
+                          Finished shooting? Submit your raw video footage here. We will edit, color grade, and render the final cut.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setItems(prev => prev.map(item => {
+                              const match = selectedItem.id ? item.id === selectedItem.id : item.topic === selectedItem.topic;
+                              if (match) {
+                                const updated = { ...item, status: 'Review' as const };
+                                setSelectedItem(updated);
+                                return updated;
+                              }
+                              return item;
+                            }));
+                            toast.success('Raw video footage submitted for editing! Status changed to Review.');
+                          }}
+                          className="w-full py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black rounded-lg transition-all uppercase tracking-wider flex items-center justify-center gap-1.5"
+                        >
+                          <Send className="w-3 h-3" /> Submit Footage for Editing
+                        </button>
+                      </div>
                     </>
                   )}
 

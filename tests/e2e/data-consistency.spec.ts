@@ -27,7 +27,7 @@ async function login(page: Page) {
   await gotoWithFallback(page, '/login');
   await page.setViewportSize({ width: 390, height: 844 });
 
-  await page.locator('input[type="email"]').first().fill(CREATOR.email);
+  await page.locator('input#identifier, input[type="email"]').first().fill(CREATOR.email);
   await page.locator('input[type="password"]').first().fill(CREATOR.password);
   await page.locator('button[type="submit"]').first().click();
 

@@ -7,6 +7,8 @@ import { ArrowLeft, Briefcase, MapPin, Clock, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+import { FAQSection } from '@/components/seo/FAQSection';
+
 interface JobOpening {
   id: string;
   title: string;
@@ -169,12 +171,41 @@ const Careers = () => {
                 
                 <Button asChild className="w-full md:w-auto">
                   <a href={`mailto:careers@creatorarmour.com?subject=Application for ${job.title}`}>
-                    Apply Now <ExternalLink className="h-4 w-4 ml-2" />
+                    Apply Now <ExternalLink className="h-4 w-4 mr-2" />
                   </a>
                 </Button>
               </Card>
             ))}
           </div>
+
+          <FAQSection 
+            title="Careers FAQs"
+            description="Got questions about working at Creator Armour? Find answers to common queries here."
+            className="px-0 py-8"
+            containerClassName="py-8 border-t border-border/50"
+            items={[
+              {
+                question: "What is the remote work policy at Creator Armour?",
+                answer: "We are a remote-first company. While we have hub locations in Bangalore, Mumbai, and Delhi, our team is distributed, and you can work from anywhere in India."
+              },
+              {
+                question: "What tech stack does the engineering team use?",
+                answer: "We build our platform using React, TypeScript, Node.js, and Supabase. We also work with Python/OpenAI for smart contract analysis and integration with payment gateways."
+              },
+              {
+                question: "Do you hire interns?",
+                answer: "Yes, we regularly hire interns for engineering, design, marketing, and content roles. Many of our internships transition into full-time roles based on performance."
+              },
+              {
+                question: "What is the interview process like?",
+                answer: "Our process typically has 3 stages: a brief introductory call (15-20 mins), a technical/role-specific assessment or task (which we respect your time on), and a final culture & alignment conversation with the founders."
+              },
+              {
+                question: "How does Creator Armour support professional growth?",
+                answer: "We support our team with learning resources, books, and courses. As an early-stage startup, you'll get direct ownership of critical features, giving you hands-on experience that would take years to acquire at larger organizations."
+              }
+            ]}
+          />
 
           <div className="space-y-4 p-6 bg-muted/50 rounded-lg">
             <h2 className="text-2xl font-bold text-foreground">Don't See a Role That Fits?</h2>
