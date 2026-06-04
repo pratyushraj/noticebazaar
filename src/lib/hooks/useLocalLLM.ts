@@ -7,7 +7,7 @@ type LLMProvider = 'ollama' | 'huggingface' | 'groq' | 'together' | 'openai' | '
 // Configuration - defaults to Groq (free, fast, requires free API key)
 // Hugging Face now requires API key, so Groq is the better free default
 const DEFAULT_PROVIDER: LLMProvider = (import.meta.env.VITE_LLM_PROVIDER as LLMProvider) || 'nvidia';
-const DEFAULT_MODEL = import.meta.env.VITE_LLM_MODEL || 'nvidia/llama-3.1-70b-instruct';
+const DEFAULT_MODEL = import.meta.env.VITE_LLM_MODEL || 'meta/llama-3.1-70b-instruct';
 
 // Provider endpoints
 const PROVIDER_ENDPOINTS: Record<LLMProvider, string> = {

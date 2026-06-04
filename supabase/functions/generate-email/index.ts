@@ -195,7 +195,7 @@ serve(async (req) => {
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: model || 'nvidia/llama-3.1-70b-instruct',
+          model: model || 'meta/llama-3.1-70b-instruct',
           messages: [{ role: 'user', content: prompt }],
           temperature,
           max_tokens: maxTokens,

@@ -10,7 +10,7 @@ export type BriefVariant = 'hinglish' | 'shorter' | 'viral' | 'professional' | '
 // ── AI Script Generator (NVIDIA) ─────────────────────────────────────────────
 
 const NVIDIA_API_KEY = import.meta.env.VITE_NVIDIA_API_KEY;
-const NVIDIA_MODEL   = 'nvidia/llama-3.1-nemotron-70b-instruct';
+const NVIDIA_MODEL   = 'meta/llama-3.1-70b-instruct';
 
 const VARIANT_STYLE: Record<BriefVariant, string> = {
   hinglish:     'Hinglish (mix of Hindi and English) — casual, relatable, local Indian tone',
