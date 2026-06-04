@@ -604,15 +604,56 @@ JSON structure:
     }
   };
 
-  // Deep-link helper to send details to ReelGenerator
-  const handleUseIdea = (idea: any, category: string) => {
-    const params = new URLSearchParams({
-      hook: idea.hook,
-      topic: idea.title || idea.topic || '',
-      format: idea.format,
-      category: category
-    });
-    navigate(`/reel-generator?${params.toString()}`);
+  // Clone for My Clinic function (Saves to Content Workspace and redirects to Studio/ReelGenerator)
+  const handleCloneForMyClinic = (idea: any, category: string) => {
+    try {
+      const savedItems = localStorage.getItem('ca_content_workspace_items');
+      let itemsList: any[] = [];
+      if (savedItems) {
+        itemsList = JSON.parse(savedItems);
+      }
+      
+      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
+
+      const clonedItem = {
+        id: crypto.randomUUID(),
+        day: null,
+        week: null,
+        type: 'Reel',
+        topic: topicTitle,
+        status: 'Draft',
+        details: idea.body || `Cloned proven viral idea from Dental Trend Finder category ${category}.`,
+        hook: idea.hook || '',
+        script: idea.body || '',
+        caption: idea.cta ? `🦷 ${idea.hook}\n\n${idea.cta} @your.dentist.patna` : '',
+        source: 'Dental Trend Finder (Cloned)',
+        sourceType: 'trend-finder',
+        sourceTopic: topicTitle,
+        industry: 'dental',
+        scheduledDate: null,
+        createdAt: Date.now()
+      };
+
+      itemsList.push(clonedItem);
+      localStorage.setItem('ca_content_workspace_items', JSON.stringify(itemsList));
+      
+      toast.success(`Cloned "${topicTitle}" to My Clinic! Opening in Studio...`);
+      
+      const params = new URLSearchParams({
+        hook: idea.hook || '',
+        topic: topicTitle,
+        format: idea.format || 'Talking Head',
+        category: category,
+        clonedId: clonedItem.id
+      });
+      
+      setTimeout(() => {
+        navigate(`/reel-generator?${params.toString()}`);
+      }, 800);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to clone idea for your clinic.');
+    }
   };
 
   // Save to Calendar function (Creates a standard ContentItem in localStorage - Day: null for drafts queue)
@@ -992,11 +1033,11 @@ JSON structure:
                         )}
                       </button>
                       <button
-                        onClick={() => handleUseIdea(idea, aiCategory)}
+                        onClick={() => handleCloneForMyClinic(idea, aiCategory)}
                         className="flex-1 min-w-[100px] p-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all"
                       >
                         <Video className="w-3.5 h-3.5 fill-black" />
-                        Open Studio
+                        Clone for My Clinic
                       </button>
                     </div>
                   </div>
@@ -1182,10 +1223,10 @@ JSON structure:
                           {isSavedToCalendar ? <Check className="w-4 h-4 text-emerald-400" /> : <Calendar className="w-4 h-4" />}
                         </button>
                         <button
-                          onClick={() => handleUseIdea(reel, reel.category)}
+                          onClick={() => handleCloneForMyClinic(reel, reel.category)}
                           className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-black rounded-xl flex items-center gap-1 transition-all"
                         >
-                          Use Hook <ChevronRight className="w-3 h-3 stroke-[2px]" />
+                          Clone for My Clinic <ChevronRight className="w-3 h-3 stroke-[2px]" />
                         </button>
                       </div>
                     </div>
