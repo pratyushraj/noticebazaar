@@ -102,6 +102,11 @@ export default function ContentWorkspace() {
   // Relative updated timestamp state
   const [lastUpdated, setLastUpdated] = useState('2 min ago');
 
+  // File upload state for submission
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   // ── June demo seed data (YOUR DENTIST, Patna) ────────────────────────────
   const DEFAULT_ITEMS: ContentItem[] = [];
 
@@ -1517,27 +1522,91 @@ export default function ContentWorkspace() {
                       )}
 
                       {/* Submit Raw Video Footages */}
-                      <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-4 space-y-2.5">
-                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1">
+                      <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-xl p-4 space-y-3">
+                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
                           <Video className="w-3.5 h-3.5 text-cyan-400" /> Submit Raw Video Footage
                         </span>
                         <p className="text-[10px] text-neutral-400 font-medium leading-normal">
-                          Finished shooting? Submit your raw video footage here. We will edit, color grade, and render the final cut.
+                          Finished shooting? Upload your raw video files here. We will handle editing, color grading, and rendering.
                         </p>
+
+                        {/* File Upload Drop Zone */}
+                        <div className="border border-dashed border-white/10 hover:border-cyan-500/30 rounded-lg p-4 text-center cursor-pointer transition-colors relative bg-black/30">
+                          <input
+                            type="file"
+                            accept="video/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setUploadedFile(file);
+                                setIsUploading(true);
+                                setUploadProgress(0);
+                                const interval = setInterval(() => {
+                                  setUploadProgress(prev => {
+                                    if (prev >= 100) {
+                                      clearInterval(interval);
+                                      setIsUploading(false);
+                                      toast.success(`"${file.name}" uploaded successfully! Ready for submission.`);
+                                      return 100;
+                                    }
+                                    return prev + 20;
+                                  });
+                                }, 200);
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                          />
+                          {!uploadedFile ? (
+                            <div className="space-y-1">
+                              <span className="text-xl block">📤</span>
+                              <span className="text-[10px] font-bold text-neutral-400 block">Click or Drag video to upload</span>
+                              <span className="text-[8px] text-neutral-600 block">MP4, MOV up to 150MB</span>
+                            </div>
+                          ) : (
+                            <div className="space-y-2 text-left">
+                              <div className="flex justify-between items-center text-[10px] font-bold text-cyan-400">
+                                <span className="truncate max-w-[80%]">📹 {uploadedFile.name}</span>
+                                <span>{(uploadedFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                              </div>
+                              {isUploading ? (
+                                <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                  <div className="bg-cyan-500 h-1.5 transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
+                                </div>
+                              ) : (
+                                <div className="flex justify-between items-center text-[8px] text-emerald-400 font-bold uppercase">
+                                  <span>✅ Ready for editor review</span>
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setUploadedFile(null); }}
+                                    className="text-[8px] text-red-400 hover:text-red-300 font-black font-sans uppercase tracking-wider"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
                         <button
+                          disabled={!uploadedFile || isUploading}
                           onClick={() => {
                             setItems(prev => prev.map(item => {
                               const match = selectedItem.id ? item.id === selectedItem.id : item.topic === selectedItem.topic;
                               if (match) {
-                                const updated = { ...item, status: 'Review' as const };
+                                const updated = { 
+                                  ...item, 
+                                  status: 'Review' as const,
+                                  assets: [...(item.assets || []), `Raw Video: ${uploadedFile?.name || 'footage.mp4'}`]
+                                };
                                 setSelectedItem(updated);
                                 return updated;
                               }
                               return item;
                             }));
+                            setUploadedFile(null);
                             toast.success('Raw video footage submitted for editing! Status changed to Review.');
                           }}
-                          className="w-full py-2 bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-black rounded-lg transition-all uppercase tracking-wider flex items-center justify-center gap-1.5"
+                          className="w-full py-2 bg-cyan-500 hover:bg-cyan-400 disabled:bg-neutral-800 disabled:text-neutral-500 text-black text-xs font-black rounded-lg transition-all uppercase tracking-wider flex items-center justify-center gap-1.5"
                         >
                           <Send className="w-3 h-3" /> Submit Footage for Editing
                         </button>
