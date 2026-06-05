@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
-import { generateBriefForTopic, generateScriptWithAI, BriefVariant } from '@/utils/briefGenerator';
+import { generateScriptWithAI, BriefVariant } from '@/utils/briefGenerator';
 import { 
   CheckCircle2, 
   Clock, 
@@ -176,31 +176,6 @@ export default function ContentWorkspace() {
     ));
   };
 
-  const handleRegenerateScript = (variant: BriefVariant) => {
-    if (!selectedItem) return;
-    const brief = generateBriefForTopic(selectedItem.topic, selectedItem.details || '', selectedItem.hook || '', variant);
-    
-    // Update in items list
-    setItems(prev => prev.map(item => {
-      const match = selectedItem.id ? item.id === selectedItem.id : item.topic === selectedItem.topic;
-      if (match) {
-        const updated = {
-          ...item,
-          hook: brief.hook,
-          script: brief.script,
-          caption: brief.caption,
-          assets: brief.shotList
-        };
-        // Also update selected item
-        setSelectedItem(updated);
-        return updated;
-      }
-      return item;
-    }));
-
-    toast.success(`Brief regenerated using option: ${variant.toUpperCase()}!`);
-  };
-
   const handleGenerateWithAI = async (variant: BriefVariant) => {
     if (!selectedItem) return;
     setIsAiGenerating(true);
@@ -223,13 +198,10 @@ export default function ContentWorkspace() {
         }));
         toast.success('AI script generated!', { id: 'ai-gen' });
       } else {
-        // Fall back to template
-        handleRegenerateScript(variant);
-        toast.warning('AI generation unavailable — used template instead', { id: 'ai-gen' });
+        toast.error('AI generation unavailable — please try again', { id: 'ai-gen' });
       }
     } catch {
-      handleRegenerateScript(variant);
-      toast.error('AI error — used template instead', { id: 'ai-gen' });
+      toast.error('AI generation error — please try again', { id: 'ai-gen' });
     } finally {
       setIsAiGenerating(false);
     }
@@ -1497,23 +1469,7 @@ export default function ContentWorkspace() {
                         </div>
                       </div>
 
-                      {/* One-click Template Options */}
-                      <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-3.5 space-y-2">
-                        <span className="text-[8px] font-black uppercase text-cyan-400 tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-cyan-400" /> Template Script (Instant)
-                        </span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {(['hinglish', 'shorter', 'viral', 'professional', 'hindi', 'english'] as const).map(variant => (
-                            <button
-                              key={variant}
-                              onClick={() => handleRegenerateScript(variant)}
-                              className="px-2.5 py-1 bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-wider text-neutral-300 transition-all"
-                            >
-                              {variant}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+
 
                       {selectedItem.script ? (
                         <div className="bg-[#070b16] border border-white/5 rounded-xl p-4 space-y-3">
