@@ -36,6 +36,12 @@ The Instagram carousels have been successfully created, previewed, and exported 
 - **File**: [og-before-after.png](file:///Users/pratyushraj/Desktop/creatorarmour/public/assets/og-before-after.png)
 - **Metadata**: Configured Open Graph (`og:image`) and Twitter Card (`twitter:image`) meta tags in the head section of `before_after_carousel.html`.
 
+### 6. Hosted JS Libraries Locally (Content Security Policy Fix)
+- **Bug**: Vercel's default Content Security Policy (CSP) headers blocked loading the external CDN links for `html2canvas.min.js` and `jszip.min.js`, causing ZIP generation to fail.
+- **Fix**:
+  - Downloaded `html2canvas.min.js` and `jszip.min.js` directly into `public/assets/js/`.
+  - Updated all three carousels and generator templates to load these files from relative paths (`/assets/js/`), serving them directly from `'self'` and satisfying CSP requirements.
+
 ## Validation & Output
 
 ### 1. Scaling Myth Carousel
