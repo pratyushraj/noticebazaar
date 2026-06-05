@@ -640,7 +640,13 @@
     <div class="ig-caption">
       <span class="caption-bold">yourdentist_patna</span>
       <span class="caption-text">🦷 Smile Transformations by Dr. Aryan Parmar! Swipe to see real before & after cases of direct composite veneers, spacing closures, and wedding smile makeovers at our Patliputra Colony clinic. Get your confidence back in just 60 minutes! ✨</span>
-      <div class="ig-timestamp">1 HOUR AGO</div>
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+        <div class="ig-timestamp" style="margin-top: 0;">1 HOUR AGO</div>
+        <button class="copy-caption-btn" style="background: none; border: none; color: #71717a; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)';" onmouseout="this.style.background='none';" onclick="copyCaptionText(this)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copy Caption</span>
+        </button>
+      </div>
     </div>
     </div>
     </div>
@@ -651,6 +657,22 @@
 
   <script>
     // Constants
+    function copyCaptionText(btn) {
+      const captionText = btn.closest('.ig-caption').querySelector('.caption-text').innerText;
+      navigator.clipboard.writeText(captionText).then(() => {
+        const span = btn.querySelector('span');
+        const originalText = span.innerText;
+        span.innerText = 'Copied!';
+        btn.style.color = '#22c55e';
+        setTimeout(() => {
+          span.innerText = originalText;
+          btn.style.color = '#71717a';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy caption: ', err);
+      });
+    }
+
     const totalSlides = 6;
     const slideWidth = 420;
     const primaryColor = '#18181B';
