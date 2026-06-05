@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Dentist Patna — Instagram Content Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark: #09090B;
+      --mid: #18181B;
+      --zinc: #71717A;
+      --light: #F4F4F5;
+      --border: #27272A;
+      --white: #ffffff;
+      --gradient: linear-gradient(135deg, #09090B 0%, #27272A 60%, #52525B 100%);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--dark);
+      font-family: 'Nunito Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 60px;
+      color: var(--white);
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 6px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--zinc);
+      margin-bottom: 20px;
+    }
+
+    .brand-badge span {
+      width: 6px; height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    .header h1 {
+      font-family: 'Lora', serif;
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: var(--zinc);
+      max-width: 420px;
+      line-height: 1.6;
+      margin: 0 auto;
+    }
+
+    /* Cards grid */
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .card {
+      background: var(--mid);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: #52525B;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    }
+
+    .card-thumb {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      background: #27272A;
+    }
+
+    .card-thumb-placeholder {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+
+    .card-body {
+      padding: 20px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-tag {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--zinc);
+    }
+
+    .card-title {
+      font-family: 'Lora', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--zinc);
+      line-height: 1.55;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .slide-count {
+      font-size: 12px;
+      color: var(--zinc);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .slide-count svg { opacity: 0.5; }
+
+    .open-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--white);
+      color: var(--dark);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 20px;
+      transition: background 0.15s;
+    }
+
+    .card:hover .open-btn {
+      background: #e4e4e7;
+    }
+
+    /* Card accent stripe */
+    .card.accent-1 { border-top: 2px solid #6366f1; }
+    .card.accent-2 { border-top: 2px solid #0ea5e9; }
+    .card.accent-3 { border-top: 2px solid #22c55e; }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      text-align: center;
+      font-size: 12px;
+      color: #3f3f46;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="brand-badge">
+      <span></span>
+      yourdentist_patna
+    </div>
+    <h1>Instagram Content Hub</h1>
+    <p>All 3 carousels for @yourdentist_patna. Click any card to preview and download the slide deck.</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Carousel 1 -->
+    <a class="card accent-1" href="/before_after_carousel.html">
+      <div class="card-thumb-placeholder" style="background: linear-gradient(135deg, #18181B 0%, #27272A 100%);">🦷</div>
+      <div class="card-body">
+        <span class="card-tag">Carousel 1 · Clinical Cases</span>
+        <h2 class="card-title">Before &amp; After Transformations</h2>
+        <p class="card-desc">Composite veneers, diastema/gap closures, and smile makeover results by Dr. Aryan Parmar — showcasing real patient cases.</p>
+      </div>
+      <div class="card-footer">
+        <span class="slide-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m8 21 4-4 4 4"/><path d="M12 17v4"/></svg>
+          6 Slides · 1080×1350px
+        </span>
+        <span class="open-btn">
+          Open
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </div>
+    </a>
+
+    <!-- Carousel 2 -->
+    <a class="card accent-2" href="/patients_carousel.html">
+      <div class="card-thumb-placeholder" style="background: linear-gradient(135deg, #0c1a2e 0%, #1e3a5f 100%);">😊</div>
+      <div class="card-body">
+        <span class="card-tag">Carousel 2 · Doctor &amp; Patients</span>
+        <h2 class="card-title">Dr. Aryan Parmar with Patients</h2>
+        <p class="card-desc">Behind-the-scenes of the clinic — Dr. Aryan with happy patients, kids, team-in-action shots, and warm patient journeys.</p>
+      </div>
+      <div class="card-footer">
+        <span class="slide-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m8 21 4-4 4 4"/><path d="M12 17v4"/></svg>
+          6 Slides · 1080×1350px
+        </span>
+        <span class="open-btn">
+          Open
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </div>
+    </a>
+
+    <!-- Carousel 3 -->
+    <a class="card accent-3" href="/carousel.html">
+      <div class="card-thumb-placeholder" style="background: linear-gradient(135deg, #052e16 0%, #14532d 100%);">❓</div>
+      <div class="card-body">
+        <span class="card-tag">Carousel 3 · Education &amp; Myth-Busting</span>
+        <h2 class="card-title">Does Scaling Loosen Teeth?</h2>
+        <p class="card-desc">A myth-busting educational carousel breaking down the truth about dental scaling — a common fear among patients in Patna.</p>
+      </div>
+      <div class="card-footer">
+        <span class="slide-count">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m8 21 4-4 4 4"/><path d="M12 17v4"/></svg>
+          7 Slides · 1080×1350px
+        </span>
+        <span class="open-btn">
+          Open
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    yourdentist_patna · New Patliputra Colony, Patna · All slides export-ready at 1080×1350px
+  </div>
+
+</body>
+</html>
