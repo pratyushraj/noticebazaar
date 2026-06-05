@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
-import { generateBriefForTopic } from '@/utils/briefGenerator';
+
 import { 
   Sparkles, 
   TrendingUp, 
@@ -615,9 +615,6 @@ JSON structure:
         itemsList = JSON.parse(savedItems);
       }
       
-      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
-      const brief = generateBriefForTopic(topicTitle, idea.body || '', idea.hook || '', 'hinglish');
-
       const clonedItem = {
         id: crypto.randomUUID(),
         day: null,
@@ -626,10 +623,10 @@ JSON structure:
         topic: topicTitle,
         status: 'Draft',
         details: idea.body || `Cloned proven viral idea from Dental Trend Finder category ${category}.`,
-        hook: brief.hook,
-        script: brief.script,
-        caption: brief.caption,
-        assets: brief.shotList,
+        hook: idea.hook || `Select a script style above to write the opening hook.`,
+        script: `No script generated yet. Please select an AI Script style above (like HINGLISH or VIRAL) to generate a custom dental script using NVIDIA AI.`,
+        caption: `No caption generated yet. Select an AI Script style above to generate.`,
+        assets: [],
         source: 'Dental Trend Finder (Cloned)',
         sourceType: 'trend-finder',
         sourceTopic: topicTitle,
@@ -661,9 +658,6 @@ JSON structure:
         itemsList = JSON.parse(savedItems);
       }
       
-      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
-      const brief = generateBriefForTopic(topicTitle, idea.body || '', idea.hook || '', 'hinglish');
-
       const newCalendarItem = {
         id: crypto.randomUUID(),
         day: null, // Draft Ideas Queue (does not auto-assign days)
@@ -672,10 +666,10 @@ JSON structure:
         topic: topicTitle,
         status: 'Draft',
         details: idea.body || `Proven viral idea from Dental Trend Finder category ${category}.`,
-        hook: brief.hook,
-        script: brief.script,
-        caption: brief.caption,
-        assets: brief.shotList,
+        hook: idea.hook || `Select a script style above to write the opening hook.`,
+        script: `No script generated yet. Please select an AI Script style above (like HINGLISH or VIRAL) to generate a custom dental script using NVIDIA AI.`,
+        caption: `No caption generated yet. Select an AI Script style above to generate.`,
+        assets: [],
         source: 'Dental Trend Finder',
         sourceType: 'trend-finder',
         sourceTopic: topicTitle,
