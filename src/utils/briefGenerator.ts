@@ -117,6 +117,63 @@ export async function generateScriptWithAI(
   }
 }
 
+/** Generate a chat response for the dental workspace via Supabase Edge Function → NVIDIA */
+export async function generateChatResponseWithAI(
+  userMessage: string,
+  doctorName = 'Dr. Aryan Parmar',
+  clinicName = 'YOUR DENTIST',
+  city = 'Patna',
+): Promise<string | null> {
+  if (!NVIDIA_API_KEY) {
+    console.error('[AI Chat] VITE_NVIDIA_API_KEY is not set');
+    return null;
+  }
+
+  const supabaseUrl     = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[AI Chat] Supabase env vars missing');
+    return null;
+  }
+
+  const systemPrompt = `You are a helpful and expert dental marketing AI Assistant. Keep your response extremely relevant to: ${doctorName} at ${clinicName} in ${city}.
+If the user asks for a script/reel/caption, generate a fresh and highly engaging one.
+Keep your response concise, professional, friendly, and structured. Use bullet points or markdown styling. Max 180 words.`;
+
+  const fullPrompt = `${systemPrompt}\n\nUser request: "${userMessage}"`;
+
+  try {
+    const res = await fetch(`${supabaseUrl}/functions/v1/generate-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({
+        prompt: fullPrompt,
+        provider: 'nvidia',
+        model: NVIDIA_MODEL,
+        apiKey: NVIDIA_API_KEY,
+        temperature: 0.7,
+        maxTokens: 600,
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error(`[AI Chat] Edge function HTTP ${res.status}:`, errBody);
+      return null;
+    }
+
+    const data = await res.json();
+    return data?.text || null;
+  } catch (err) {
+    console.error('[AI Chat] Error:', err);
+    return null;
+  }
+}
+
+
 
 
 const DENTAL_TEMPLATES: Record<string, Record<BriefVariant, GeneratedBrief>> = {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { toast } from 'sonner';
-import { generateScriptWithAI, BriefVariant } from '@/utils/briefGenerator';
+import { generateScriptWithAI, generateChatResponseWithAI, BriefVariant } from '@/utils/briefGenerator';
 import { 
   CheckCircle2, 
   Clock, 
@@ -207,7 +207,7 @@ export default function ContentWorkspace() {
     }
   };
 
-  const handleSendAiMessage = () => {
+  const handleSendAiMessage = async () => {
     if (!aiInput.trim()) return;
     const newMsg = { sender: 'user' as const, text: aiInput };
     setAiMessages(prev => [...prev, newMsg]);
@@ -215,24 +215,21 @@ export default function ContentWorkspace() {
     setAiInput('');
     setIsAiLoading(true);
 
-    setTimeout(() => {
-      let aiResponse = "Content Workspace active. Select a preset chip below for instant content templates.";
-      const query = userQuery.toLowerCase();
-      if (query.includes('reel') || query.includes('script')) {
-        aiResponse = "🎬 **Reel Script (YOUR DENTIST, Patna):**\n\n*Hook:* \"POV: You found a clinic in Patna that feels like a luxury lounge.\"\n*Script:* \"Scaling at YOUR DENTIST doesn't thin teeth. Dr. Aryan Parmar uses ultrasonic scaling vibrations to leave your natural enamel safe and clean. Schedule a scaling consult today in Patliputra Colony!\"";
-      } else if (query.includes('carousel') || query.includes('implant')) {
-        aiResponse = "Carousel outline loaded for Dr. Aryan:\n\n- Slide 1: Fixed Implant vs Removable Denture at YOUR DENTIST\n- Slide 2: Bone health preservation (Dr. Aryan's recommendation)\n- Slide 3: Durability comparison matrix\n- Slide 4: Painless treatment protocol map\n- Slide 5: Comment 'IMPLANT' for direct WhatsApp consult";
-      } else if (query.includes('caption') || query.includes('cleaning')) {
-        aiResponse = "Instagram caption draft for Dr. Aryan:\n\n\"Painless scaling matches aesthetic design. ✨ Ultrasound scaling clears plaque without enamel scratch. Consult Dr. Aryan Parmar at YOUR DENTIST, Patliputra Colony, Patna. 🦷\"";
-      } else if (query.includes('brief') || query.includes('influencer')) {
-        aiResponse = "Influencer Brief template:\n\n- **Clinic:** YOUR DENTIST, Patna\n- **Campaign:** Ultrasonic Clean Experience\n- **Creator deliverables:** 1 Reel + 3 Stories mapping painless session with Dr. Aryan Parmar.";
-      } else if (query.includes('testimonial') || query.includes('patient')) {
-        aiResponse = "Patient Testimonial graphic text block:\n\n- Main banner: \"Absolutely painless scaling and root canal!\"\n- Subtitle: Dr. Aryan Parmar, YOUR DENTIST Patna.";
-      }
-
+    try {
+      const response = await generateChatResponseWithAI(
+        userQuery,
+        'Dr. Aryan Parmar',
+        'YOUR DENTIST',
+        'Patna'
+      );
+      const aiResponse = response || "I'm sorry, I couldn't process that request right now. Please try again.";
       setAiMessages(prev => [...prev, { sender: 'ai', text: aiResponse }]);
+    } catch (err) {
+      console.error('[Chat Assistant Error]:', err);
+      setAiMessages(prev => [...prev, { sender: 'ai', text: "Error calling AI Assistant. Please check your network and try again." }]);
+    } finally {
       setIsAiLoading(false);
-    }, 1000);
+    }
   };
 
   const getStatusColor = (status: ContentItem['status']) => {
