@@ -26,6 +26,16 @@ The Instagram carousels have been successfully created, previewed, and exported 
   - Cleaned up regex replacements to dynamically generate 6 indicator dots and update the ZIP progress tracker text to show `Preparing slide 1/6...`.
   - Re-exported the slide PNG files using Playwright.
 
+### 4. Added "Copy Caption" Capability (All Carousels)
+- **Feature**: Added a "Copy Caption" action button next to the timestamp on all three carousels (`before_after_carousel.html`, `patients_carousel.html`, and `carousel.html`).
+- **Interactive States**: When clicked, the caption text is copied to the clipboard, and the button transitions to a green "Copied!" check state for 2 seconds.
+- **Persistence**: Embedded this capability inside the generator scripts so it remains active during future regenerations.
+
+### 5. Configured Rich Link Preview (Open Graph)
+- **Preview Image**: Generated a premium, custom 1200x630px card featuring high-contrast before/after smile transformations and logo branding.
+- **File**: [og-before-after.png](file:///Users/pratyushraj/Desktop/creatorarmour/public/assets/og-before-after.png)
+- **Metadata**: Configured Open Graph (`og:image`) and Twitter Card (`twitter:image`) meta tags in the head section of `before_after_carousel.html`.
+
 ## Validation & Output
 
 ### 1. Scaling Myth Carousel
