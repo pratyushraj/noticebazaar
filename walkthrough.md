@@ -1,4 +1,4 @@
-# Walkthrough - "Does Scaling Loosen Teeth?" Instagram Carousel
+# Walkthrough - "Does Scaling Loosen Teeth?" & "Before/After" Instagram Carousels
 
 The Instagram carousels have been successfully created, previewed, and exported into high-resolution PNG files.
 
@@ -19,6 +19,13 @@ The Instagram carousels have been successfully created, previewed, and exported 
   - [export_slides.js](file:///Users/pratyushraj/Desktop/creatorarmour/scratch/export_slides.js) (Scaling Myth)
   - [export_before_after.js](file:///Users/pratyushraj/Desktop/creatorarmour/scratch/export_before_after.js) (Before & After)
 
+### 3. Fixed the Black/Empty Slide Issue (Before & After Carousel)
+- **Bug**: The HTML file had `totalSlides = 7` and 7 navigation dots, but the track only contained 6 actual slides, resulting in a black 7th slide during swipe navigation and ZIP download.
+- **Fix**: 
+  - Modified the generator script `scratch/update_before_after.js` to change `totalSlides` to `6`.
+  - Cleaned up regex replacements to dynamically generate 6 indicator dots and update the ZIP progress tracker text to show `Preparing slide 1/6...`.
+  - Re-exported the slide PNG files using Playwright.
+
 ## Validation & Output
 
 ### 1. Scaling Myth Carousel
@@ -33,17 +40,15 @@ The Instagram carousels have been successfully created, previewed, and exported 
   - `slide_7.png` (CTA) - *Booking appointment message with location*
 
 ### 2. Before & After Transformations Carousel (Veneers & Spacing Closure)
-An additional 7-slide carousel has been successfully created using the doctor's actual clinical cases, patient photos, and clinic interiors:
 - **Interactive Preview Page**: [before_after_carousel.html](file:///Users/pratyushraj/Desktop/creatorarmour/public/before_after_carousel.html) (runs on `http://localhost:5173/before_after_carousel.html`)
 - **Exported Slide PNGs**: [before_after_slides/](file:///Users/pratyushraj/Desktop/creatorarmour/scratch/before_after_slides/)
 - **Visual Mapping of Slides**:
-  - `slide_1.png` (Hero) - *Chipped or Spaced Teeth? Real transformations by Dr. Aryan Parmar*
-  - `slide_2.png` (Composite Veneers case before/after) - *Uncropped vertical teeth transformation case centered on slide*
-  - `slide_3.png` (Smile Makeover Navratri quote) - *Pure-text festive smile makeover slide*
-  - `slide_4.png` (Smile Makeover Results) - *Cropped smile makeover case detailing teeth transformations*
-  - `slide_5.png` (Clinic interior operatory) - *High-end dual dental chair layout*
-  - `slide_6.png` (Doctor with happy patient) - *Smiles of Patliputra patient experience*
-  - `slide_7.png` (CTA page with Dr. Aryan Parmar lighted sign) - *Call to action and Patliputra clinic location*
+  - `slide_1.png` (Hero) - *Chipped or Spaced Teeth? Real smile transformations in under 60 minutes by Dr. Aryan Parmar.*
+  - `slide_2.png` (Direct Composite Veneers) - *Veneers Before & After comparison.*
+  - `slide_3.png` (Diastema/Gap Closure) - *Before & After gaps comparison.*
+  - `slide_4.png` (Modern Infrastructure) - *State-of-the-Art Care interior operatory.*
+  - `slide_5.png` (Happy Smiles) - *Smiles of Patliputra.*
+  - `slide_6.png` (CTA page with Doctor's custom logo) - *Call to action and Patliputra clinic location.*
 
 ### Image Specifications
 - **Dimensions**: Exactly `1080px` x `1350px` (standard Instagram 4:5 aspect ratio).
