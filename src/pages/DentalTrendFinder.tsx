@@ -615,6 +615,7 @@ JSON structure:
         itemsList = JSON.parse(savedItems);
       }
       
+      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
       const clonedItem = {
         id: crypto.randomUUID(),
         day: null,
@@ -658,6 +659,7 @@ JSON structure:
         itemsList = JSON.parse(savedItems);
       }
       
+      const topicTitle = idea.topic || idea.title || 'Untitled Dental Reel';
       const newCalendarItem = {
         id: crypto.randomUUID(),
         day: null, // Draft Ideas Queue (does not auto-assign days)
