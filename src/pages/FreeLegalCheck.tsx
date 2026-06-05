@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { FAQSchema } from '@/components/seo/SchemaMarkup';
+import { FAQSection } from '@/components/seo/FAQSection';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowDown, ShieldCheck, Users, Gavel, Zap, Clock, IndianRupee, Star, ArrowRight, FileText, Lock, AlertTriangle } from 'lucide-react';
@@ -49,35 +49,24 @@ const FreeLegalCheck = () => {
     </div>
   );
 
-  const FAQItem = ({ question, answer }: { question: string, answer: string }) => (
-    <div className="space-y-1">
-      <h4 className="font-semibold text-foreground flex items-center">
-        <Zap className="h-4 w-4 text-primary mr-2" /> {question}
-      </h4>
-      <p className="text-sm text-muted-foreground">{answer}</p>
-    </div>
-  );
-
-  // FAQ Schema Data
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [{
-      "@type": "Question",
-      "name": "What is a Legal Health Check?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "A Legal Health Check helps startups and SMEs identify compliance gaps, missed filings, and legal risks early."
-      }
-    }, {
-      "@type": "Question",
-      "name": "Is the Legal Health Check free?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. The Legal Health Check by Creator Armour is completely free for a limited time."
-      }
-    }]
-  };
+  const faqs = [
+    {
+      question: "What is a Free Influencer Contract Review?",
+      answer: "Our free contract review allows you to upload any brand collaboration agreement and receive an automated legal audit. We check for key red flags, such as missing payment timelines, excessive exclusivity clauses, or unlimited usage rights."
+    },
+    {
+      question: "How long does the contract review take?",
+      answer: "The initial automated check happens in under 5 minutes. If your contract requires advanced review, our legal advisors will review and deliver a detailed PDF report within 48 hours."
+    },
+    {
+      question: "Is my contract data safe and confidential?",
+      answer: "Yes, absolutely. We encrypt all uploaded documents and never share your contract terms or brand details with third parties. Your legal health check is strictly confidential."
+    },
+    {
+      question: "Will Creator Armour help me negotiate with the brand?",
+      answer: "While the free audit shows you the red flags, you can upgrade to Creator Armour Pro or Business to get legal templates, custom renegotiation drafts, or direct assistance from our expert team."
+    }
+  ];
 
   return (
     <div className="nb-screen-height bg-background">
@@ -87,8 +76,6 @@ const FreeLegalCheck = () => {
         keywords={['free influencer contract review', 'influencer contract review', 'brand deal contract analysis', 'contract red flags']}
         canonicalUrl="https://creatorarmour.com/free-legal-check"
       />
-
-      <FAQSchema faqs={faqSchema.mainEntity.map(q => ({ question: q.name, answer: q.acceptedAnswer.text }))} />
 
       {/* Header/Navigation */}
       <header className="sticky top-0 z-50 bg-card/90 backdrop-blur-sm border-b border-border">
@@ -207,6 +194,14 @@ const FreeLegalCheck = () => {
             500+ startups checked | 85% found gaps | ₹0 cost
           </div>
         </section>
+
+        {/* FAQ Section */}
+        <FAQSection
+          title="Common Questions"
+          description="Everything you need to know about our contract review and legal health check."
+          items={faqs}
+          containerClassName="border-t border-border mt-16"
+        />
       </main>
       
       {/* Footer (Minimal) */}

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SEOHead } from '@/components/seo/SEOHead';
-import { FAQSchema } from '@/components/seo/SchemaMarkup';
+import { FAQSection } from '@/components/seo/FAQSection';
 import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 // SoftwareApplication Schema Component
@@ -263,8 +263,6 @@ For the Creator: ____________________`;
         ]}
       />
 
-      <FAQSchema faqs={faqs} />
-
       <div className="min-h-dvh bg-[#091E16] text-[#E2E8F0] font-sans pb-20 overflow-x-hidden">
         {/* Custom Header Nav */}
         <nav className="border-b border-[#14532D]/30 bg-[#091E16]/80 backdrop-blur-md sticky top-0 z-50 h-16 flex items-center">
@@ -512,19 +510,12 @@ For the Creator: ____________________`;
           </div>
 
           {/* FAQs */}
-          <div className="mt-20 max-w-3xl mx-auto border-t border-[#14532D]/20 pt-16">
-            <h2 className="text-2xl font-black text-white text-center mb-10">Frequently Asked Questions</h2>
-            <div className="space-y-4">
-              {faqs.map((faq, index) => (
-                <Card key={index} className="bg-[#0D2E21] border-[#14532D]/30 rounded-[20px] overflow-hidden shadow-sm">
-                  <CardContent className="p-6">
-                    <h3 className="font-black text-[#4ADE80] text-[15px] mb-2">{faq.question}</h3>
-                    <p className="text-sm text-[#94A3B8] font-medium leading-relaxed">{faq.answer}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <FAQSection
+            title="Frequently Asked Questions"
+            description="Find answers to common questions about influencer contract templates and legal considerations."
+            items={faqs}
+            containerClassName="mt-20 border-t border-[#14532D]/20 pt-16"
+          />
 
         </div>
       </div>

@@ -54,7 +54,7 @@ const RateCalculatorDynamic = () => {
                 Programmatic data powered by Creator Armour Systems. Updated May 2026.
             </p>
         </div>
-        <RateCalculator initialPlatform={platform.toLowerCase()} initialCategory={niche.toLowerCase()} />
+        <RateCalculator key={`${platform.toLowerCase()}-${niche.toLowerCase()}`} initialPlatform={platform.toLowerCase()} initialCategory={niche.toLowerCase()} />
       </div>
     </div>
   );
