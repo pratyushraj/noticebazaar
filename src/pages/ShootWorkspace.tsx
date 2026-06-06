@@ -286,6 +286,33 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
       setVideos([...videos, newVideo]);
       toast.success('Video uploaded successfully!');
+
+      // Trigger server-side transcoding for MOV files to guarantee compatibility across all browsers/Chrome
+      if (file.name.toLowerCase().endsWith('.mov')) {
+        const transcodeToast = toast.loading('Processing & standardizing video container for compatibility...');
+        try {
+          const transcodeRes = await fetch(`${getApiBaseUrl()}/api/video-transcode`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ videoId: newVideo.id })
+          });
+          const transcodeData = await transcodeRes.json();
+          if (transcodeRes.ok && transcodeData.success) {
+            toast.dismiss(transcodeToast);
+            toast.success('Video processed successfully! Universal preview ready.');
+            // Update the local video state with the new MP4 filename
+            setVideos(prev => prev.map(v => v.id === newVideo.id ? { ...v, file_name: v.file_name.replace(/\.mov$/i, '.mp4') } : v));
+          } else {
+            toast.dismiss(transcodeToast);
+            toast.warning('Processing failed, but raw video is uploaded.');
+          }
+        } catch (transcodeErr) {
+          console.error('Transcode trigger error:', transcodeErr);
+          toast.dismiss(transcodeToast);
+        }
+      }
     } catch (error: any) {
       console.error('Upload error:', error);
       
@@ -1048,7 +1075,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
       {/* Video Modal (Google Photos style) */}
       {activeModalVideo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4">
           <div className="relative w-full max-w-4xl bg-neutral-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/40">
@@ -1061,14 +1088,14 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               </button>
             </div>
             
-            {/* Player Container */}
-            <div className="flex-1 aspect-video bg-black flex items-center justify-center p-6 relative">
-              {videoErrors[activeModalVideo.id] || (activeModalVideo.file_name.toLowerCase().endsWith('.mov') && !isSafariOrIOS()) ? (
+            {/* Player Container (Google Photos style fluid sizing) */}
+            <div className="flex-1 min-h-[50vh] md:min-h-[60vh] max-h-[75vh] bg-black flex items-center justify-center relative p-2 md:p-4 overflow-hidden">
+              {videoErrors[activeModalVideo.id] ? (
                 <div className="flex flex-col items-center justify-center p-6 text-center max-w-md">
-                  <Video className="w-12 h-12 text-amber-500 mb-3" />
-                  <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider">MOV Preview Unplayable on Chrome</h4>
+                  <Video className="w-12 h-12 text-amber-500 mb-3 animate-pulse" />
+                  <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider">Preview Unplayable on this Browser</h4>
                   <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
-                    This browser cannot play MOV containers natively. The video has been uploaded successfully. You can download and preview it locally, or view it on Safari/iOS.
+                    This video format or codec is not supported by your browser natively. The video has been uploaded successfully. You can download and preview it locally, or view it on a compatible device/browser.
                   </p>
                   <a 
                     href={activeModalVideo.file_url} 
@@ -1086,7 +1113,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                   playsInline 
                   preload="metadata" 
                   onError={() => setVideoErrors(prev => ({ ...prev, [activeModalVideo.id]: true }))}
-                  className="max-w-full max-h-full rounded-lg object-contain shadow-2xl" 
+                  className="max-w-full max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-2xl" 
                 />
               )}
             </div>
