@@ -592,12 +592,11 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
                   <div>
                     <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Video Caption</label>
-                    <input 
-                      type="text"
+                    <textarea
                       value={captionText}
                       onChange={(e) => setCaptionText(e.target.value)}
                       placeholder="e.g., Healthy smiles start here! Book consult today."
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full h-32 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
                     />
                   </div>
                   
@@ -607,7 +606,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       value={scriptText}
                       onChange={(e) => setScriptText(e.target.value)}
                       placeholder="Write the final script and directions here..."
-                      className="w-full h-32 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
+                      className="w-full h-64 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
                     />
                   </div>
 
@@ -752,12 +751,11 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
                   <div>
                     <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Caption</label>
-                    <input 
-                      type="text"
+                    <textarea
                       value={creatorCaptionText}
                       onChange={(e) => setCreatorCaptionText(e.target.value)}
                       placeholder="e.g., Alternative dental vlog caption idea!"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full h-32 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
                     />
                   </div>
                   
@@ -767,7 +765,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       value={creatorScriptText}
                       onChange={(e) => setCreatorScriptText(e.target.value)}
                       placeholder="Suggest video captions or script ideas here..."
-                      className="w-full h-32 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
+                      className="w-full h-64 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
                     />
                   </div>
 
