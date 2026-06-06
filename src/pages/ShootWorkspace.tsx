@@ -27,6 +27,14 @@ interface ShootWorkspaceProps {
   roleOverride?: string;
 }
 
+const isSafariOrIOS = () => {
+  const ua = navigator.userAgent.toLowerCase();
+  const isChrome = ua.includes('chrome') || ua.includes('crios');
+  const isSafari = ua.includes('safari') && !isChrome;
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  return isSafari || isIOS;
+};
+
 export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorkspaceProps = {}) {
   const { id: routeId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -433,7 +441,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       {catVideos.map(video => (
                         <div key={video.id} className={`bg-[#090d16] border rounded-xl overflow-hidden group ${video.is_selected ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/[0.06]'}`}>
                           <div className="aspect-video bg-black relative flex items-center justify-center w-full h-full">
-                            {videoErrors[video.id] ? (
+                            {videoErrors[video.id] || (video.file_name.toLowerCase().endsWith('.mov') && !isSafariOrIOS()) ? (
                               <div className="flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-neutral-950 to-neutral-900 absolute inset-0 w-full h-full">
                                 <Video className="w-8 h-8 text-amber-500 mb-2 opacity-80" />
                                 <p className="text-[11px] font-black uppercase tracking-wider text-neutral-300">MOV Preview Unplayable</p>
