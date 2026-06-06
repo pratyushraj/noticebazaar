@@ -10,6 +10,7 @@ export default function CreateShootWorkspace() {
   const [title, setTitle] = useState('');
   const [songOption, setSongOption] = useState('');
   const [hookOption, setHookOption] = useState('');
+  const [hookOption2, setHookOption2] = useState('');
   const [loading, setLoading] = useState(false);
   const [createdUrl, setCreatedUrl] = useState('');
   const navigate = useNavigate();
@@ -28,7 +29,8 @@ export default function CreateShootWorkspace() {
         .insert({ 
           title: title.trim(), 
           song_option: songOption.trim(),
-          hook_option: hookOption.trim()
+          hook_option: hookOption.trim(),
+          hook_option_2: hookOption2.trim()
         })
         .select()
         .single();
@@ -44,7 +46,7 @@ export default function CreateShootWorkspace() {
       // Fallback for demo without migration
       if (error.code === '42P01') {
         const fakeId = 'demo-workspace-id';
-        const url = `${window.location.origin}/shoot-workspace/${fakeId}?song=${encodeURIComponent(songOption.trim())}&hook=${encodeURIComponent(hookOption.trim())}`;
+        const url = `${window.location.origin}/shoot-workspace/${fakeId}?song=${encodeURIComponent(songOption.trim())}&hook=${encodeURIComponent(hookOption.trim())}&hook2=${encodeURIComponent(hookOption2.trim())}`;
         setCreatedUrl(url);
         toast.info('Using local mock workspace since DB is not migrated.');
       } else {
@@ -97,12 +99,23 @@ export default function CreateShootWorkspace() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-1.5">Video Hook Choice (Optional)</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-1.5">Video Hook Option 1 (Optional)</label>
               <input 
                 type="text" 
                 value={hookOption}
                 onChange={(e) => setHookOption(e.target.value)}
-                placeholder="e.g., Did you know scaling doesn't loosen teeth?, Stop doing this!"
+                placeholder="e.g., Did you know scaling doesn't loosen teeth?"
+                className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-1.5">Video Hook Option 2 (Optional)</label>
+              <input 
+                type="text" 
+                value={hookOption2}
+                onChange={(e) => setHookOption2(e.target.value)}
+                placeholder="e.g., Stop doing this to your teeth!"
                 className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
               />
             </div>
