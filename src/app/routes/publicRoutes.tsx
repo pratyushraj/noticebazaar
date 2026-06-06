@@ -47,6 +47,8 @@ const BarterCollabPage = lazy(() => import("@/pages/BarterCollabPage"));
 const AutoplayDirectory = lazy(() => import("@/pages/AutoplayDirectory"));
 const ReelGenerator = lazy(() => import("@/pages/ReelGenerator"));
 const DentalTrendFinder = lazy(() => import("@/pages/DentalTrendFinder"));
+const ShootWorkspace = lazy(() => import("@/pages/ShootWorkspace"));
+const CreateShootWorkspace = lazy(() => import("@/pages/CreateShootWorkspace"));
 
 
 export const PublicRoutes = () => (
@@ -111,6 +113,10 @@ export const PublicRoutes = () => (
     <Route path="/dentist-deck" element={<Navigate to="/dentist-proposal" replace />} />
     <Route path="/dental-trends" element={<LazyRoute><DentalTrendFinder /></LazyRoute>} />
     <Route path="/dentist-trends" element={<Navigate to="/dental-trends" replace />} />
+    <Route path="/shoot-workspace/new" element={<LazyRoute><CreateShootWorkspace /></LazyRoute>} />
+    <Route path="/shoot-workspace/:id" element={<LazyRoute><ShootWorkspace /></LazyRoute>} />
+    <Route path="/patliputra/shoot" element={<LazyRoute><ShootWorkspace idOverride="126fc6ff-e1e4-4d43-b4dc-9fb45f077dde" roleOverride="influencer" /></LazyRoute>} />
+    <Route path="/patliputra/review" element={<LazyRoute><ShootWorkspace idOverride="126fc6ff-e1e4-4d43-b4dc-9fb45f077dde" roleOverride="dentist" /></LazyRoute>} />
     <Route path="/calculator/:platform/:niche" element={<LazyRoute><RateCalculatorDynamic /></LazyRoute>} />
     <Route path="/creator/:username" element={<LegacyCreatorProfileRedirect />} />
     <Route path="/settings" element={<Navigate to="/creator-profile" replace />} />
