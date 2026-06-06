@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Upload, Play, CheckCircle, Video, FileText, Share2, Loader2, X } from 'lucide-react';
+import { Upload, Play, CheckCircle, Video, FileText, Share2, Loader2, X, Trash2 } from 'lucide-react';
 import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface ShootVideo {
@@ -337,6 +337,47 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
     }
   };
 
+  const deleteVideo = async (video: ShootVideo) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${video.file_name}"?`);
+    if (!confirmDelete) return;
+
+    try {
+      // 1. Delete from DB
+      const { error: dbError } = await supabase
+        .from('shoot_videos')
+        .delete()
+        .eq('id', video.id);
+
+      if (dbError) throw dbError;
+
+      // 2. Delete from Storage (ignore errors since delete policy might restrict public delete)
+      try {
+        const urlParts = video.file_url.split('/creator-assets/');
+        if (urlParts.length >= 2) {
+          const storagePath = urlParts[1];
+          await supabase.storage
+            .from('creator-assets')
+            .remove([storagePath]);
+        }
+      } catch (storageErr) {
+        console.warn('Storage cleanup failed (ignoring):', storageErr);
+      }
+
+      setVideos(prev => prev.filter(v => v.id !== video.id));
+      toast.success('Video deleted successfully.');
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      
+      // Fallback for mock/local memory state deletion
+      if (error.message?.includes('fetch') || error.code === '42P01') {
+        setVideos(prev => prev.filter(v => v.id !== video.id));
+        toast.info('Deleted from local mock memory.');
+      } else {
+        toast.error('Failed to delete video');
+      }
+    }
+  };
+
   const toggleVideoSelection = async (videoId: string, currentStatus: boolean) => {
     try {
       const { error } = await supabase
@@ -573,13 +614,28 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                               </div>
                             )}
                           </div>
-                          <div className="p-3 flex justify-between items-center">
-                            <p className="text-xs font-mono truncate text-neutral-300 w-3/4">{video.file_name}</p>
+                          <div className="p-3 flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteVideo(video);
+                                }}
+                                className="text-neutral-500 hover:text-rose-500 p-1 rounded hover:bg-white/5 transition-colors shrink-0"
+                                title="Delete video"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                              <p className="text-xs font-mono truncate text-neutral-300">{video.file_name}</p>
+                            </div>
                             
                             {role === 'dentist' && (
                               <button 
-                                onClick={() => toggleVideoSelection(video.id, video.is_selected)}
-                                className={`text-[10px] px-2.5 py-1 rounded font-black uppercase transition-all ${video.is_selected ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleVideoSelection(video.id, video.is_selected);
+                                }}
+                                className={`text-[10px] px-2.5 py-1 rounded font-black uppercase transition-all shrink-0 ${video.is_selected ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'}`}
                               >
                                 {video.is_selected ? 'Deselect' : 'Select'}
                               </button>
