@@ -4,6 +4,7 @@ import { SEOHead } from '@/components/seo/SEOHead';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Upload, Play, CheckCircle, Video, FileText, Share2, Loader2, X } from 'lucide-react';
+import { getApiBaseUrl } from '@/lib/utils/api';
 
 interface ShootVideo {
   id: string;
@@ -40,8 +41,10 @@ const VideoThumbnail = ({ src, fileName }: { src: string; fileName: string }) =>
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    // If it's a MOV file on a non-Safari browser, request a thumbnail from our backend API proxy (using FFmpeg)
     if (fileName.toLowerCase().endsWith('.mov') && !isSafariOrIOS()) {
-      setFailed(true);
+      const apiUrl = `${getApiBaseUrl()}/api/video-thumbnail?url=${encodeURIComponent(src)}`;
+      setThumbnail(apiUrl);
       return;
     }
 
@@ -66,12 +69,16 @@ const VideoThumbnail = ({ src, fileName }: { src: string; fileName: string }) =>
         }
       } catch (err) {
         console.warn('Failed to extract video thumbnail:', err);
-        setFailed(true);
+        // Fallback to server-side extraction
+        const apiUrl = `${getApiBaseUrl()}/api/video-thumbnail?url=${encodeURIComponent(src)}`;
+        setThumbnail(apiUrl);
       }
     };
 
     const handleError = () => {
-      setFailed(true);
+      // Fallback to server-side extraction
+      const apiUrl = `${getApiBaseUrl()}/api/video-thumbnail?url=${encodeURIComponent(src)}`;
+      setThumbnail(apiUrl);
     };
 
     video.addEventListener('seeked', handleSeeked);
@@ -101,7 +108,17 @@ const VideoThumbnail = ({ src, fileName }: { src: string; fileName: string }) =>
     );
   }
 
-  return <img src={thumbnail} alt="Video thumbnail" className="w-full h-full object-cover" />;
+  return (
+    <img 
+      src={thumbnail} 
+      alt="Video thumbnail" 
+      className="w-full h-full object-cover" 
+      onError={() => {
+        // If server-side generation fails (e.g. backend down), trigger textual fallback card
+        setFailed(true);
+      }}
+    />
+  );
 };
 
 export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorkspaceProps = {}) {

@@ -83,6 +83,11 @@ import { authMiddleware } from './middleware/auth';
 import { rateLimitMiddleware } from './middleware/rateLimit';
 import { errorHandler } from './middleware/errorHandler';
 
+import { exec } from 'child_process';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+
 const app = express();
 const PORT = process.env.PORT || 3001; // Fly.io uses 8080, but we keep 3001 for local dev
 
@@ -373,6 +378,40 @@ app.use('/api/creators', creatorsRouter); // Public creator directory routes
 app.use('/api/shipping', shippingRouter); // Public shipping update (brand, no auth)
 app.use('/api/cron', cronDealRemindersRouter); // Cron: deal reminders (protected by CRON_SECRET in route)
 app.use('/api/auth', authRouter); // Auth resolution routes (public)
+
+// Public route for video thumbnail extraction using FFmpeg
+app.get('/api/video-thumbnail', async (req: express.Request, res: express.Response) => {
+  try {
+    const videoUrl = req.query.url as string;
+    if (!videoUrl) {
+      return res.status(400).json({ error: 'url parameter is required' });
+    }
+
+    const tempImagePath = path.join(os.tmpdir(), `thumb_${Math.random().toString(36).substring(7)}.jpg`);
+
+    // Run ffmpeg directly on the URL to extract a frame at 0.5 seconds
+    const ffmpegCmd = `ffmpeg -ss 0.5 -i "${videoUrl}" -vframes 1 -q:v 2 -f image2 -y "${tempImagePath}"`;
+
+    exec(ffmpegCmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error('[Thumbnail Generator] ffmpeg error:', error.message);
+        return res.status(500).json({ error: 'Failed to extract thumbnail' });
+      }
+
+      res.sendFile(tempImagePath, () => {
+        // Clean up the temp image file after sending
+        try {
+          fs.unlinkSync(tempImagePath);
+        } catch (e) {
+          console.error('[Thumbnail Generator] cleanup error:', e);
+        }
+      });
+    });
+  } catch (err: any) {
+    console.error('[Thumbnail Generator] catch error:', err?.message || err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // API Routes (protected)
 app.use('/api/brand-reply-tokens', authMiddleware, rateLimitMiddleware, brandReplyTokensRouter);
