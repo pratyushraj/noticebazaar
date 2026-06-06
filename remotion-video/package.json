@@ -1,0 +1,19 @@
+{
+  "name": "remotion-video",
+  "version": "1.0.0",
+  "description": "Remotion project to convert carousels to video reels",
+  "type": "module",
+  "scripts": {
+    "start": "remotion preview src/index.tsx",
+    "build:scaling": "remotion render src/index.tsx ScalingReel out/scaling_reel.mp4",
+    "build:before_after": "remotion render src/index.tsx BeforeAfterReel out/before_after_reel.mp4"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.190"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.190"
+  }
+}
