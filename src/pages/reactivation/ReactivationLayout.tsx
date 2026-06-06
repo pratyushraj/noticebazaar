@@ -11,6 +11,7 @@ import {
   Zap,
   Zap as ZapIcon,
   MessageCircle,
+  Star,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -67,6 +68,12 @@ const NAV_ITEMS: NavItem[] = [
     path: '/reactivation/automations',
     icon: Zap,
   },
+  {
+    label: 'Google Reviews',
+    path: '/reactivation/reviews',
+    icon: Star,
+    badge: 'AI',
+  },
 ];
 
 // ─── Page title map ───────────────────────────────────────────────────────────
@@ -79,6 +86,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/reactivation/campaigns': 'Campaigns',
   '/reactivation/analytics': 'Analytics',
   '/reactivation/automations': 'Automations',
+  '/reactivation/reviews': 'Google Reviews',
 };
 
 // ─── Sidebar Nav Item ─────────────────────────────────────────────────────────

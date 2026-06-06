@@ -12,6 +12,7 @@ const ReactivationSegments = lazy(() => import('@/pages/reactivation/Reactivatio
 const ReactivationCampaigns = lazy(() => import('@/pages/reactivation/ReactivationCampaigns'));
 const ReactivationAnalytics = lazy(() => import('@/pages/reactivation/ReactivationAnalytics'));
 const ReactivationAutomations = lazy(() => import('@/pages/reactivation/ReactivationAutomations'));
+const ReactivationReviews = lazy(() => import('@/pages/reactivation/ReactivationReviews'));
 
 // ─── Route definitions ────────────────────────────────────────────────────────
 
@@ -83,6 +84,16 @@ export const ReactivationRoutes = () => (
         <LazyRoute>
           <ReactivationLayout>
             <ReactivationAutomations />
+          </ReactivationLayout>
+        </LazyRoute>
+      }
+    />
+    <Route
+      path="/reactivation/reviews"
+      element={
+        <LazyRoute>
+          <ReactivationLayout>
+            <ReactivationReviews />
           </ReactivationLayout>
         </LazyRoute>
       }
