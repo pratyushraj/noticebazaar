@@ -2,13 +2,13 @@ import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } fr
 import React from 'react';
 
 // Import slides directly
-import slide1 from '../../scratch/slides/slide_1.png';
-import slide2 from '../../scratch/slides/slide_2.png';
-import slide3 from '../../scratch/slides/slide_3.png';
-import slide4 from '../../scratch/slides/slide_4.png';
-import slide5 from '../../scratch/slides/slide_5.png';
-import slide6 from '../../scratch/slides/slide_6.png';
-import slide7 from '../../scratch/slides/slide_7.png';
+import slide1 from './slides/slide_1.png';
+import slide2 from './slides/slide_2.png';
+import slide3 from './slides/slide_3.png';
+import slide4 from './slides/slide_4.png';
+import slide5 from './slides/slide_5.png';
+import slide6 from './slides/slide_6.png';
+import slide7 from './slides/slide_7.png';
 
 const SLIDES = [slide1, slide2, slide3, slide4, slide5, slide6, slide7];
 const SLIDE_DURATION = 90; // 90 frames = 3 seconds at 30fps
