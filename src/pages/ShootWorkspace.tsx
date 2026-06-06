@@ -150,14 +150,19 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
     setUploading(true);
     const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileExt = file.name.split('.').pop()?.toLowerCase();
+    const normalizedExt = (fileExt === 'mov' || fileExt === 'quicktime') ? 'mp4' : fileExt;
+    const fileName = `${Math.random()}.${normalizedExt}`;
     const filePath = `shoot-assets/${workspace.id}/${fileName}`;
 
     try {
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          contentType: 'video/mp4',
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 

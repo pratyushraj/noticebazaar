@@ -49,9 +49,10 @@ export const DiscoveryVideoUpload: React.FC<DiscoveryVideoUploadProps> = ({
         setUploadProgress(10);
 
         try {
-            const fileExt = file.name.split('.').pop();
+            const fileExt = file.name.split('.').pop()?.toLowerCase();
+            const normalizedExt = (fileExt === 'mov' || fileExt === 'quicktime') ? 'mp4' : fileExt;
             const slotName = selectedSlot === 'primary' ? 'hero' : `sample-${selectedSlot}`;
-            const filePath = `${userId}/videos/${slotName}_${Date.now()}.${fileExt}`;
+            const filePath = `${userId}/videos/${slotName}_${Date.now()}.${normalizedExt}`;
 
             // Upload
             setUploadProgress(30);
@@ -59,6 +60,7 @@ export const DiscoveryVideoUpload: React.FC<DiscoveryVideoUploadProps> = ({
                 .from('creator-assets')
                 .upload(filePath, file, {
                     cacheControl: '3600',
+                    contentType: 'video/mp4',
                     upsert: true
                 });
 
