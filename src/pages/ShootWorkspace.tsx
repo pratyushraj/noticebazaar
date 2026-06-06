@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Upload, Play, CheckCircle, Video, FileText, Share2, Loader2 } from 'lucide-react';
+import { Upload, Play, CheckCircle, Video, FileText, Share2, Loader2, X } from 'lucide-react';
 
 interface ShootVideo {
   id: string;
@@ -35,6 +35,75 @@ const isSafariOrIOS = () => {
   return isSafari || isIOS;
 };
 
+const VideoThumbnail = ({ src, fileName }: { src: string; fileName: string }) => {
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    if (fileName.toLowerCase().endsWith('.mov') && !isSafariOrIOS()) {
+      setFailed(true);
+      return;
+    }
+
+    const video = document.createElement('video');
+    video.src = src;
+    video.crossOrigin = 'anonymous';
+    video.preload = 'metadata';
+    video.currentTime = 0.5;
+    video.muted = true;
+    video.playsInline = true;
+
+    const handleSeeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 320;
+        canvas.height = video.videoHeight || 180;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL('image/jpeg');
+          setThumbnail(dataUrl);
+        }
+      } catch (err) {
+        console.warn('Failed to extract video thumbnail:', err);
+        setFailed(true);
+      }
+    };
+
+    const handleError = () => {
+      setFailed(true);
+    };
+
+    video.addEventListener('seeked', handleSeeked);
+    video.addEventListener('error', handleError);
+
+    return () => {
+      video.removeEventListener('seeked', handleSeeked);
+      video.removeEventListener('error', handleError);
+    };
+  }, [src, fileName]);
+
+  if (failed) {
+    return (
+      <div className="flex flex-col items-center justify-center bg-gradient-to-b from-neutral-900 to-neutral-950 w-full h-full text-center p-3">
+        <Video className="w-6 h-6 text-amber-500 mb-1 opacity-70" />
+        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">MOV Format</span>
+        <span className="text-[8px] text-neutral-600 mt-0.5">Click to play/download</span>
+      </div>
+    );
+  }
+
+  if (!thumbnail) {
+    return (
+      <div className="flex items-center justify-center bg-neutral-900 w-full h-full">
+        <Loader2 className="w-5 h-5 animate-spin text-neutral-600" />
+      </div>
+    );
+  }
+
+  return <img src={thumbnail} alt="Video thumbnail" className="w-full h-full object-cover" />;
+};
+
 export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorkspaceProps = {}) {
   const { id: routeId } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -45,6 +114,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
   const [workspace, setWorkspace] = useState<any>(null);
   const [videos, setVideos] = useState<ShootVideo[]>([]);
   const [videoErrors, setVideoErrors] = useState<Record<string, boolean>>({});
+  const [activeModalVideo, setActiveModalVideo] = useState<ShootVideo | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [scriptText, setScriptText] = useState('');
@@ -440,25 +510,19 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {catVideos.map(video => (
                         <div key={video.id} className={`bg-[#090d16] border rounded-xl overflow-hidden group ${video.is_selected ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/[0.06]'}`}>
-                          <div className="aspect-video bg-black relative flex items-center justify-center w-full h-full">
-                            {videoErrors[video.id] || (video.file_name.toLowerCase().endsWith('.mov') && !isSafariOrIOS()) ? (
-                              <div className="flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-neutral-950 to-neutral-900 absolute inset-0 w-full h-full">
-                                <Video className="w-8 h-8 text-amber-500 mb-2 opacity-80" />
-                                <p className="text-[11px] font-black uppercase tracking-wider text-neutral-300">MOV Preview Unplayable</p>
-                                <p className="text-[9px] text-neutral-500 mt-1 max-w-[220px] leading-normal">
-                                  Chrome/Windows cannot play MOV. File uploaded successfully and works on Safari/iOS.
-                                </p>
+                          <div 
+                            className="aspect-video bg-black relative flex items-center justify-center w-full h-full cursor-pointer overflow-hidden group/thumb"
+                            onClick={() => setActiveModalVideo(video)}
+                          >
+                            <VideoThumbnail src={video.file_url} fileName={video.file_name} />
+                            
+                            {/* Hover overlay with play button */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center transition-all duration-200">
+                              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white scale-90 group-hover/thumb:scale-100 transition-all duration-250 hover:bg-white/30">
+                                <Play className="w-6 h-6 fill-white text-white ml-0.5" />
                               </div>
-                            ) : (
-                              <video 
-                                src={video.file_url} 
-                                controls 
-                                playsInline 
-                                preload="metadata" 
-                                onError={() => setVideoErrors(prev => ({ ...prev, [video.id]: true }))}
-                                className="max-w-full max-h-full object-contain" 
-                              />
-                            )}
+                            </div>
+
                             {video.is_selected && (
                               <div className="absolute top-2 right-2 bg-emerald-500 text-black px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg z-10">
                                 <CheckCircle className="w-3 h-3" /> Selected
@@ -964,6 +1028,54 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           </div>
         </section>
       </main>
+
+      {/* Video Modal (Google Photos style) */}
+      {activeModalVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+          <div className="relative w-full max-w-4xl bg-neutral-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/40">
+              <h3 className="text-sm font-bold truncate text-neutral-200">{activeModalVideo.file_name}</h3>
+              <button 
+                onClick={() => setActiveModalVideo(null)} 
+                className="p-1 bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Player Container */}
+            <div className="flex-1 aspect-video bg-black flex items-center justify-center p-6 relative">
+              {videoErrors[activeModalVideo.id] || (activeModalVideo.file_name.toLowerCase().endsWith('.mov') && !isSafariOrIOS()) ? (
+                <div className="flex flex-col items-center justify-center p-6 text-center max-w-md">
+                  <Video className="w-12 h-12 text-amber-500 mb-3" />
+                  <h4 className="text-sm font-bold text-neutral-200 uppercase tracking-wider">MOV Preview Unplayable on Chrome</h4>
+                  <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+                    This browser cannot play MOV containers natively. The video has been uploaded successfully. You can download and preview it locally, or view it on Safari/iOS.
+                  </p>
+                  <a 
+                    href={activeModalVideo.file_url} 
+                    download={activeModalVideo.file_name}
+                    className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold uppercase transition-all shadow-lg shadow-indigo-600/20"
+                  >
+                    Download Video
+                  </a>
+                </div>
+              ) : (
+                <video 
+                  src={activeModalVideo.file_url} 
+                  controls 
+                  autoPlay 
+                  playsInline 
+                  preload="metadata" 
+                  onError={() => setVideoErrors(prev => ({ ...prev, [activeModalVideo.id]: true }))}
+                  className="max-w-full max-h-full rounded-lg object-contain shadow-2xl" 
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
