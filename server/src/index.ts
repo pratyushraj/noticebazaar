@@ -8,7 +8,10 @@ import dotenv from 'dotenv';
 // In Vercel, environment variables are already set, so dotenv is only needed for local dev
 // Try to load .env files, but don't fail if they don't exist (Vercel provides env vars directly)
 import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import path, { dirname, resolve } from 'path';
+import { exec } from 'child_process';
+import fs from 'fs';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -416,6 +419,135 @@ app.use('/api/cron', cronInstagramReelsSyncRouter); // Cron: Instagram Reels cra
 app.use('/api/og', ogRouter); // Public OG bot scraper routes
 app.use('/api/bot', botRouter); // OpenClaw bot access to admin operations
 app.use('/api/collab-action', collabActionRouter); // Public collab action routes (accept/decline via token)
+
+// Public route for video thumbnail extraction using FFmpeg
+app.get('/api/video-thumbnail', async (req: express.Request, res: express.Response) => {
+  try {
+    const videoUrl = req.query.url as string;
+    if (!videoUrl) {
+      return res.status(400).json({ error: 'url parameter is required' });
+    }
+
+    const tempImagePath = path.join(os.tmpdir(), `thumb_${Math.random().toString(36).substring(7)}.jpg`);
+
+    // Run ffmpeg directly on the URL to extract a frame at 0.5 seconds
+    const ffmpegCmd = `ffmpeg -ss 0.5 -i "${videoUrl}" -vframes 1 -q:v 2 -f image2 -y "${tempImagePath}"`;
+
+    exec(ffmpegCmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error('[Thumbnail Generator] ffmpeg error:', error.message);
+        return res.status(500).json({ error: 'Failed to extract thumbnail' });
+      }
+
+      res.sendFile(tempImagePath, () => {
+        // Clean up the temp image file after sending
+        try {
+          fs.unlinkSync(tempImagePath);
+        } catch (e) {
+          console.error('[Thumbnail Generator] cleanup error:', e);
+        }
+      });
+    });
+  } catch (err: any) {
+    console.error('[Thumbnail Generator] catch error:', err?.message || err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Public route for transcoding uploaded MOV videos to standard H.264 MP4
+app.post('/api/video-transcode', async (req: express.Request, res: express.Response) => {
+  try {
+    const { videoId } = req.body;
+    if (!videoId) {
+      return res.status(400).json({ error: 'videoId is required' });
+    }
+
+    // 1. Get video record from DB
+    const { data: video, error: fetchError } = await supabase
+      .from('shoot_videos')
+      .select('*')
+      .eq('id', videoId)
+      .single();
+
+    if (fetchError || !video) {
+      return res.status(404).json({ error: 'Video record not found' });
+    }
+
+    const isMov = video.file_name.toLowerCase().endsWith('.mov');
+    if (!isMov) {
+      return res.json({ success: true, message: 'Skipped: Not a MOV file', file_url: video.file_url });
+    }
+
+    console.log(`[Transcoder] Starting H.264 transcoding for video ${videoId} (${video.file_name})`);
+    const tempInputPath = path.join(os.tmpdir(), `input_${videoId}.mov`);
+    const tempOutputPath = path.join(os.tmpdir(), `output_${videoId}.mp4`);
+
+    // 2. Download the original video file
+    const response = await fetch(video.file_url);
+    if (!response.ok) {
+      throw new Error(`Failed to download original video from URL: ${video.file_url}`);
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.writeFileSync(tempInputPath, buffer);
+
+    // 3. Run FFmpeg command to transcode to H.264 MP4 with faststart
+    const ffmpegCmd = `ffmpeg -i "${tempInputPath}" -vcodec libx264 -profile:v main -level 3.1 -pix_fmt yuv420p -movflags +faststart -threads 0 -preset fast -y "${tempOutputPath}"`;
+
+    exec(ffmpegCmd, async (error, stdout, stderr) => {
+      // Clean up input file
+      try { fs.unlinkSync(tempInputPath); } catch (e) {}
+
+      if (error) {
+        console.error('[Transcoder] ffmpeg transcoding error:', error.message);
+        try { fs.unlinkSync(tempOutputPath); } catch (e) {}
+        return res.status(500).json({ error: 'FFmpeg transcoding failed' });
+      }
+
+      try {
+        // 4. Upload the transcoded video back to Supabase Storage at the exact same location
+        const urlParts = video.file_url.split('/creator-assets/');
+        if (urlParts.length < 2) {
+          throw new Error('Could not parse storage path from public URL');
+        }
+        const storagePath = urlParts[1];
+        const outputBuffer = fs.readFileSync(tempOutputPath);
+
+        const { error: uploadError } = await supabase.storage
+          .from('creator-assets')
+          .upload(storagePath, outputBuffer, {
+            contentType: 'video/mp4',
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        // Clean up output file
+        try { fs.unlinkSync(tempOutputPath); } catch (e) {}
+
+        if (uploadError) throw uploadError;
+
+        console.log(`[Transcoder] Transcoded and updated video ${videoId} to ${storagePath}`);
+
+        // 5. Update filename in shoot_videos table to end with .mp4
+        const { error: dbError } = await supabase
+          .from('shoot_videos')
+          .update({
+            file_name: video.file_name.replace(/\.mov$/i, '.mp4')
+          })
+          .eq('id', videoId);
+
+        if (dbError) throw dbError;
+
+        return res.json({ success: true, message: 'Video transcoded successfully' });
+      } catch (err: any) {
+        console.error('[Transcoder] upload/db update error:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+    });
+  } catch (err: any) {
+    console.error('[Transcoder] catch error:', err?.message || err);
+    res.status(500).json({ error: err?.message || 'Internal server error' });
+  }
+});
 
 // Authentication Routes - Must be registered before catch-all and after other public routes
  console.log('[Server] Registering auth routes at /api/auth');
