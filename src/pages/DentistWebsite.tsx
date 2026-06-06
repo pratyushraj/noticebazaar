@@ -76,22 +76,22 @@ const SERVICES: Service[] = [
 
 const BEFORE_AFTER_IMAGES = [
   {
-    title: "Full Arch Rehabilitation",
-    before: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=600",
-    after: "https://images.unsplash.com/photo-1606811971618-4486d14f3f99?auto=format&fit=crop&q=80&w=600",
-    desc: "Fixed implants replaced a full upper denture."
+    title: "Teeth Gap Closure",
+    before: "/assets/yourdentist/gap_before.png",
+    after: "/assets/yourdentist/gap_after.png",
+    desc: "Composite veneers to close the diastema in a single session."
   },
   {
-    title: "Smile Makeover (Veneers)",
-    before: "https://images.unsplash.com/photo-1579684389782-64d84b5e901a?auto=format&fit=crop&q=80&w=600",
-    after: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=600",
-    desc: "10 E-max porcelain veneers for spacing and alignment."
+    title: "Premium Smile Makeover",
+    before: "/assets/yourdentist/gap_before.png",
+    after: "/assets/yourdentist/veneer_case_1.png",
+    desc: "Porcelain veneers for full arch cosmetic smile designing."
   },
   {
-    title: "Laser Teeth Whitening Result",
-    before: "https://images.unsplash.com/photo-1598256989800-fe5f95da9787?auto=format&fit=crop&q=80&w=600",
-    after: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=600",
-    desc: "6 shades lighter in 45 minutes of laser whitening."
+    title: "Smile Reconstruction",
+    before: "/assets/yourdentist/gap_before.png",
+    after: "/assets/yourdentist/makeover_case.png",
+    desc: "Full cosmetic rehabilitation combining implants and veneers."
   }
 ];
 
@@ -232,8 +232,8 @@ export default function DentistWebsite() {
             <div className="relative w-full max-w-md aspect-[4/5] rounded-[32px] overflow-hidden border border-white/[0.08] shadow-2xl group">
               <div className="absolute inset-0 bg-gradient-to-t from-[#070a13] via-transparent to-transparent z-10" />
               <img
-                src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=800"
-                alt="Clinic Treatment Room"
+                src="/assets/yourdentist/dr_with_patient_1.jpg"
+                alt="Dr. Aryan Parmar with Patient"
                 className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute bottom-6 left-6 right-6 z-20 bg-[#070a13]/85 backdrop-blur-md border border-white/[0.08] p-5 rounded-2xl">
@@ -595,7 +595,7 @@ export default function DentistWebsite() {
             <div className="relative w-full max-w-md aspect-[4/5] rounded-[32px] overflow-hidden border border-white/[0.08] shadow-2xl group">
               <div className="absolute inset-0 bg-gradient-to-t from-[#070a13] via-transparent to-transparent z-10" />
               <img
-                src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=600"
+                src="/assets/yourdentist/doctor_profile.png"
                 alt="Dr. Aryan Parmar"
                 className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-700"
               />
