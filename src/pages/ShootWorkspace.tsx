@@ -153,9 +153,13 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
     const fileExt = file.name.split('.').pop()?.toLowerCase();
     const normalizedExt = (fileExt === 'mov' || fileExt === 'quicktime') ? 'mp4' : fileExt;
     const fileName = `${Math.random()}.${normalizedExt}`;
-    const filePath = `shoot-assets/${workspace.id}/${fileName}`;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+      const userId = user.id;
+      const filePath = `${userId}/shoot-assets/${workspace.id}/${fileName}`;
+
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
         .upload(filePath, file, {
