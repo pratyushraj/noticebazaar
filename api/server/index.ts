@@ -463,17 +463,23 @@ app.post('/api/video-transcode', async (req: express.Request, res: express.Respo
       }
 
       try {
-        // 4. Upload the transcoded video back to Supabase Storage at the exact same location
+        // 4. Upload the transcoded video back to Supabase Storage at a new path to bust browser caching
         const urlParts = video.file_url.split('/creator-assets/');
         if (urlParts.length < 2) {
           throw new Error('Could not parse storage path from public URL');
         }
         const storagePath = urlParts[1];
+        
+        // Append unique timestamp suffix to file path name to guarantee a fresh URL
+        const fileExtIndex = storagePath.lastIndexOf('.');
+        const storagePathBase = fileExtIndex !== -1 ? storagePath.substring(0, fileExtIndex) : storagePath;
+        const transcodedStoragePath = `${storagePathBase}_transcoded_${Date.now()}.mp4`;
+        
         const outputBuffer = fs.readFileSync(tempOutputPath);
 
         const { error: uploadError } = await supabase.storage
           .from('creator-assets')
-          .upload(storagePath, outputBuffer, {
+          .upload(transcodedStoragePath, outputBuffer, {
             contentType: 'video/mp4',
             cacheControl: '3600',
             upsert: true
@@ -484,19 +490,38 @@ app.post('/api/video-transcode', async (req: express.Request, res: express.Respo
 
         if (uploadError) throw uploadError;
 
-        console.log(`[Transcoder] Transcoded and updated video ${videoId} to ${storagePath}`);
+        // Get new public URL
+        const { data: publicUrlData } = supabase.storage
+          .from('creator-assets')
+          .getPublicUrl(transcodedStoragePath);
 
-        // 5. Update filename in shoot_videos table to end with .mp4
+        // Delete the original raw HEVC/MOV file to save space
+        try {
+          await supabase.storage
+            .from('creator-assets')
+            .remove([storagePath]);
+        } catch (removeErr) {
+          console.warn('[Transcoder] Failed to remove raw file (ignoring):', removeErr);
+        }
+
+        console.log(`[Transcoder] Transcoded and updated video ${videoId} to ${transcodedStoragePath}`);
+
+        // 5. Update filename and URL in shoot_videos table
         const { error: dbError } = await supabase
           .from('shoot_videos')
           .update({
+            file_url: publicUrlData.publicUrl,
             file_name: video.file_name.replace(/\.mov$/i, '.mp4')
           })
           .eq('id', videoId);
 
         if (dbError) throw dbError;
 
-        return res.json({ success: true, message: 'Video transcoded successfully' });
+        return res.json({ 
+          success: true, 
+          message: 'Video transcoded successfully',
+          file_url: publicUrlData.publicUrl 
+        });
       } catch (err: any) {
         console.error('[Transcoder] upload/db update error:', err.message);
         return res.status(500).json({ error: err.message });

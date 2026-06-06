@@ -302,8 +302,12 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           if (transcodeRes.ok && transcodeData.success) {
             toast.dismiss(transcodeToast);
             toast.success('Video processed successfully! Universal preview ready.');
-            // Update the local video state with the new MP4 filename
-            setVideos(prev => prev.map(v => v.id === newVideo.id ? { ...v, file_name: v.file_name.replace(/\.mov$/i, '.mp4') } : v));
+             // Update the local video state with the new MP4 filename and the cache-busted transcoded URL
+             setVideos(prev => prev.map(v => v.id === newVideo.id ? { 
+               ...v, 
+               file_name: v.file_name.replace(/\.mov$/i, '.mp4'),
+               file_url: transcodeData.file_url || v.file_url 
+             } : v));
           } else {
             toast.dismiss(transcodeToast);
             toast.warning('Processing failed, but raw video is uploaded.');
