@@ -43,12 +43,14 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
   const [songText2, setSongText2] = useState('');
   const [hookText, setHookText] = useState('');
   const [hookText2, setHookText2] = useState('');
+  const [captionText, setCaptionText] = useState('');
   const [savingScript, setSavingScript] = useState(false);
   const [creatorScriptText, setCreatorScriptText] = useState('');
   const [creatorSongText, setCreatorSongText] = useState('');
   const [creatorSongText2, setCreatorSongText2] = useState('');
   const [creatorHookText, setCreatorHookText] = useState('');
   const [creatorHookText2, setCreatorHookText2] = useState('');
+  const [creatorCaptionText, setCreatorCaptionText] = useState('');
   const [savingSuggestions, setSavingSuggestions] = useState(false);
   const [selectedCategoryForUpload, setSelectedCategoryForUpload] = useState('treatment');
   const [guidelineTab, setGuidelineTab] = useState('treatment');
@@ -86,11 +88,13 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
       setSongText2(wsData.song_option_2 || '');
       setHookText(wsData.hook_option || '');
       setHookText2(wsData.hook_option_2 || '');
+      setCaptionText(wsData.caption_option || '');
       setCreatorScriptText(wsData.creator_script || '');
       setCreatorSongText(wsData.creator_song || '');
       setCreatorSongText2(wsData.creator_song_2 || '');
       setCreatorHookText(wsData.creator_hook || '');
       setCreatorHookText2(wsData.creator_hook_2 || '');
+      setCreatorCaptionText(wsData.creator_caption || '');
       setVideos(vidData || []);
     } catch (error: any) {
       console.error('Error loading workspace:', error);
@@ -100,6 +104,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         const song2Param = searchParams.get('song2') || '';
         const hookParam = searchParams.get('hook') || '';
         const hook2Param = searchParams.get('hook2') || '';
+        const captionParam = searchParams.get('caption') || '';
         setWorkspace({ 
           id: workspaceId, 
           title: 'Patliputra Dental Clinic Shoot', 
@@ -107,23 +112,27 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           song_option_2: song2Param,
           hook_option: hookParam,
           hook_option_2: hook2Param,
+          caption_option: captionParam,
           script: '1. Start with a premium pan shot of the clinic reception.\n2. Cut to the modern operatory chair explaining patient comfort.\n3. Close-up of Veneer before/after reveal!',
           creator_script: 'Hey everyone, today we are visiting Patliputra Clinic!',
           creator_song: 'Aesthetic Lo-fi Beats',
           creator_song_2: 'Trending Dental Pop track',
           creator_hook: 'Stop brushing your teeth like this!',
-          creator_hook_2: '3 mistakes you make at the dentist!'
+          creator_hook_2: '3 mistakes you make at the dentist!',
+          creator_caption: 'Healthy teeth aesthetic vlog!'
         });
         setScriptText('1. Start with a premium pan shot of the clinic reception.\n2. Cut to the modern operatory chair explaining patient comfort.\n3. Close-up of Veneer before/after reveal!');
         setSongText(songParam);
         setSongText2(song2Param);
         setHookText(hookParam || 'Stop brushing your teeth like this!');
         setHookText2(hook2Param || '3 mistakes you make at the dentist!');
+        setCaptionText(captionParam || 'Healthy teeth aesthetic vlog!');
         setCreatorScriptText('Hey everyone, today we are visiting Patliputra Clinic!');
         setCreatorSongText('Aesthetic Lo-fi Beats');
         setCreatorSongText2('Trending Dental Pop track');
         setCreatorHookText('Stop brushing your teeth like this!');
         setCreatorHookText2('3 mistakes you make at the dentist!');
+        setCreatorCaptionText('Healthy teeth aesthetic vlog!');
         setVideos([
           { id: '1', workspace_id: workspaceId, file_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', file_name: 'clinic_tour_aesthetic.mp4', is_selected: true, uploaded_by: 'influencer', category: 'interior' },
           { id: '2', workspace_id: workspaceId, file_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', file_name: 'laser_whitening_setup.mp4', is_selected: false, uploaded_by: 'influencer', category: 'treatment' },
@@ -225,12 +234,13 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           song_option: songText,
           song_option_2: songText2,
           hook_option: hookText,
-          hook_option_2: hookText2
+          hook_option_2: hookText2,
+          caption_option: captionText
         })
         .eq('id', workspace.id);
 
       if (error) throw error;
-      toast.success('Production script, songs & hooks saved!');
+      toast.success('Production specs & script saved!');
     } catch (error: any) {
       console.error('Script error:', error);
       setWorkspace({ 
@@ -239,7 +249,8 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         song_option: songText,
         song_option_2: songText2,
         hook_option: hookText,
-        hook_option_2: hookText2
+        hook_option_2: hookText2,
+        caption_option: captionText
       });
       toast.info('Saved production options to mock memory');
     } finally {
@@ -258,7 +269,8 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           creator_song: creatorSongText,
           creator_song_2: creatorSongText2,
           creator_hook: creatorHookText,
-          creator_hook_2: creatorHookText2
+          creator_hook_2: creatorHookText2,
+          creator_caption: creatorCaptionText
         })
         .eq('id', workspace.id);
 
@@ -272,7 +284,8 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         creator_song: creatorSongText,
         creator_song_2: creatorSongText2,
         creator_hook: creatorHookText,
-        creator_hook_2: creatorHookText2
+        creator_hook_2: creatorHookText2,
+        creator_caption: creatorCaptionText
       });
       toast.info('Saved suggestions to mock memory');
     } finally {
@@ -485,6 +498,16 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               </div>
             )}
 
+            {workspace.caption_option && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-emerald-400 mt-0.5">📝</span>
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-emerald-400">Video Caption</div>
+                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.caption_option}</div>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-4 gap-1 border border-white/[0.06] rounded-lg p-0.5 bg-black/40">
               {SHOOT_CATEGORIES.map(cat => (
                 <button
@@ -566,6 +589,17 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Video Caption</label>
+                    <input 
+                      type="text"
+                      value={captionText}
+                      onChange={(e) => setCaptionText(e.target.value)}
+                      placeholder="e.g., Healthy smiles start here! Book consult today."
+                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                    />
+                  </div>
                   
                   <div>
                     <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Script directions</label>
@@ -636,6 +670,18 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                     <div className="text-[10px] text-neutral-500 italic">No final hook 2 specified yet.</div>
                   )}
 
+                  {workspace.caption_option ? (
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-emerald-400 text-xs">📝</span>
+                      <div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-emerald-400">Chosen Video Caption</div>
+                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.caption_option}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-neutral-500 italic">No final caption specified yet.</div>
+                  )}
+
                   <div>
                     <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Script</div>
                     {workspace.script ? (
@@ -700,6 +746,17 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       value={creatorHookText2}
                       onChange={(e) => setCreatorHookText2(e.target.value)}
                       placeholder="e.g., Why scaling is actually good for you!"
+                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Caption</label>
+                    <input 
+                      type="text"
+                      value={creatorCaptionText}
+                      onChange={(e) => setCreatorCaptionText(e.target.value)}
+                      placeholder="e.g., Alternative dental vlog caption idea!"
                       className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
                     />
                   </div>
@@ -818,6 +875,30 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       </div>
                     ) : (
                       <div className="text-[10px] text-neutral-500 italic mt-1">No hook suggestion 2 yet.</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                      <span>Suggested Caption</span>
+                      {workspace.creator_caption && (
+                        <button 
+                          onClick={() => {
+                            setCaptionText(workspace.creator_caption);
+                            toast.success('Caption copied to editor input');
+                          }}
+                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                        >
+                          Use Caption
+                        </button>
+                      )}
+                    </div>
+                    {workspace.creator_caption ? (
+                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                        📝 {workspace.creator_caption}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-neutral-500 italic mt-1">No caption suggestion yet.</div>
                     )}
                   </div>
 
