@@ -40,11 +40,13 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
   const [uploading, setUploading] = useState(false);
   const [scriptText, setScriptText] = useState('');
   const [songText, setSongText] = useState('');
+  const [songText2, setSongText2] = useState('');
   const [hookText, setHookText] = useState('');
   const [hookText2, setHookText2] = useState('');
   const [savingScript, setSavingScript] = useState(false);
   const [creatorScriptText, setCreatorScriptText] = useState('');
   const [creatorSongText, setCreatorSongText] = useState('');
+  const [creatorSongText2, setCreatorSongText2] = useState('');
   const [creatorHookText, setCreatorHookText] = useState('');
   const [creatorHookText2, setCreatorHookText2] = useState('');
   const [savingSuggestions, setSavingSuggestions] = useState(false);
@@ -81,10 +83,12 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
       setWorkspace(wsData);
       setScriptText(wsData.script || '');
       setSongText(wsData.song_option || '');
+      setSongText2(wsData.song_option_2 || '');
       setHookText(wsData.hook_option || '');
       setHookText2(wsData.hook_option_2 || '');
       setCreatorScriptText(wsData.creator_script || '');
       setCreatorSongText(wsData.creator_song || '');
+      setCreatorSongText2(wsData.creator_song_2 || '');
       setCreatorHookText(wsData.creator_hook || '');
       setCreatorHookText2(wsData.creator_hook_2 || '');
       setVideos(vidData || []);
@@ -93,26 +97,31 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
       if (error.code === '42P01') {
         toast.error('Database tables not migrated yet. Showing mock data.');
         const songParam = searchParams.get('song') || '';
+        const song2Param = searchParams.get('song2') || '';
         const hookParam = searchParams.get('hook') || '';
         const hook2Param = searchParams.get('hook2') || '';
         setWorkspace({ 
           id: workspaceId, 
           title: 'Patliputra Dental Clinic Shoot', 
           song_option: songParam, 
+          song_option_2: song2Param,
           hook_option: hookParam,
           hook_option_2: hook2Param,
           script: '1. Start with a premium pan shot of the clinic reception.\n2. Cut to the modern operatory chair explaining patient comfort.\n3. Close-up of Veneer before/after reveal!',
           creator_script: 'Hey everyone, today we are visiting Patliputra Clinic!',
           creator_song: 'Aesthetic Lo-fi Beats',
+          creator_song_2: 'Trending Dental Pop track',
           creator_hook: 'Stop brushing your teeth like this!',
           creator_hook_2: '3 mistakes you make at the dentist!'
         });
         setScriptText('1. Start with a premium pan shot of the clinic reception.\n2. Cut to the modern operatory chair explaining patient comfort.\n3. Close-up of Veneer before/after reveal!');
         setSongText(songParam);
+        setSongText2(song2Param);
         setHookText(hookParam || 'Stop brushing your teeth like this!');
         setHookText2(hook2Param || '3 mistakes you make at the dentist!');
         setCreatorScriptText('Hey everyone, today we are visiting Patliputra Clinic!');
         setCreatorSongText('Aesthetic Lo-fi Beats');
+        setCreatorSongText2('Trending Dental Pop track');
         setCreatorHookText('Stop brushing your teeth like this!');
         setCreatorHookText2('3 mistakes you make at the dentist!');
         setVideos([
@@ -214,19 +223,21 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         .update({ 
           script: scriptText,
           song_option: songText,
+          song_option_2: songText2,
           hook_option: hookText,
           hook_option_2: hookText2
         })
         .eq('id', workspace.id);
 
       if (error) throw error;
-      toast.success('Production script, song & hooks saved!');
+      toast.success('Production script, songs & hooks saved!');
     } catch (error: any) {
       console.error('Script error:', error);
       setWorkspace({ 
         ...workspace, 
         script: scriptText,
         song_option: songText,
+        song_option_2: songText2,
         hook_option: hookText,
         hook_option_2: hookText2
       });
@@ -245,6 +256,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         .update({ 
           creator_script: creatorScriptText,
           creator_song: creatorSongText,
+          creator_song_2: creatorSongText2,
           creator_hook: creatorHookText,
           creator_hook_2: creatorHookText2
         })
@@ -258,6 +270,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         ...workspace, 
         creator_script: creatorScriptText,
         creator_song: creatorSongText,
+        creator_song_2: creatorSongText2,
         creator_hook: creatorHookText,
         creator_hook_2: creatorHookText2
       });
@@ -436,8 +449,18 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 flex items-start gap-2.5">
                 <span className="text-purple-400 mt-0.5">🎵</span>
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-purple-400">Background Audio / Song</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-purple-400">Background Audio / Song 1</div>
                   <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option}</div>
+                </div>
+              </div>
+            )}
+
+            {workspace.song_option_2 && (
+              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-purple-400 mt-0.5">🎵</span>
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-purple-400">Background Audio / Song 2</div>
+                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option_2}</div>
                 </div>
               </div>
             )}
@@ -501,12 +524,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               {role === 'dentist' ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Background Audio</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Background Audio 1</label>
                     <input 
                       type="text"
                       value={songText}
                       onChange={(e) => setSongText(e.target.value)}
                       placeholder="e.g., Trending Instagram audio track, upbeat jazz"
+                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Background Audio 2</label>
+                    <input 
+                      type="text"
+                      value={songText2}
+                      onChange={(e) => setSongText2(e.target.value)}
+                      placeholder="e.g., Soft instrumental, second audio option"
                       className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
                     />
                   </div>
@@ -558,12 +592,24 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                     <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2.5 flex items-start gap-2">
                       <span className="text-purple-400 text-xs">🎵</span>
                       <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-purple-400">Chosen Background Audio</div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-purple-400">Chosen Background Audio 1</div>
                         <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option}</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-neutral-500 italic">No final audio specified yet.</div>
+                    <div className="text-[10px] text-neutral-500 italic">No final audio 1 specified yet.</div>
+                  )}
+
+                  {workspace.song_option_2 ? (
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-purple-400 text-xs">🎵</span>
+                      <div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-purple-400">Chosen Background Audio 2</div>
+                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option_2}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-neutral-500 italic">No final audio 2 specified yet.</div>
                   )}
 
                   {workspace.hook_option ? (
@@ -615,12 +661,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               {role === 'influencer' ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Song / Audio</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Song / Audio 1</label>
                     <input 
                       type="text"
                       value={creatorSongText}
                       onChange={(e) => setCreatorSongText(e.target.value)}
                       placeholder="e.g., Lofi aesthetic, trending audio link"
+                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Song / Audio 2</label>
+                    <input 
+                      type="text"
+                      value={creatorSongText2}
+                      onChange={(e) => setCreatorSongText2(e.target.value)}
+                      placeholder="e.g., Electronic beats, alternate audio track"
                       className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
                     />
                   </div>
@@ -670,16 +727,16 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                 <div className="space-y-3.5">
                   <div>
                     <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
-                      <span>Suggested Song</span>
+                      <span>Suggested Song 1</span>
                       {workspace.creator_song && (
                         <button 
                           onClick={() => {
                             setSongText(workspace.creator_song);
-                            toast.success('Song copied to editor input');
+                            toast.success('Song 1 copied to editor input');
                           }}
                           className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
                         >
-                          Use Song
+                          Use Song 1
                         </button>
                       )}
                     </div>
@@ -688,7 +745,31 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                         🎵 {workspace.creator_song}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1">No song suggestions yet.</div>
+                      <div className="text-[10px] text-neutral-500 italic mt-1">No song suggestion 1 yet.</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                      <span>Suggested Song 2</span>
+                      {workspace.creator_song_2 && (
+                        <button 
+                          onClick={() => {
+                            setSongText2(workspace.creator_song_2);
+                            toast.success('Song 2 copied to editor input');
+                          }}
+                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                        >
+                          Use Song 2
+                        </button>
+                      )}
+                    </div>
+                    {workspace.creator_song_2 ? (
+                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                        🎵 {workspace.creator_song_2}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-neutral-500 italic mt-1">No song suggestion 2 yet.</div>
                     )}
                   </div>
 

@@ -9,6 +9,7 @@ import { Loader2, Video, Plus, Link as LinkIcon, Share2 } from 'lucide-react';
 export default function CreateShootWorkspace() {
   const [title, setTitle] = useState('');
   const [songOption, setSongOption] = useState('');
+  const [songOption2, setSongOption2] = useState('');
   const [hookOption, setHookOption] = useState('');
   const [hookOption2, setHookOption2] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function CreateShootWorkspace() {
         .insert({ 
           title: title.trim(), 
           song_option: songOption.trim(),
+          song_option_2: songOption2.trim(),
           hook_option: hookOption.trim(),
           hook_option_2: hookOption2.trim()
         })
@@ -46,7 +48,7 @@ export default function CreateShootWorkspace() {
       // Fallback for demo without migration
       if (error.code === '42P01') {
         const fakeId = 'demo-workspace-id';
-        const url = `${window.location.origin}/shoot-workspace/${fakeId}?song=${encodeURIComponent(songOption.trim())}&hook=${encodeURIComponent(hookOption.trim())}&hook2=${encodeURIComponent(hookOption2.trim())}`;
+        const url = `${window.location.origin}/shoot-workspace/${fakeId}?song=${encodeURIComponent(songOption.trim())}&song2=${encodeURIComponent(songOption2.trim())}&hook=${encodeURIComponent(hookOption.trim())}&hook2=${encodeURIComponent(hookOption2.trim())}`;
         setCreatedUrl(url);
         toast.info('Using local mock workspace since DB is not migrated.');
       } else {
@@ -88,12 +90,23 @@ export default function CreateShootWorkspace() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-1.5">Song / Audio Choice (Optional)</label>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-1.5">Song / Audio Choice 1 (Optional)</label>
               <input 
                 type="text" 
                 value={songOption}
                 onChange={(e) => setSongOption(e.target.value)}
-                placeholder="e.g., Trending Instagram Reel Audio, Soft Lofi, Upbeat Pop"
+                placeholder="e.g., Trending Instagram Reel Audio"
+                className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 mb-1.5">Song / Audio Choice 2 (Optional)</label>
+              <input 
+                type="text" 
+                value={songOption2}
+                onChange={(e) => setSongOption2(e.target.value)}
+                placeholder="e.g., Upbeat Pop music"
                 className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
               />
             </div>
