@@ -40,6 +40,7 @@ const InvestorPitchDeck = lazy(() => import("@/pages/InvestorPitchDeck"));
 const BrandPitchDeck = lazy(() => import("@/pages/BrandPitchDeck"));
 const SalonProposalDeck = lazy(() => import("@/pages/SalonProposalDeck"));
 const ContentWorkspace = lazy(() => import("@/pages/ContentWorkspace"));
+const DentistWebsite = lazy(() => import("@/pages/DentistWebsite"));
 
 const WelcomeOnboarding = lazy(() => import("@/pages/WelcomeOnboarding"));
 const InstaMockup = lazy(() => import("@/pages/InstaMockup"));
@@ -109,6 +110,8 @@ export const PublicRoutes = () => (
     <Route path="/salon-deck" element={<Navigate to="/salon-proposal" replace />} />
     <Route path="/salons" element={<Navigate to="/salon-proposal" replace />} />
     <Route path="/dentist-proposal" element={<LazyRoute><ContentWorkspace /></LazyRoute>} />
+    <Route path="/dentist-website" element={<LazyRoute><DentistWebsite /></LazyRoute>} />
+    <Route path="/clinic-website" element={<Navigate to="/dentist-website" replace />} />
     <Route path="/dentist-preview" element={<Navigate to="/dentist-proposal" replace />} />
     <Route path="/dentist-deck" element={<Navigate to="/dentist-proposal" replace />} />
     <Route path="/dental-trends" element={<LazyRoute><DentalTrendFinder /></LazyRoute>} />
