@@ -54,20 +54,66 @@ export const ScalingReel: React.FC = () => {
         const translateX = interpolate(
           activeProgress - exitProgress,
           [0, 1],
-          [1080, 0]
+          [800, 0]
         ) + interpolate(
           exitProgress,
           [0, 1],
-          [0, -1080]
+          [0, -800]
         );
 
-        // Subtle scale zoom-in effect during active state
-        const scale = interpolate(
+        // Opacity transition to prevent visual gaps
+        const opacity = interpolate(
+          frame - startFrame,
+          [0, 15],
+          [0, 1],
+          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+        ) * interpolate(
+          frame - (endFrame - 15),
+          [0, 15],
+          [1, 0],
+          { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+        );
+
+        // Scale pop effect when entering, zooming during active, and exit scaling
+        const enterScale = interpolate(activeProgress, [0, 1], [0.85, 1.0]);
+        const exitScale = interpolate(exitProgress, [0, 1], [1.0, 0.9]);
+        const activeZoom = interpolate(
           frame - startFrame,
           [0, SLIDE_DURATION],
-          [1.0, 1.05],
+          [1.0, 1.06],
           { extrapolateRight: 'clamp' }
         );
+        const finalScale = enterScale * exitScale * activeZoom;
+
+        // 3D Card tilt effect based on transition
+        const rotateY = interpolate(
+          activeProgress - exitProgress,
+          [0, 1],
+          [15, 0]
+        ) + interpolate(
+          exitProgress,
+          [0, 1],
+          [0, -15]
+        );
+
+        // Ken Burns effect on the blurred background image
+        const bgScale = interpolate(
+          frame - startFrame,
+          [0, SLIDE_DURATION],
+          [1.2, 1.4],
+          { extrapolateRight: 'clamp' }
+        );
+        const bgRotate = interpolate(
+          frame - startFrame,
+          [0, SLIDE_DURATION],
+          [0, 3],
+          { extrapolateRight: 'clamp' }
+        );
+
+        // Pulsing border glow for active card
+        const pulsePeriod = Math.sin((frame - startFrame) / 10);
+        const glowRadius = interpolate(pulsePeriod, [-1, 1], [15, 45]);
+        const glowOpacity = interpolate(pulsePeriod, [-1, 1], [0.15, 0.4]);
 
         return (
           <div
@@ -79,7 +125,9 @@ export const ScalingReel: React.FC = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              transform: `translateX(${translateX}px)`,
+              transform: `translateX(${translateX}px) rotateY(${rotateY}deg)`,
+              opacity,
+              perspective: 1200,
             }}
           >
             {/* Blurred background panel of the slide */}
@@ -90,9 +138,9 @@ export const ScalingReel: React.FC = () => {
                 backgroundImage: `url(${slide})`,
                 backgroundPosition: 'center',
                 backgroundSize: 'cover',
-                filter: 'blur(40px)',
-                opacity: 0.15,
-                transform: 'scale(1.2)',
+                filter: 'blur(50px)',
+                opacity: 0.25,
+                transform: `scale(${bgScale}) rotate(${bgRotate}deg)`,
               }}
             />
 
@@ -101,11 +149,11 @@ export const ScalingReel: React.FC = () => {
               style={{
                 width: 1080,
                 height: 1350,
-                boxShadow: '0 30px 100px rgba(0,0,0,0.8)',
-                borderRadius: '24px',
+                boxShadow: `0 30px 100px rgba(0,0,0,0.8), 0 0 ${glowRadius}px rgba(99, 102, 241, ${glowOpacity})`,
+                borderRadius: '32px',
                 overflow: 'hidden',
-                transform: `scale(${scale})`,
-                border: '1px solid rgba(255,255,255,0.08)',
+                transform: `scale(${finalScale})`,
+                border: '1.5px solid rgba(255,255,255,0.12)',
                 zIndex: 10,
               }}
             >
