@@ -596,7 +596,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       {catVideos.map(video => (
                         <div key={video.id} className={`bg-[#090d16] border rounded-xl overflow-hidden group ${video.is_selected ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/[0.06]'}`}>
                           <div 
-                            className="aspect-video bg-black relative flex items-center justify-center w-full h-full cursor-pointer overflow-hidden group/thumb"
+                            className="aspect-video bg-black relative flex items-center justify-center w-full cursor-pointer overflow-hidden group/thumb"
                             onClick={() => setActiveModalVideo(video)}
                           >
                             <VideoThumbnail src={video.file_url} fileName={video.file_name} />
