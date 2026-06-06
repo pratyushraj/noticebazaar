@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ShieldCheck, Package, ArrowRight, CheckCircle2, Star,
-  Gift, TrendingUp, Users, Zap, ChevronDown, ChevronUp
+  ShieldCheck, Package, ArrowRight, Star,
+  Gift, TrendingUp, Users, Zap
 } from 'lucide-react';
 import { SEOHead } from '@/components/seo/SEOHead';
 import { BreadcrumbSchema } from '@/components/seo/SchemaMarkup';
+import { FAQSection } from '@/components/seo/FAQSection';
 import { getApiBaseUrl } from '@/lib/utils/api';
 import { withRetry } from '@/lib/utils/retry';
 import { safeAvatarSrc } from '@/lib/utils/image';
@@ -13,36 +14,36 @@ import { triggerHaptic, HapticPatterns } from '@/lib/utils/haptics';
 
 const faqs = [
   {
-    q: 'What is a barter collaboration on Instagram?',
-    a: 'A barter collaboration on Instagram is a product exchange partnership where a brand sends a physical product to an Instagram creator or Reel editor in exchange for promotional content (such as an aesthetic Reel or Story) instead of a cash payment. The creator keeps the product as their fee, and the brand receives high-converting organic exposure.'
+    question: 'What is a barter collaboration on Instagram?',
+    answer: 'A barter collaboration on Instagram is a product exchange partnership where a brand sends a physical product to an Instagram creator or Reel editor in exchange for promotional content (such as an aesthetic Reel or Story) instead of a cash payment. The creator keeps the product as their fee, and the brand receives high-converting organic exposure.'
   },
   {
-    q: 'Is there a dedicated barter collaboration app for influencers and brands in India?',
-    a: 'Yes, Creator Armour serves as India\'s leading structured barter collaboration app and platform. It automates creator discovery, barter campaign setup, digital agreement generation, and content delivery tracking in one simple dashboard—removing the need for messy DMs or spreadsheets.'
+    question: 'Is there a dedicated barter collaboration app for influencers and brands in India?',
+    answer: 'Yes, Creator Armour serves as India\'s leading structured barter collaboration app and platform. It automates creator discovery, barter campaign setup, digital agreement generation, and content delivery tracking in one simple dashboard—removing the need for messy DMs or spreadsheets.'
   },
   {
-    q: 'Which creators are best for a barter collaboration?',
-    a: 'Nano and micro-influencers (1K–50K followers) are the highest-converting partners for barter collaborations. They maintain highly active, trusting relationships with their audience, have much higher engagement rates than macro-influencers, and are highly open to product exchanges, especially for premium lifestyle, skincare, or fashion products.'
+    question: 'Which creators are best for a barter collaboration?',
+    answer: 'Nano and micro-influencers (1K–50K followers) are the highest-converting partners for barter collaborations. They maintain highly active, trusting relationships with their audience, have much higher engagement rates than macro-influencers, and are highly open to product exchanges, especially for premium lifestyle, skincare, or fashion products.'
   },
   {
-    q: 'How do D2C brands set up barter collaborations?',
-    a: 'D2C brands use Creator Armour to browse verified, barter-ready creators in India, send structured product offers (specifying product details, value, and deliverables), and automatically generate legally binding digital agreements to protect both sides.'
+    question: 'How do D2C brands set up barter collaborations?',
+    answer: 'D2C brands use Creator Armour to browse verified, barter-ready creators in India, send structured product offers (specifying product details, value, and deliverables), and automatically generate legally binding digital agreements to protect both sides.'
   },
   {
-    q: 'How do I share a barter collaboration link in my bio?',
-    a: 'With Creator Armour, creators open to barter can generate a secure barter collaboration link to place in their Instagram bio. This allows interested brands to submit structured product-exchange proposals directly to you, keeping your DMs clean and professional.'
+    question: 'How do I share a barter collaboration link in my bio?',
+    answer: 'With Creator Armour, creators open to barter can generate a secure barter collaboration link to place in their Instagram bio. This allows interested brands to submit structured product-exchange proposals directly to you, keeping your DMs clean and professional.'
   },
   {
-    q: 'How do I write a professional barter collaboration message/pitch?',
-    a: 'A high-converting barter collaboration message should be concise and outline mutual value. State your niche, highlight your engagement metrics, define what you will deliver (e.g., 1x vertical Reel), and include your secure Creator Armour portal link so the brand can instantly verify your profile and ship products.'
+    question: 'How do I write a professional barter collaboration message/pitch?',
+    answer: 'A high-converting barter collaboration message should be concise and outline mutual value. State your niche, highlight your engagement metrics, define what you will deliver (e.g., 1x vertical Reel), and include your secure Creator Armour portal link so the brand can instantly verify your profile and ship products.'
   },
   {
-    q: 'What is the difference between a barter collaboration and a paid collaboration?',
-    a: 'A barter collaboration involves exchanging physical products of equal value for content deliverables, whereas a paid collaboration includes a direct cash transaction alongside product delivery. Creator Armour supports both barter and paid campaign tracks, ensuring contracts protect both formats.'
+    question: 'What is the difference between a barter collaboration and a paid collaboration?',
+    answer: 'A barter collaboration involves exchanging physical products of equal value for content deliverables, whereas a paid collaboration includes a direct cash transaction alongside product delivery. Creator Armour supports both barter and paid campaign tracks, ensuring contracts protect both formats.'
   },
   {
-    q: 'Why do most marketing agencies avoid barter deals?',
-    a: 'Traditional influencer marketing agencies charge a commission based on deal value (usually 15–30%). Because barter campaigns don\'t involve cash, agencies earn nothing and actively hide barter-ready creators. Creator Armour uses a platform-first model, making barter collaborations accessible and free to list.'
+    question: 'Why do most marketing agencies avoid barter deals?',
+    answer: 'Traditional influencer marketing agencies charge a commission based on deal value (usually 15–30%). Because barter campaigns don\'t involve cash, agencies earn nothing and actively hide barter-ready creators. Creator Armour uses a platform-first model, making barter collaborations accessible and free to list.'
   }
 ];
 
@@ -208,7 +209,6 @@ const FALLBACK_CREATORS: Creator[] = [
 const BarterCollabPage = () => {
   const [creators, setCreators] = useState<Creator[]>(FALLBACK_CREATORS);
   const [loading, setLoading] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.add('light');
@@ -238,15 +238,7 @@ const BarterCollabPage = () => {
     }
   };
 
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map(f => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a }
-    }))
-  };
+
 
   const webPageSchema = {
     '@context': 'https://schema.org',
@@ -308,7 +300,7 @@ const BarterCollabPage = () => {
         ]}
         canonicalUrl="https://creatorarmour.com/barter-collab"
         imageAlt="Creator Armour barter influencer marketing page for Indian brands"
-        jsonLd={[webPageSchema, serviceSchema, faqSchema]}
+        jsonLd={[webPageSchema, serviceSchema]}
       />
       <BreadcrumbSchema
         items={[
@@ -523,46 +515,12 @@ const BarterCollabPage = () => {
         </section>
 
         {/* FAQ */}
-        <section className="py-16 md:py-20 px-4 sm:px-6 max-w-[800px] mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-[11px] font-black uppercase tracking-widest text-[#16A34A] mb-3">Common questions</p>
-            <h2 className="text-3xl md:text-[40px] font-black text-[#0F172A] tracking-tight">
-              Everything about barter deals
-            </h2>
-            <p className="mt-4 text-[#64748B] font-medium max-w-2xl mx-auto">
-              If you want the contract side too, see our{' '}
-              <Link to="/collaboration-agreement-generator" className="text-[#16A34A] font-bold hover:underline">
-                collaboration agreement generator
-              </Link>{' '}
-              or read the{' '}
-              <Link to="/blog/barter-influencer-deal-india-guide-2025" className="text-[#16A34A] font-bold hover:underline">
-                barter deal guide
-              </Link>
-              .
-            </p>
-          </div>
-          <div className="space-y-3">
-            {faqs.map((faq, idx) => (
-              <div key={idx} className="bg-white rounded-[20px] border border-[#E5E7EB] overflow-hidden shadow-sm">
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full flex items-center justify-between px-6 py-5 text-left"
-                >
-                  <span className="font-black text-[#0F172A] text-[15px] pr-4">{faq.q}</span>
-                  {openFaq === idx
-                    ? <ChevronUp className="w-5 h-5 text-[#16A34A] shrink-0" />
-                    : <ChevronDown className="w-5 h-5 text-[#64748B] shrink-0" />
-                  }
-                </button>
-                {openFaq === idx && (
-                  <div className="px-6 pb-5 text-[#64748B] text-sm font-medium leading-relaxed border-t border-[#F1F5F9]">
-                    <p className="pt-4">{faq.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+        <FAQSection
+          title="Everything about barter deals"
+          description="Common questions about barter collaborations, influencer gifting, and agreements in India."
+          items={faqs}
+          containerClassName="border-t border-[#E5E7EB] mt-16"
+        />
 
         {/* CTA */}
         <section className="px-4 sm:px-6 pb-20">

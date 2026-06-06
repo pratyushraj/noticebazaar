@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { 
   ShieldCheck, CheckCircle2, ExternalLink,
-  Filter, Sparkles, ArrowRight, HelpCircle
+  Filter, Sparkles, ArrowRight
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { FAQSection } from "@/components/seo/FAQSection";
 import { triggerHaptic, HapticPatterns } from "@/lib/utils/haptics";
 import { safeAvatarSrc } from "@/lib/utils/image";
 import profilesData from "../../database_backups/profiles_latest.json";
@@ -52,7 +52,6 @@ const LocalInfluencers = () => {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [filteredCreators, setFilteredCreators] = useState<Creator[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [faqOpen, setFaqOpen] = useState<Record<number, boolean>>({});
 
   const categories = ["All", "Food", "Fashion", "Travel", "Lifestyle"];
 
@@ -115,10 +114,7 @@ const LocalInfluencers = () => {
     }
   }, [creators, selectedCategory]);
 
-  const toggleFaq = (index: number) => {
-    triggerHaptic(HapticPatterns.light);
-    setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
-  };
+
 
   const formatFollowers = (count?: number | null) => {
     if (!count) return "—";
@@ -153,18 +149,7 @@ const LocalInfluencers = () => {
     }
   ];
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
-  };
+
 
   return (
     <div className="min-h-screen bg-[#020D0A] text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-black">
@@ -178,7 +163,7 @@ const LocalInfluencers = () => {
           `influencer marketing ${cityMeta.name}`, 
           `${cityMeta.name} food bloggers`
         ]}
-        jsonLd={jsonLd}
+        jsonLd={undefined}
         canonicalUrl={`https://creatorarmour.com/local-creators/${currentCityKey}`}
       />
 
@@ -417,43 +402,12 @@ const LocalInfluencers = () => {
         </section>
 
         {/* FAQs */}
-        <section className="space-y-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-black text-white">Frequently Asked Questions</h2>
-            <p className="text-xs text-slate-400 mt-2">Find answers regarding campaigns, pricing, and onboarding for local influencers.</p>
-          </div>
-
-          <div className="max-w-3xl mx-auto space-y-4">
-            {faqs.map((faq, idx) => (
-              <div 
-                key={idx}
-                className="border border-emerald-500/10 bg-[#061B15]/20 rounded-2xl overflow-hidden transition-all duration-300"
-              >
-                <button
-                  onClick={() => toggleFaq(idx)}
-                  className="flex items-center justify-between w-full p-5 text-left text-sm font-bold text-white hover:bg-emerald-500/5 transition-all"
-                >
-                  <span>{faq.question}</span>
-                  <HelpCircle className={`w-5 h-5 text-emerald-400 transition-transform duration-300 shrink-0 ml-4 ${faqOpen[idx] ? 'rotate-180' : ''}`} />
-                </button>
-                <AnimatePresence initial={false}>
-                  {faqOpen[idx] && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <p className="p-5 pt-0 text-slate-400 text-xs leading-relaxed border-t border-emerald-500/5">
-                        {faq.answer}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ))}
-          </div>
-        </section>
+        <FAQSection
+          title="Frequently Asked Questions"
+          description="Find answers regarding campaigns, pricing, and onboarding for local influencers."
+          items={faqs}
+          containerClassName="border-t border-emerald-500/10 mt-16"
+        />
       </main>
 
       {/* Footer */}
