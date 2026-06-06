@@ -1,0 +1,1 @@
+import{au as a,av as s,r as e,j as o,aw as r}from"./vendor-react-YtDxvp-8.js";import{c as d}from"./index-MJZ6qNKX.js";const t=a,c=s,i=e.forwardRef(({className:a,...s},e)=>o.jsx(r,{ref:e,className:d("overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",a),...s}));i.displayName=r.displayName;export{t as C,c as a,i as b};

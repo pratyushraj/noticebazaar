@@ -269,4 +269,116 @@ router.post('/pitch/history', async (req: AuthenticatedRequest, res: Response) =
   }
 });
 
+// POST /api/ai/google-reviews/generate-reply
+// Generate context-aware, professional reply to Google Business reviews using LLM
+router.post('/google-reviews/generate-reply', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { commenterName, starRating, comment, businessName } = req.body;
+
+    if (!commenterName || typeof starRating !== 'number') {
+      return res.status(400).json({
+        success: false,
+        error: 'commenterName and starRating (number) are required'
+      });
+    }
+
+    const business = businessName || 'Smile Dental Clinic';
+    const rating = Math.max(1, Math.min(5, starRating));
+
+    const systemPrompt = `
+You are a professional customer experience manager for "${business}". Generate a concise, polite, and personalized reply to a Google Business review.
+
+Guidelines:
+1. If rating is 4 or 5 stars: Be warm, thank the customer by name (${commenterName}), mention specific highlights if they wrote a comment, and invite them back.
+2. If rating is 1, 2, or 3 stars: Be professional and empathetic. Apologize for the inconvenience without admitting legal liability. Direct them to email manager@smiledental.com or call +91 98765 43210 to resolve their concerns.
+3. Keep the reply under 3 sentences. Output ONLY the response text itself, no explanations, no wrappers, and no quote marks.
+`.trim();
+
+    const userPrompt = `
+Customer: ${commenterName}
+Rating: ${rating}/5 Stars
+Review: "${comment || 'Left a rating without comment.'}"
+`.trim();
+
+    const output = await callLLM(`${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY the final response text.`);
+
+    return res.json({
+      success: true,
+      data: {
+        reply: output.trim()
+      }
+    });
+  } catch (error: any) {
+    console.error('[AI Google Review] Error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate review reply'
+    });
+  }
+});
+
+// POST /api/ai/google-reviews/webhook
+// Webhook endpoint to receive real-time Pub/Sub review notifications from Google Business Profile
+router.post('/google-reviews/webhook', async (req: express.Request, res: Response) => {
+  try {
+    // Google Cloud Pub/Sub sends notifications wrapped in a message payload
+    // If it's a test notification or mock notification, parse accordingly
+    const data = req.body.message?.data 
+      ? JSON.parse(Buffer.from(req.body.message.data, 'base64').toString())
+      : req.body;
+
+    const { reviewId, locationId, commenterName, starRating, comment } = data;
+
+    if (!commenterName || typeof starRating !== 'number') {
+      // Return 200 to acknowledge Pub/Sub even if payload is invalid
+      return res.json({ success: false, warning: 'Invalid payload elements' });
+    }
+
+    // Generate reply via LLM
+    const businessName = 'Smile Dental Clinic';
+    const systemPrompt = `
+You are a professional customer experience manager for "${businessName}". Generate a concise, polite, and personalized reply to a Google Business review.
+
+Guidelines:
+1. If rating is 4 or 5 stars: Be warm, thank the customer by name (${commenterName}), mention specific highlights if they wrote a comment, and invite them back.
+2. If rating is 1, 2, or 3 stars: Be professional and empathetic. Apologize for the inconvenience without admitting legal liability. Direct them to email manager@smiledental.com or call +91 98765 43210 to resolve their concerns.
+3. Keep the reply under 3 sentences. Output ONLY the response text itself, no explanations, no wrappers, and no quote marks.
+`.trim();
+
+    const userPrompt = `
+Customer: ${commenterName}
+Rating: ${starRating}/5 Stars
+Review: "${comment || 'Left a rating without comment.'}"
+`.trim();
+
+    const replyText = await callLLM(`${systemPrompt}\n\n${userPrompt}\n\nReturn ONLY the final response text.`);
+
+    // Log action to simulate posting to Google Business Profile My Business Reviews API
+    console.log(`[Google Reviews Autoreply] Replying to Review ${reviewId} on location ${locationId}`);
+    console.log(`[Google Reviews Autoreply] Review by ${commenterName} (${starRating} stars): "${comment || ''}"`);
+    console.log(`[Google Reviews Autoreply] Auto Reply text: "${replyText.trim()}"`);
+
+    // In production, you would call:
+    // await mybusinessreviews.accounts.locations.reviews.updateReply({ name: ..., requestBody: { comment: replyText } })
+
+    return res.json({
+      success: true,
+      data: {
+        reviewId,
+        commenterName,
+        starRating,
+        autoReply: replyText.trim(),
+        status: 'replied_successfully'
+      }
+    });
+  } catch (error: any) {
+    console.error('[AI Google Review Webhook] Error:', error);
+    // Return 200 so Pub/Sub doesn't continuously retry on webhook failure during demos
+    return res.json({
+      success: false,
+      error: error.message || 'Webhook processing failed'
+    });
+  }
+});
+
 export default router;
