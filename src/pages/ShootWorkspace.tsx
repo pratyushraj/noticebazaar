@@ -156,9 +156,9 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-      const userId = user.id;
-      const filePath = `${userId}/shoot-assets/${workspace.id}/${fileName}`;
+      const filePath = user 
+        ? `${user.id}/shoot-assets/${workspace.id}/${fileName}`
+        : `shoot-assets/${workspace.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('creator-assets')
