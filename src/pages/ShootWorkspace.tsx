@@ -432,7 +432,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       {catVideos.map(video => (
                         <div key={video.id} className={`bg-[#090d16] border rounded-xl overflow-hidden group ${video.is_selected ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/[0.06]'}`}>
                           <div className="aspect-video bg-black relative flex items-center justify-center">
-                            <video src={video.file_url} controls className="max-w-full max-h-full object-contain" />
+                            <video src={video.file_url} controls playsInline preload="metadata" className="max-w-full max-h-full object-contain" />
                             {video.is_selected && (
                               <div className="absolute top-2 right-2 bg-emerald-500 text-black px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
                                 <CheckCircle className="w-3 h-3" /> Selected
