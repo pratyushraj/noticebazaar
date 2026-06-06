@@ -36,6 +36,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
   const [workspace, setWorkspace] = useState<any>(null);
   const [videos, setVideos] = useState<ShootVideo[]>([]);
+  const [videoErrors, setVideoErrors] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [scriptText, setScriptText] = useState('');
@@ -431,10 +432,27 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {catVideos.map(video => (
                         <div key={video.id} className={`bg-[#090d16] border rounded-xl overflow-hidden group ${video.is_selected ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/[0.06]'}`}>
-                          <div className="aspect-video bg-black relative flex items-center justify-center">
-                            <video src={video.file_url} controls playsInline preload="metadata" className="max-w-full max-h-full object-contain" />
+                          <div className="aspect-video bg-black relative flex items-center justify-center w-full h-full">
+                            {videoErrors[video.id] ? (
+                              <div className="flex flex-col items-center justify-center p-4 text-center bg-gradient-to-b from-neutral-950 to-neutral-900 absolute inset-0 w-full h-full">
+                                <Video className="w-8 h-8 text-amber-500 mb-2 opacity-80" />
+                                <p className="text-[11px] font-black uppercase tracking-wider text-neutral-300">MOV Preview Unplayable</p>
+                                <p className="text-[9px] text-neutral-500 mt-1 max-w-[220px] leading-normal">
+                                  Chrome/Windows cannot play MOV. File uploaded successfully and works on Safari/iOS.
+                                </p>
+                              </div>
+                            ) : (
+                              <video 
+                                src={video.file_url} 
+                                controls 
+                                playsInline 
+                                preload="metadata" 
+                                onError={() => setVideoErrors(prev => ({ ...prev, [video.id]: true }))}
+                                className="max-w-full max-h-full object-contain" 
+                              />
+                            )}
                             {video.is_selected && (
-                              <div className="absolute top-2 right-2 bg-emerald-500 text-black px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                              <div className="absolute top-2 right-2 bg-emerald-500 text-black px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg z-10">
                                 <CheckCircle className="w-3 h-3" /> Selected
                               </div>
                             )}
