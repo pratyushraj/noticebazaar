@@ -293,7 +293,11 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
   return (
     <div className="min-h-screen bg-[#030712] text-[#f3f4f6] font-sans antialiased">
-      <SEOHead title={`${workspace.title} - Shoot Approval`} description="Review and approve shoot videos." />
+      <SEOHead 
+        title={`${workspace.title} - Shoot Approval`} 
+        description="Collaborative video approval and script feedback workspace." 
+        image="https://creatorarmour.com/og-dentist-workspace.png"
+      />
 
       <header className="border-b border-white/[0.06] bg-[#090d16] p-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
