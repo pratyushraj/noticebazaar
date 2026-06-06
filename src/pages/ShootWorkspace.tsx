@@ -40,9 +40,11 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
   const [uploading, setUploading] = useState(false);
   const [scriptText, setScriptText] = useState('');
   const [songText, setSongText] = useState('');
+  const [hookText, setHookText] = useState('');
   const [savingScript, setSavingScript] = useState(false);
   const [creatorScriptText, setCreatorScriptText] = useState('');
   const [creatorSongText, setCreatorSongText] = useState('');
+  const [creatorHookText, setCreatorHookText] = useState('');
   const [savingSuggestions, setSavingSuggestions] = useState(false);
   const [selectedCategoryForUpload, setSelectedCategoryForUpload] = useState('treatment');
   const [guidelineTab, setGuidelineTab] = useState('treatment');
@@ -77,26 +79,33 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
       setWorkspace(wsData);
       setScriptText(wsData.script || '');
       setSongText(wsData.song_option || '');
+      setHookText(wsData.hook_option || '');
       setCreatorScriptText(wsData.creator_script || '');
       setCreatorSongText(wsData.creator_song || '');
+      setCreatorHookText(wsData.creator_hook || '');
       setVideos(vidData || []);
     } catch (error: any) {
       console.error('Error loading workspace:', error);
       if (error.code === '42P01') {
         toast.error('Database tables not migrated yet. Showing mock data.');
         const songParam = searchParams.get('song') || '';
+        const hookParam = searchParams.get('hook') || '';
         setWorkspace({ 
           id: workspaceId, 
           title: 'Patliputra Dental Clinic Shoot', 
           song_option: songParam, 
+          hook_option: hookParam,
           script: '1. Start with a premium pan shot of the clinic reception.\n2. Cut to the modern operatory chair explaining patient comfort.\n3. Close-up of Veneer before/after reveal!',
           creator_script: 'Hey everyone, today we are visiting Patliputra Clinic!',
-          creator_song: 'Aesthetic Lo-fi Beats'
+          creator_song: 'Aesthetic Lo-fi Beats',
+          creator_hook: 'Stop brushing your teeth like this!'
         });
         setScriptText('1. Start with a premium pan shot of the clinic reception.\n2. Cut to the modern operatory chair explaining patient comfort.\n3. Close-up of Veneer before/after reveal!');
         setSongText(songParam);
+        setHookText(hookParam || 'Stop brushing your teeth like this!');
         setCreatorScriptText('Hey everyone, today we are visiting Patliputra Clinic!');
         setCreatorSongText('Aesthetic Lo-fi Beats');
+        setCreatorHookText('Stop brushing your teeth like this!');
         setVideos([
           { id: '1', workspace_id: workspaceId, file_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', file_name: 'clinic_tour_aesthetic.mp4', is_selected: true, uploaded_by: 'influencer', category: 'interior' },
           { id: '2', workspace_id: workspaceId, file_url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4', file_name: 'laser_whitening_setup.mp4', is_selected: false, uploaded_by: 'influencer', category: 'treatment' },
@@ -195,18 +204,20 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         .from('shoot_workspaces')
         .update({ 
           script: scriptText,
-          song_option: songText
+          song_option: songText,
+          hook_option: hookText
         })
         .eq('id', workspace.id);
 
       if (error) throw error;
-      toast.success('Production script & song saved!');
+      toast.success('Production script, song & hook saved!');
     } catch (error: any) {
       console.error('Script error:', error);
       setWorkspace({ 
         ...workspace, 
         script: scriptText,
-        song_option: songText 
+        song_option: songText,
+        hook_option: hookText
       });
       toast.info('Saved production options to mock memory');
     } finally {
@@ -222,7 +233,8 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         .from('shoot_workspaces')
         .update({ 
           creator_script: creatorScriptText,
-          creator_song: creatorSongText
+          creator_song: creatorSongText,
+          creator_hook: creatorHookText
         })
         .eq('id', workspace.id);
 
@@ -233,7 +245,8 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
       setWorkspace({ 
         ...workspace, 
         creator_script: creatorScriptText,
-        creator_song: creatorSongText 
+        creator_song: creatorSongText,
+        creator_hook: creatorHookText
       });
       toast.info('Saved suggestions to mock memory');
     } finally {
@@ -416,6 +429,16 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               </div>
             )}
 
+            {workspace.hook_option && (
+              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-cyan-400 mt-0.5">🪝</span>
+                <div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-cyan-400">Video Hook</div>
+                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.hook_option}</div>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-4 gap-1 border border-white/[0.06] rounded-lg p-0.5 bg-black/40">
               {SHOOT_CATEGORIES.map(cat => (
                 <button
@@ -464,6 +487,17 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Video Hook</label>
+                    <input 
+                      type="text"
+                      value={hookText}
+                      onChange={(e) => setHookText(e.target.value)}
+                      placeholder="e.g., Did you know scaling doesn't loosen teeth?, Stop doing this!"
+                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                    />
+                  </div>
                   
                   <div>
                     <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Script directions</label>
@@ -498,6 +532,18 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                     <div className="text-[10px] text-neutral-500 italic">No final audio specified yet.</div>
                   )}
 
+                  {workspace.hook_option ? (
+                    <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-cyan-400 text-xs">🪝</span>
+                      <div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-cyan-400">Chosen Video Hook</div>
+                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.hook_option}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-neutral-500 italic">No final hook specified yet.</div>
+                  )}
+
                   <div>
                     <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Script</div>
                     {workspace.script ? (
@@ -529,6 +575,17 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       value={creatorSongText}
                       onChange={(e) => setCreatorSongText(e.target.value)}
                       placeholder="e.g., Lofi aesthetic, trending audio link"
+                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Video Hook</label>
+                    <input 
+                      type="text"
+                      value={creatorHookText}
+                      onChange={(e) => setCreatorHookText(e.target.value)}
+                      placeholder="e.g., 3 mistakes you make at the dentist!"
                       className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
                     />
                   </div>
@@ -575,6 +632,30 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                       </div>
                     ) : (
                       <div className="text-[10px] text-neutral-500 italic mt-1">No song suggestions yet.</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                      <span>Suggested Hook</span>
+                      {workspace.creator_hook && (
+                        <button 
+                          onClick={() => {
+                            setHookText(workspace.creator_hook);
+                            toast.success('Hook copied to editor input');
+                          }}
+                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                        >
+                          Use Hook
+                        </button>
+                      )}
+                    </div>
+                    {workspace.creator_hook ? (
+                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                        🪝 {workspace.creator_hook}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-neutral-500 italic mt-1">No hook suggestions yet.</div>
                     )}
                   </div>
 

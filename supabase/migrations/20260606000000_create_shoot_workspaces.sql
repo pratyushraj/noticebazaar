@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS public.shoot_workspaces (
     category text DEFAULT 'treatment'::text NOT NULL,
     song_option text DEFAULT ''::text NOT NULL,
     script text DEFAULT ''::text,
+    hook_option text DEFAULT ''::text NOT NULL,
     creator_script text DEFAULT ''::text NOT NULL,
     creator_song text DEFAULT ''::text NOT NULL,
+    creator_hook text DEFAULT ''::text NOT NULL,
     status text DEFAULT 'uploading'::text NOT NULL,
     brand_id uuid REFERENCES public.brands(id) ON DELETE SET NULL,
     creator_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL

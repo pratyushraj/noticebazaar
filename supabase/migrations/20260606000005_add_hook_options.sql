@@ -1,0 +1,4 @@
+-- Add final and suggested hook columns to shoot_workspaces table
+ALTER TABLE public.shoot_workspaces 
+ADD COLUMN IF NOT EXISTS hook_option text DEFAULT ''::text NOT NULL,
+ADD COLUMN IF NOT EXISTS creator_hook text DEFAULT ''::text NOT NULL;
