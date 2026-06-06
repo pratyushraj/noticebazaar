@@ -1,0 +1,1202 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Brain,
+  Building2,
+  Users,
+  Scissors,
+  HelpCircle,
+  Tag,
+  MessageSquare,
+  BookOpen,
+  CalendarCheck,
+  Stethoscope,
+  Star,
+  AlertTriangle,
+  Phone,
+  Mail,
+  MessageCircle,
+  Trash2,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  Check,
+  X,
+  Sparkles,
+  Zap,
+  Bot,
+  Send,
+  Clock,
+  MapPin,
+  IndianRupee,
+  Flame,
+  Circle,
+  RefreshCw,
+  Activity,
+  CalendarDays,
+  Link2,
+  Shield,
+  UserCheck,
+  TrendingUp,
+  Wifi,
+  ExternalLink,
+  ToggleLeft,
+  ArrowRight,
+} from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import * as Collapsible from '@radix-ui/react-collapsible';
+import * as Checkbox from '@radix-ui/react-checkbox';
+import confetti from 'canvas-confetti';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface StaffMember {
+  id: string;
+  name: string;
+  role: string;
+  days: string[];
+}
+
+interface Service {
+  id: string;
+  name: string;
+  duration: number;
+  price: number;
+  description: string;
+}
+
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+interface Offer {
+  id: string;
+  title: string;
+  description: string;
+  validUntil: string;
+}
+
+interface AIToggle {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  enabled: boolean;
+  color: string;
+}
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'ai';
+  text: string;
+  timestamp: string;
+  isTyping?: boolean;
+}
+
+interface RecentConversation {
+  name: string;
+  inquiry: string;
+  lastSeen: string;
+  temperature: 'hot' | 'warm' | 'cold';
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+const INITIAL_STAFF: StaffMember[] = [
+  { id: '1', name: 'Dr. Priya Sharma', role: 'Dental Surgeon', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] },
+  { id: '2', name: 'Dr. Arjun Mehta', role: 'Orthodontist', days: ['Mon', 'Wed', 'Fri'] },
+];
+
+const INITIAL_SERVICES: Service[] = [
+  { id: '1', name: 'Teeth Cleaning', duration: 45, price: 800, description: 'Professional scaling and polishing' },
+  { id: '2', name: 'Teeth Whitening', duration: 60, price: 3500, description: 'In-clinic laser whitening treatment' },
+  { id: '3', name: 'Root Canal', duration: 90, price: 6000, description: 'Single sitting root canal with rotary files' },
+  { id: '4', name: 'Dental Implant', duration: 120, price: 35000, description: 'Titanium implant with zirconia crown' },
+  { id: '5', name: 'Clear Aligners', duration: 30, price: 45000, description: 'Custom Invisalign-style treatment plan' },
+];
+
+const INITIAL_FAQS: FAQ[] = [
+  { id: '1', question: 'Do you offer EMI?', answer: 'Yes, we offer 0% EMI on treatments above ₹5,000 through Bajaj Finance and HDFC PayLater.' },
+  { id: '2', question: 'Is parking available?', answer: 'Yes, free parking for 2 hours is available in our building basement. Ask reception for the pass.' },
+  { id: '3', question: 'Do you accept insurance?', answer: 'We accept Star Health, Niva Bupa, and ICICI Lombard dental policies.' },
+  { id: '4', question: 'How long does a root canal take?', answer: 'A single-sitting root canal takes approximately 90 minutes. Multi-sitting may be required for complex cases.' },
+];
+
+const INITIAL_OFFERS: Offer[] = [
+  { id: '1', title: 'Summer Smile Package', description: '20% off on teeth whitening + free consultation', validUntil: '2026-06-30' },
+  { id: '2', title: 'New Patient Welcome', description: '₹200 off on your first scaling + free X-ray', validUntil: '2026-07-15' },
+];
+
+const INITIAL_AI_TOGGLES: AIToggle[] = [
+  { id: 'faq', label: 'Answer FAQs', icon: <HelpCircle className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'services', label: 'Explain Services', icon: <BookOpen className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'pricing', label: 'Handle Pricing', icon: <IndianRupee className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'leads', label: 'Capture Leads', icon: <UserCheck className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'booking', label: 'Book Appointments', icon: <CalendarCheck className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'followup', label: 'Follow Up with Leads', icon: <RefreshCw className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'reviews', label: 'Request Reviews', icon: <Star className="w-4 h-4" />, enabled: true, color: 'indigo' },
+  { id: 'escalate', label: 'Escalate Urgent Cases', icon: <AlertTriangle className="w-4 h-4" />, enabled: false, color: 'red' },
+];
+
+const INTEGRATION_OPTIONS = [
+  { id: 'gcal', name: 'Google Calendar', icon: CalendarDays, connected: false },
+  { id: 'zoho', name: 'Zoho Bookings', icon: CalendarCheck, connected: true },
+  { id: 'calendly', name: 'Calendly', icon: Link2, connected: false },
+];
+
+const HANDOFF_TRIGGERS = [
+  { id: 'human_request', label: "Customer says 'speak to human' / 'real person'" },
+  { id: 'emergency', label: 'Emergency keywords detected (pain, bleeding, accident)' },
+  { id: 'complaint', label: 'Complaint or refund request' },
+  { id: 'diagnosis', label: 'Medical diagnosis request' },
+];
+
+const NOTIFY_OPTIONS = ['WhatsApp', 'SMS', 'Email'];
+
+const RECENT_CONVERSATIONS: RecentConversation[] = [
+  { name: 'Rahul Sharma', inquiry: 'Aligners', lastSeen: '3 days ago', temperature: 'hot' },
+  { name: 'Priya Mehta', inquiry: 'Root Canal (booked)', lastSeen: '1 week ago', temperature: 'warm' },
+  { name: 'Arun Singh', inquiry: 'Whitening', lastSeen: '2 weeks ago', temperature: 'cold' },
+];
+
+const DEMO_CONVERSATION: ChatMessage[] = [
+  { id: 'u1', role: 'user', text: 'Hi', timestamp: '10:02 AM' },
+  {
+    id: 'a1', role: 'ai',
+    text: "Welcome to Smile Dental Clinic! 👋 I'm your AI receptionist. How can I help you today?\n\n1️⃣ Book an Appointment\n2️⃣ Know about Services & Pricing\n3️⃣ Talk to a Doctor\n4️⃣ Current Offers",
+    timestamp: '10:02 AM'
+  },
+  { id: 'u2', role: 'user', text: "What's the cost of teeth whitening?", timestamp: '10:03 AM' },
+  {
+    id: 'a2', role: 'ai',
+    text: "Our Teeth Whitening treatment costs ₹3,500 and takes about 60 minutes. ✨\n\nWe also have a **Summer Smile Package** with 20% off — just ₹2,800!\n\nWould you like to book a slot?",
+    timestamp: '10:03 AM'
+  },
+  { id: 'u3', role: 'user', text: 'Yes please', timestamp: '10:04 AM' },
+  {
+    id: 'a3', role: 'ai',
+    text: "Great! Let me check Dr. Priya's availability... 🔍\n\nAvailable slots this week:\n📅 Tomorrow (Tue) — 11 AM or 3 PM\n📅 Thursday — 2 PM or 5 PM\n\nWhich works best for you?",
+    timestamp: '10:04 AM'
+  },
+];
+
+const SCENARIO_SCRIPTS: Record<string, ChatMessage[]> = {
+  pricing: [
+    { id: 'su1', role: 'user', text: 'What are your service charges?', timestamp: 'Now' },
+    { id: 'sa1', role: 'ai', text: "Here's our pricing menu 💰\n\n🦷 Teeth Cleaning — ₹800 (45 min)\n✨ Teeth Whitening — ₹3,500 (60 min)\n🔩 Root Canal — ₹6,000 (90 min)\n💎 Dental Implant — ₹35,000 (120 min)\n\nAll treatments include a free pre-consultation!", timestamp: 'Now' },
+    { id: 'su2', role: 'user', text: 'Is there any discount available?', timestamp: 'Now' },
+    { id: 'sa2', role: 'ai', text: "Yes! We have active offers right now 🎉\n\n🌟 **Summer Smile Package** — 20% off whitening (valid till June 30)\n🎁 **New Patient Welcome** — ₹200 off first scaling + free X-ray\n\nWant me to book you in?", timestamp: 'Now' },
+  ],
+  booking: [
+    { id: 'bu1', role: 'user', text: 'I want to book an appointment for root canal', timestamp: 'Now' },
+    { id: 'ba1', role: 'ai', text: "I'll help you book a Root Canal appointment right away! 🔍\n\nMay I know your name and preferred date?", timestamp: 'Now' },
+    { id: 'bu2', role: 'user', text: 'Vikram Nair, tomorrow if possible', timestamp: 'Now' },
+    { id: 'ba2', role: 'ai', text: "Perfect, Vikram! ✅ Checking availability...\n\n📅 Tomorrow — Dr. Priya Sharma is available at:\n• 10:30 AM\n• 2:00 PM\n• 4:30 PM\n\nWhich slot works best for you?", timestamp: 'Now' },
+    { id: 'bu3', role: 'user', text: '2 PM please', timestamp: 'Now' },
+    { id: 'ba3', role: 'ai', text: "🎉 Confirmed! Your appointment is booked:\n\n👤 Vikram Nair\n📅 Tomorrow at 2:00 PM\n👩‍⚕️ Dr. Priya Sharma\n🦷 Root Canal Treatment\n\nYou'll receive a reminder 2 hours before. See you tomorrow! 😊", timestamp: 'Now' },
+  ],
+  faq: [
+    { id: 'fu1', role: 'user', text: 'Do you provide EMI options?', timestamp: 'Now' },
+    { id: 'fa1', role: 'ai', text: "Yes, we offer 0% EMI on treatments above ₹5,000! 💳\n\nAvailable through:\n✅ Bajaj Finance (3-12 months)\n✅ HDFC PayLater (up to 6 months)\n✅ ZestMoney (3-9 months)\n\nNo processing fee. Approval in 2 minutes!", timestamp: 'Now' },
+    { id: 'fu2', role: 'user', text: 'Do you accept Star Health insurance?', timestamp: 'Now' },
+    { id: 'fa2', role: 'ai', text: "Yes, we accept Star Health insurance! ✅\n\nWe also accept:\n• Niva Bupa\n• ICICI Lombard\n• Care Health\n\nPlease bring your insurance card. Our billing team will handle the rest.", timestamp: 'Now' },
+  ],
+  lead: [
+    { id: 'lu1', role: 'user', text: "I'm interested in clear aligners", timestamp: 'Now' },
+    { id: 'la1', role: 'ai', text: "Great choice! Clear aligners are amazing 😍\n\nOur package includes:\n🔬 3D smile simulation\n📐 Custom aligners\n♾️ Lifetime retainers\n👨‍⚕️ Monthly check-ups\n\nStarting ₹45,000. May I capture your details for a free consultation call?", timestamp: 'Now' },
+    { id: 'lu2', role: 'user', text: 'Sure', timestamp: 'Now' },
+    { id: 'la2', role: 'ai', text: "Perfect! 📝 I've captured your interest.\n\n✅ Lead saved: Clear Aligners\n📞 Our treatment coordinator will call you within 2 hours\n\nName saved. WhatsApp notification sent to clinic. You're all set!", timestamp: 'Now' },
+  ],
+  handoff: [
+    { id: 'hu1', role: 'user', text: 'I want to speak to a real person', timestamp: 'Now' },
+    { id: 'ha1', role: 'ai', text: "Of course! Let me connect you with a team member right away 🔔\n\n⚡ Notifying staff...\n\nDr. Priya's team has been alerted. Someone will join this chat in under 3 minutes.\n\nIn the meantime, is there anything I can help with?", timestamp: 'Now' },
+    { id: 'hu2', role: 'user', text: "I've been having severe tooth pain since yesterday", timestamp: 'Now' },
+    { id: 'ha2', role: 'ai', text: "I'm so sorry to hear that 💙 This sounds urgent!\n\n🚨 **Emergency escalation triggered**\n\nI've sent an urgent alert to Dr. Priya. For immediate help:\n📞 Call us: +91 98765 43210\n📍 Walk-in available 10 AM – 8 PM\n\nPlease don't wait — we'll prioritize you!", timestamp: 'Now' },
+  ],
+  returning: [
+    { id: 'ru1', role: 'user', text: 'Hi, I visited 3 months ago for scaling', timestamp: 'Now' },
+    { id: 'ra1', role: 'ai', text: "Welcome back! 👋 Great to hear from you again!\n\nIt's been 3 months since your last cleaning — perfect time for a check-up!\n\n🦷 Would you like to schedule your next scaling session?\n⭐ As a returning patient, you get **₹100 off** on your next visit!", timestamp: 'Now' },
+    { id: 'ru2', role: 'user', text: 'Yes that sounds good', timestamp: 'Now' },
+    { id: 'ra2', role: 'ai', text: "Wonderful! Let me book your session 🎉\n\n📅 Available this week:\n• Wednesday — 11 AM, 3 PM, 5 PM\n• Saturday — 10 AM, 12 PM, 2 PM\n\nWhich works for you?", timestamp: 'Now' },
+  ],
+};
+
+// ─── Sub-components ────────────────────────────────────────────────────────────
+
+const GlassInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
+  <input
+    {...props}
+    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/60 focus:bg-white/8 transition-all ${props.className || ''}`}
+  />
+);
+
+const GlassTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
+  <textarea
+    {...props}
+    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/60 focus:bg-white/8 transition-all resize-none ${props.className || ''}`}
+  />
+);
+
+const GlassSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ children, ...props }) => (
+  <select
+    {...props}
+    className={`w-full bg-[#0e1220] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500/60 transition-all appearance-none ${props.className || ''}`}
+  >
+    {children}
+  </select>
+);
+
+const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">{children}</label>
+);
+
+// ─── Main Component ────────────────────────────────────────────────────────────
+
+export default function ReactivationReceptionist() {
+  // ── Business Profile State
+  const [clinicName, setClinicName] = useState('Smile Dental Clinic');
+  const [industry, setIndustry] = useState('Dental Clinic');
+  const [address, setAddress] = useState('Shop 12, Andheri West, Mumbai, Maharashtra 400058');
+  const [phone, setPhone] = useState('+91 98765 43210');
+  const [workingHours, setWorkingHours] = useState('Mon–Sat: 10:00 AM – 8:00 PM');
+  const [timingsNote, setTimingsNote] = useState('Closed on Sundays & public holidays. Emergency contact: +91 99887 76655');
+
+  // ── Staff State
+  const [staff, setStaff] = useState<StaffMember[]>(INITIAL_STAFF);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [newStaffRole, setNewStaffRole] = useState('');
+  const [newStaffDays, setNewStaffDays] = useState<string[]>([]);
+
+  // ── Services State
+  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
+  const [newService, setNewService] = useState({ name: '', duration: '', price: '', description: '' });
+
+  // ── FAQs State
+  const [faqs, setFaqs] = useState<FAQ[]>(INITIAL_FAQS);
+  const [newFaq, setNewFaq] = useState({ question: '', answer: '' });
+  const [expandedFaq, setExpandedFaq] = useState<string | undefined>(undefined);
+
+  // ── Offers State
+  const [offers, setOffers] = useState<Offer[]>(INITIAL_OFFERS);
+  const [newOffer, setNewOffer] = useState({ title: '', description: '', validUntil: '' });
+
+  // ── AI Toggles State
+  const [aiToggles, setAiToggles] = useState<AIToggle[]>(INITIAL_AI_TOGGLES);
+
+  // ── Integration State
+  const [integrations, setIntegrations] = useState(INTEGRATION_OPTIONS);
+
+  // ── Handoff State
+  const [handoffOpen, setHandoffOpen] = useState(false);
+  const [enabledTriggers, setEnabledTriggers] = useState<string[]>(['human_request', 'emergency', 'complaint']);
+  const [notifyVia, setNotifyVia] = useState('WhatsApp');
+
+  // ── Train AI State
+  const [trainState, setTrainState] = useState<'idle' | 'loading' | 'success'>('idle');
+
+  // ── Chat State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(DEMO_CONVERSATION);
+  const [activeScenario, setActiveScenario] = useState<string | null>(null);
+  const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // ── Scroll chat to bottom on new message
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTop = chatRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  // ── Staff Handlers
+  const addStaff = () => {
+    if (!newStaffName.trim()) return;
+    setStaff(prev => [...prev, {
+      id: crypto.randomUUID(),
+      name: newStaffName,
+      role: newStaffRole,
+      days: newStaffDays,
+    }]);
+    setNewStaffName(''); setNewStaffRole(''); setNewStaffDays([]);
+  };
+
+  const toggleStaffDay = (day: string) => {
+    setNewStaffDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  };
+
+  // ── Service Handlers
+  const addService = () => {
+    if (!newService.name.trim()) return;
+    setServices(prev => [...prev, {
+      id: crypto.randomUUID(),
+      name: newService.name,
+      duration: Number(newService.duration),
+      price: Number(newService.price),
+      description: newService.description,
+    }]);
+    setNewService({ name: '', duration: '', price: '', description: '' });
+  };
+
+  // ── FAQ Handlers
+  const addFaq = () => {
+    if (!newFaq.question.trim()) return;
+    setFaqs(prev => [...prev, { id: crypto.randomUUID(), ...newFaq }]);
+    setNewFaq({ question: '', answer: '' });
+  };
+
+  // ── Offer Handlers
+  const addOffer = () => {
+    if (!newOffer.title.trim()) return;
+    setOffers(prev => [...prev, { id: crypto.randomUUID(), ...newOffer }]);
+    setNewOffer({ title: '', description: '', validUntil: '' });
+  };
+
+  const daysUntil = (dateStr: string) => {
+    const diff = new Date(dateStr).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  };
+
+  // ── AI Toggle Handler
+  const toggleAI = (id: string) => {
+    setAiToggles(prev => prev.map(t => t.id === id ? { ...t, enabled: !t.enabled } : t));
+  };
+
+  // ── Integration Handler
+  const toggleIntegration = (id: string) => {
+    setIntegrations(prev => prev.map(i => i.id === id ? { ...i, connected: !i.connected } : i));
+  };
+
+  // ── Train AI Handler
+  const handleTrainAI = async () => {
+    setTrainState('loading');
+    await new Promise(r => setTimeout(r, 2400));
+    setTrainState('success');
+    confetti({
+      particleCount: 120,
+      spread: 80,
+      origin: { y: 0.6 },
+      colors: ['#6366f1', '#8b5cf6', '#10b981', '#f59e0b', '#ffffff'],
+    });
+    setTimeout(() => setTrainState('idle'), 5000);
+  };
+
+  // ── Chat Scenario Handler
+  const runScenario = useCallback((scenarioKey: string) => {
+    if (activeScenario === scenarioKey) return;
+    setActiveScenario(scenarioKey);
+    const script = SCENARIO_SCRIPTS[scenarioKey];
+    if (!script) return;
+
+    setChatMessages([]);
+    let delay = 0;
+
+    script.forEach((msg, idx) => {
+      const msgDelay = delay;
+      delay += msg.role === 'user' ? 600 : 1800;
+
+      setTimeout(() => {
+        if (msg.role === 'ai') {
+          // Show typing indicator first
+          const typingId = `typing-${msg.id}`;
+          setChatMessages(prev => [...prev, { id: typingId, role: 'ai', text: '', timestamp: 'Now', isTyping: true }]);
+          setTypingMessageId(typingId);
+
+          setTimeout(() => {
+            setChatMessages(prev => prev.filter(m => m.id !== typingId).concat({ ...msg }));
+            setTypingMessageId(null);
+          }, 1200);
+        } else {
+          setChatMessages(prev => [...prev, msg]);
+        }
+      }, msgDelay);
+    });
+  }, [activeScenario]);
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <div className="min-h-screen bg-[#080C14] text-white font-sans relative overflow-hidden">
+      {/* Ambient background glows */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-[140px]" />
+        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-violet-600/6 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-20 left-1/3 w-[400px] h-[300px] bg-emerald-500/5 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Top header bar */}
+      <div className="relative z-10 border-b border-white/5 bg-[#080C14]/80 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <Bot className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-white leading-none">AI Receptionist Setup</h1>
+            <p className="text-[11px] text-white/40 mt-0.5">Customer Reactivation Module</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[11px] font-semibold text-emerald-400">System Online</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+            <Activity className="w-3 h-3 text-white/50" />
+            <span className="text-[11px] font-medium text-white/50">Smile Dental Clinic</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main two-column layout */}
+      <div className="relative z-10 flex h-[calc(100vh-65px)]">
+
+        {/* ══════════════════════════════════════════════════════
+            LEFT PANEL — Knowledge Base Setup
+        ══════════════════════════════════════════════════════ */}
+        <div className="w-1/2 flex flex-col h-full overflow-y-auto border-r border-white/5 scrollbar-hide">
+          <div className="p-6 pb-2">
+            {/* Header */}
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+              <div className="flex items-center gap-2 mb-1">
+                <Brain className="w-5 h-5 text-indigo-400" />
+                <h2 className="text-lg font-bold text-white">Train Your AI Receptionist</h2>
+              </div>
+              <p className="text-sm text-white/40">Teach the AI everything about your clinic</p>
+            </motion.div>
+          </div>
+
+          {/* ── 5-Tab System ── */}
+          <div className="px-6 pb-2 flex-shrink-0">
+            <Tabs defaultValue="business">
+              <TabsList className="w-full grid grid-cols-5 bg-white/5 border border-white/10 rounded-xl p-1 gap-0.5 h-auto">
+                {[
+                  { value: 'business', icon: Building2, label: 'Business' },
+                  { value: 'staff', icon: Users, label: 'Staff' },
+                  { value: 'services', icon: Scissors, label: 'Services' },
+                  { value: 'faqs', icon: HelpCircle, label: 'FAQs' },
+                  { value: 'offers', icon: Tag, label: 'Offers' },
+                ].map(tab => (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] font-semibold text-white/40 data-[state=active]:text-white data-[state=active]:bg-indigo-600/30 data-[state=active]:border data-[state=active]:border-indigo-500/40 transition-all"
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              {/* ── Tab 1: Business Profile ── */}
+              <TabsContent value="business" className="mt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <SectionLabel>Clinic / Business Name</SectionLabel>
+                    <GlassInput value={clinicName} onChange={e => setClinicName(e.target.value)} placeholder="e.g. Smile Dental Clinic" />
+                  </div>
+                  <div>
+                    <SectionLabel>Industry / Type</SectionLabel>
+                    <GlassSelect value={industry} onChange={e => setIndustry(e.target.value)}>
+                      {['Dental Clinic', 'Salon', 'Gym', 'Skin Clinic', 'Aesthetic Clinic', 'Restaurant'].map(opt => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </GlassSelect>
+                  </div>
+                </div>
+                <div>
+                  <SectionLabel>Address</SectionLabel>
+                  <GlassTextarea rows={2} value={address} onChange={e => setAddress(e.target.value)} placeholder="Full clinic address..." />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <SectionLabel>Phone Number</SectionLabel>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+                      <GlassInput className="pl-9" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 ..." />
+                    </div>
+                  </div>
+                  <div>
+                    <SectionLabel>Working Hours</SectionLabel>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+                      <GlassInput className="pl-9" value={workingHours} onChange={e => setWorkingHours(e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <SectionLabel>Timings Note (Holidays, Exceptions)</SectionLabel>
+                  <GlassTextarea rows={2} value={timingsNote} onChange={e => setTimingsNote(e.target.value)} placeholder="e.g. Closed on 2nd Saturday..." />
+                </div>
+              </TabsContent>
+
+              {/* ── Tab 2: Staff ── */}
+              <TabsContent value="staff" className="mt-4 space-y-4">
+                {/* Add Staff Form */}
+                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add Staff Member</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <SectionLabel>Name</SectionLabel>
+                      <GlassInput value={newStaffName} onChange={e => setNewStaffName(e.target.value)} placeholder="Dr. Aarav Kumar" />
+                    </div>
+                    <div>
+                      <SectionLabel>Role / Specialization</SectionLabel>
+                      <GlassInput value={newStaffRole} onChange={e => setNewStaffRole(e.target.value)} placeholder="Orthodontist" />
+                    </div>
+                  </div>
+                  <div>
+                    <SectionLabel>Available Days</SectionLabel>
+                    <div className="flex gap-2 flex-wrap">
+                      {DAYS_OF_WEEK.map(day => (
+                        <button
+                          key={day}
+                          onClick={() => toggleStaffDay(day)}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${newStaffDays.includes(day) ? 'bg-indigo-600/30 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'}`}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button onClick={addStaff} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                    <Plus className="w-3.5 h-3.5" /> Add Staff Member
+                  </button>
+                </div>
+
+                {/* Staff Cards */}
+                <div className="space-y-2">
+                  {staff.map((member, i) => (
+                    <motion.div
+                      key={member.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="flex items-center justify-between bg-white/3 border border-white/8 rounded-xl p-3.5 group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center">
+                          <Stethoscope className="w-3.5 h-3.5 text-indigo-400" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{member.name}</p>
+                          <p className="text-xs text-white/40">{member.role} • {member.days.join(', ') || 'All days'}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setStaff(prev => prev.filter(s => s.id !== member.id))}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* ── Tab 3: Services & Pricing ── */}
+              <TabsContent value="services" className="mt-4 space-y-4">
+                {/* Add Service Form */}
+                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add Service</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-3">
+                      <SectionLabel>Service Name</SectionLabel>
+                      <GlassInput value={newService.name} onChange={e => setNewService(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Composite Bonding" />
+                    </div>
+                    <div>
+                      <SectionLabel>Duration (min)</SectionLabel>
+                      <GlassInput type="number" value={newService.duration} onChange={e => setNewService(p => ({ ...p, duration: e.target.value }))} placeholder="60" />
+                    </div>
+                    <div>
+                      <SectionLabel>Price (₹)</SectionLabel>
+                      <GlassInput type="number" value={newService.price} onChange={e => setNewService(p => ({ ...p, price: e.target.value }))} placeholder="2500" />
+                    </div>
+                    <div>
+                      <SectionLabel>Description</SectionLabel>
+                      <GlassInput value={newService.description} onChange={e => setNewService(p => ({ ...p, description: e.target.value }))} placeholder="Brief note" />
+                    </div>
+                  </div>
+                  <button onClick={addService} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                    <Plus className="w-3.5 h-3.5" /> Add Service
+                  </button>
+                </div>
+
+                {/* Services Table */}
+                <div className="bg-white/3 border border-white/8 rounded-xl overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-white/8">
+                        <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-2.5">Service</th>
+                        <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-2.5">Duration</th>
+                        <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-2.5">Price</th>
+                        <th className="px-2 py-2.5" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {services.map((svc, i) => (
+                        <motion.tr
+                          key={svc.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: i * 0.04 }}
+                          className="border-b border-white/5 last:border-0 hover:bg-white/2 group"
+                        >
+                          <td className="px-4 py-3">
+                            <p className="text-sm font-medium text-white">{svc.name}</p>
+                            <p className="text-[11px] text-white/30">{svc.description}</p>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-white/60">{svc.duration} min</td>
+                          <td className="px-4 py-3">
+                            <span className="text-sm font-semibold text-emerald-400">₹{svc.price.toLocaleString('en-IN')}</span>
+                          </td>
+                          <td className="px-2 py-3">
+                            <button
+                              onClick={() => setServices(prev => prev.filter(s => s.id !== svc.id))}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+
+              {/* ── Tab 4: FAQs ── */}
+              <TabsContent value="faqs" className="mt-4 space-y-4">
+                {/* Add FAQ Form */}
+                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add FAQ</p>
+                  <div>
+                    <SectionLabel>Question</SectionLabel>
+                    <GlassInput value={newFaq.question} onChange={e => setNewFaq(p => ({ ...p, question: e.target.value }))} placeholder="e.g. Do you offer home visits?" />
+                  </div>
+                  <div>
+                    <SectionLabel>Answer</SectionLabel>
+                    <GlassTextarea rows={3} value={newFaq.answer} onChange={e => setNewFaq(p => ({ ...p, answer: e.target.value }))} placeholder="Detailed answer..." />
+                  </div>
+                  <button onClick={addFaq} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                    <Plus className="w-3.5 h-3.5" /> Add FAQ
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  {faqs.map((faq, i) => {
+                    const isOpen = expandedFaq === faq.id;
+                    return (
+                      <motion.div key={faq.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                        <div className="bg-white/3 border border-white/8 rounded-xl overflow-hidden">
+                          <button
+                            onClick={() => setExpandedFaq(isOpen ? undefined : faq.id)}
+                            className="w-full flex items-center justify-between px-4 py-3 text-left group hover:bg-white/3 transition-all"
+                          >
+                            <span className="text-sm font-medium text-white">{faq.question}</span>
+                            <div className="flex items-center gap-2">
+                              <span
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFaqs(prev => prev.filter(f => f.id !== faq.id));
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all cursor-pointer inline-flex items-center justify-center"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </span>
+                              <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                            </div>
+                          </button>
+                          <AnimatePresence initial={false}>
+                            {isOpen && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="px-4 pb-3 text-sm text-white/50 leading-relaxed">
+                                  {faq.answer}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              {/* ── Tab 5: Active Offers ── */}
+              <TabsContent value="offers" className="mt-4 space-y-4">
+                {/* Add Offer Form */}
+                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add Offer</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <SectionLabel>Title</SectionLabel>
+                      <GlassInput value={newOffer.title} onChange={e => setNewOffer(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Monsoon Special" />
+                    </div>
+                    <div>
+                      <SectionLabel>Valid Until</SectionLabel>
+                      <GlassInput type="date" value={newOffer.validUntil} onChange={e => setNewOffer(p => ({ ...p, validUntil: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div>
+                    <SectionLabel>Description</SectionLabel>
+                    <GlassTextarea rows={2} value={newOffer.description} onChange={e => setNewOffer(p => ({ ...p, description: e.target.value }))} placeholder="Offer details..." />
+                  </div>
+                  <button onClick={addOffer} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                    <Plus className="w-3.5 h-3.5" /> Add Offer
+                  </button>
+                </div>
+
+                {/* Offers Cards */}
+                <div className="space-y-3">
+                  {offers.map((offer, i) => {
+                    const days = daysUntil(offer.validUntil);
+                    return (
+                      <motion.div
+                        key={offer.id}
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.07 }}
+                        className="bg-white/3 border border-white/8 rounded-xl p-4 relative overflow-hidden group"
+                      >
+                        {/* Glow strip */}
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-semibold text-white">{offer.title}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Active</span>
+                            </div>
+                            <p className="text-xs text-white/50">{offer.description}</p>
+                            <p className="text-[11px] text-amber-400 mt-1.5">
+                              ⏳ {days > 0 ? `${days} days remaining` : 'Expired'} · Valid till {offer.validUntil}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setOffers(prev => prev.filter(o => o.id !== offer.id))}
+                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* ── AI Responsibility Toggles ── */}
+          <div className="px-6 py-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">AI Responsibilities</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {aiToggles.map((toggle) => (
+                <motion.div
+                  key={toggle.id}
+                  whileHover={{ scale: 1.01 }}
+                  onClick={() => toggleAI(toggle.id)}
+                  className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                    toggle.enabled
+                      ? toggle.color === 'red'
+                        ? 'bg-red-500/10 border-red-500/25 shadow-sm shadow-red-500/10'
+                        : 'bg-indigo-600/10 border-indigo-500/25 shadow-sm shadow-indigo-500/10'
+                      : 'bg-white/3 border-white/8'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={toggle.enabled ? (toggle.color === 'red' ? 'text-red-400' : 'text-indigo-400') : 'text-white/30'}>
+                      {toggle.icon}
+                    </span>
+                    <span className={`text-xs font-medium ${toggle.enabled ? 'text-white' : 'text-white/40'}`}>
+                      {toggle.label}
+                    </span>
+                  </div>
+                  <div
+                    className={`w-8 h-4 rounded-full transition-all relative flex-shrink-0 ${
+                      toggle.enabled
+                        ? toggle.color === 'red' ? 'bg-red-500' : 'bg-indigo-500'
+                        : 'bg-white/15'
+                    }`}
+                  >
+                    <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-all ${toggle.enabled ? 'left-4.5 translate-x-0.5' : 'left-0.5'}`} style={{ left: toggle.enabled ? '18px' : '2px' }} />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Booking Integration ── */}
+          <div className="px-6 py-2 pb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <CalendarDays className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-bold text-white">Booking Integration</h3>
+            </div>
+            <div className="space-y-2">
+              {integrations.map((intg) => (
+                <div key={intg.id} className="flex items-center justify-between bg-white/3 border border-white/8 rounded-xl p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center">
+                      <intg.icon className="w-4 h-4 text-white/60" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{intg.name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${intg.connected ? 'bg-emerald-400' : 'bg-white/20'}`} />
+                        <span className={`text-[11px] ${intg.connected ? 'text-emerald-400' : 'text-white/30'}`}>
+                          {intg.connected ? 'Connected' : 'Not Connected'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleIntegration(intg.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      intg.connected
+                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-red-500/10 hover:border-red-500/25 hover:text-red-400'
+                        : 'bg-indigo-600/15 border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/25'
+                    }`}
+                  >
+                    {intg.connected ? 'Disconnect' : 'Connect'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Human Handoff Triggers ── */}
+          <div className="px-6 pb-4">
+            <Collapsible.Root open={handoffOpen} onOpenChange={setHandoffOpen}>
+              <Collapsible.Trigger className="w-full flex items-center justify-between bg-white/3 border border-white/8 rounded-xl px-4 py-3 hover:bg-white/5 transition-all group">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-amber-400" />
+                  <span className="text-sm font-bold text-white">Human Handoff Triggers</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400">
+                    {enabledTriggers.length} active
+                  </span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-200 ${handoffOpen ? 'rotate-180' : ''}`} />
+              </Collapsible.Trigger>
+              <Collapsible.Content className="mt-2 space-y-2">
+                <div className="bg-white/2 border border-white/6 rounded-xl p-4 space-y-3">
+                  {HANDOFF_TRIGGERS.map(trigger => (
+                    <div key={trigger.id} className="flex items-center gap-3">
+                      <button
+                        onClick={() => setEnabledTriggers(prev => prev.includes(trigger.id) ? prev.filter(t => t !== trigger.id) : [...prev, trigger.id])}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-all flex-shrink-0 ${enabledTriggers.includes(trigger.id) ? 'bg-indigo-600 border-indigo-500' : 'bg-white/5 border-white/15'}`}
+                      >
+                        {enabledTriggers.includes(trigger.id) && <Check className="w-2.5 h-2.5 text-white" />}
+                      </button>
+                      <span className="text-xs text-white/70">{trigger.label}</span>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-white/8">
+                    <SectionLabel>Notify Team Via</SectionLabel>
+                    <div className="flex gap-2">
+                      {NOTIFY_OPTIONS.map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => setNotifyVia(opt)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${notifyVia === opt ? 'bg-indigo-600/20 border-indigo-500/40 text-indigo-300' : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'}`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Collapsible.Content>
+            </Collapsible.Root>
+          </div>
+
+          {/* ── Train AI CTA ── */}
+          <div className="px-6 pb-8 mt-auto">
+            <motion.button
+              onClick={trainState === 'idle' ? handleTrainAI : undefined}
+              whileHover={trainState === 'idle' ? { scale: 1.01 } : {}}
+              whileTap={trainState === 'idle' ? { scale: 0.98 } : {}}
+              disabled={trainState === 'loading'}
+              className={`w-full py-4 rounded-2xl font-bold text-base transition-all relative overflow-hidden ${
+                trainState === 'success'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30'
+                  : trainState === 'loading'
+                  ? 'bg-gradient-to-r from-indigo-600/70 to-violet-600/70 text-white/70 cursor-wait'
+                  : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50'
+              }`}
+            >
+              {/* Animated shine */}
+              {trainState === 'idle' && (
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              )}
+              <AnimatePresence mode="wait">
+                {trainState === 'loading' && (
+                  <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-3">
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    <span>Training AI Receptionist...</span>
+                  </motion.div>
+                )}
+                {trainState === 'success' && (
+                  <motion.div key="success" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-3">
+                    <Sparkles className="w-5 h-5 text-emerald-200 animate-pulse" />
+                    <span>AI is Live ✨ Knowledge Base Updated!</span>
+                  </motion.div>
+                )}
+                {trainState === 'idle' && (
+                  <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-3">
+                    <Brain className="w-5 h-5" />
+                    <span>Train AI Receptionist</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════════
+            RIGHT PANEL — Live WhatsApp Chat Preview
+        ══════════════════════════════════════════════════════ */}
+        <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-[#080C14] scrollbar-hide">
+          <div className="flex flex-col items-center py-6 px-6 h-full">
+
+            {/* Panel header */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full max-w-[400px] mb-4"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-emerald-400" />
+                    Live Chat Preview
+                  </h2>
+                  <p className="text-sm text-white/40">Test how your AI responds</p>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                  <Wifi className="w-3 h-3 text-emerald-400" />
+                  <span className="text-[10px] font-bold text-emerald-400">LIVE</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* ── WhatsApp Phone Frame ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="w-full max-w-[380px] flex-shrink-0"
+            >
+              {/* Phone shell */}
+              <div className="rounded-[2rem] border-2 border-white/10 shadow-2xl shadow-black/60 overflow-hidden bg-[#111b21]">
+
+                {/* WhatsApp Header */}
+                <div className="bg-[#202c33] px-4 py-3 flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#202c33]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-white leading-none">{clinicName || 'Smile Dental Clinic'}</p>
+                    <p className="text-[11px] text-emerald-400 mt-0.5">AI Receptionist • Online</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-white/60" />
+                    <ExternalLink className="w-4 h-4 text-white/60" />
+                  </div>
+                </div>
+
+                {/* Chat area */}
+                <div
+                  ref={chatRef}
+                  className="h-[380px] overflow-y-auto bg-[#0b141a] px-4 py-3 space-y-2 scrollbar-hide"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\'%3E%3Ccircle cx=\'30\' cy=\'30\' r=\'1\' fill=\'%23ffffff04\'/%3E%3C/svg%3E")' }}
+                >
+                  {/* Date divider */}
+                  <div className="flex items-center justify-center">
+                    <span className="text-[10px] text-white/30 bg-white/5 px-3 py-0.5 rounded-full">Today</span>
+                  </div>
+
+                  <AnimatePresence>
+                    {chatMessages.map((msg) => (
+                      <motion.div
+                        key={msg.id}
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-[80%] px-3 py-2 rounded-xl text-xs leading-relaxed relative ${
+                            msg.role === 'user'
+                              ? 'bg-[#005c4b] text-white rounded-tr-sm'
+                              : 'bg-[#202c33] text-white/90 rounded-tl-sm'
+                          }`}
+                        >
+                          {msg.isTyping ? (
+                            <div className="flex gap-1 py-1 px-1">
+                              {[0, 1, 2].map(i => (
+                                <div
+                                  key={i}
+                                  className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce"
+                                  style={{ animationDelay: `${i * 0.15}s` }}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <>
+                              <p className="whitespace-pre-line">{msg.text}</p>
+                              <p className="text-[9px] text-white/30 text-right mt-1">{msg.timestamp}</p>
+                            </>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Chat input bar */}
+                <div className="bg-[#202c33] px-3 py-2 flex items-center gap-2">
+                  <div className="flex-1 bg-[#2a3942] rounded-full px-4 py-2 text-xs text-white/30">
+                    Type a message...
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
+                    <Send className="w-3.5 h-3.5 text-white ml-0.5" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* ── Scenario Buttons ── */}
+            <div className="w-full max-w-[380px] mt-4">
+              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider mb-2">Test Scenarios</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { key: 'pricing', label: 'Ask Pricing', icon: IndianRupee },
+                  { key: 'booking', label: 'Book Appt.', icon: CalendarCheck },
+                  { key: 'faq', label: 'Test FAQ', icon: HelpCircle },
+                  { key: 'lead', label: 'Capture Lead', icon: UserCheck },
+                  { key: 'handoff', label: 'Test Handoff', icon: Phone },
+                  { key: 'returning', label: 'Returning Patient', icon: RefreshCw },
+                ].map(({ key, label, icon: Icon }) => (
+                  <motion.button
+                    key={key}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => runScenario(key)}
+                    className={`flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border text-xs font-semibold transition-all ${
+                      activeScenario === key
+                        ? 'bg-indigo-600/25 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/20'
+                        : 'bg-white/3 border-white/8 text-white/50 hover:text-white hover:bg-white/6 hover:border-white/15'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {label}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Recent Conversations ── */}
+            <div className="w-full max-w-[380px] mt-5">
+              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider mb-2">Recent Conversations</p>
+              <div className="space-y-2">
+                {RECENT_CONVERSATIONS.map((conv, i) => {
+                  const tempConfig = {
+                    hot: { label: 'Hot 🔥', class: 'text-red-400 bg-red-500/10 border-red-500/20' },
+                    warm: { label: 'Warm 🟡', class: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+                    cold: { label: 'Cold 🔵', class: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+                  }[conv.temperature];
+
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.07 }}
+                      className="flex items-center justify-between bg-white/3 border border-white/8 rounded-xl px-4 py-3 hover:bg-white/5 transition-all"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-violet-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300">
+                          {conv.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{conv.name}</p>
+                          <p className="text-[11px] text-white/40">Inquiry: {conv.inquiry} · {conv.lastSeen}</p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${tempConfig.class}`}>
+                        {tempConfig.label}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Lead Qualification Mini-Panel ── */}
+            <div className="w-full max-w-[380px] mt-4 mb-6">
+              <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-indigo-400" />
+                    <span className="text-sm font-bold text-white">Leads Captured Today</span>
+                  </div>
+                  <span className="text-xl font-black text-white">5</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Hot', count: 2, emoji: '🔥', color: 'red' },
+                    { label: 'Warm', count: 2, emoji: '🟡', color: 'amber' },
+                    { label: 'Cold', count: 1, emoji: '🔵', color: 'blue' },
+                  ].map(stat => (
+                    <div
+                      key={stat.label}
+                      className={`text-center py-2.5 px-2 rounded-xl border ${
+                        stat.color === 'red' ? 'bg-red-500/8 border-red-500/15' :
+                        stat.color === 'amber' ? 'bg-amber-500/8 border-amber-500/15' :
+                        'bg-blue-500/8 border-blue-500/15'
+                      }`}
+                    >
+                      <span className="text-lg">{stat.emoji}</span>
+                      <p className={`text-xl font-black mt-0.5 ${
+                        stat.color === 'red' ? 'text-red-400' :
+                        stat.color === 'amber' ? 'text-amber-400' :
+                        'text-blue-400'
+                      }`}>
+                        {stat.count}
+                      </p>
+                      <p className="text-[10px] text-white/40 font-semibold">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 pt-3 border-t border-white/6 flex items-center justify-between">
+                  <span className="text-[11px] text-white/40">Conversion rate</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-1.5 rounded-full bg-white/8 overflow-hidden">
+                      <div className="h-full w-[40%] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
+                    </div>
+                    <span className="text-[11px] font-bold text-indigo-400">40%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
