@@ -38,6 +38,7 @@ interface Service {
   price: string;
   description: string;
   icon: string;
+  img: string;
 }
 
 const SERVICES: Service[] = [
@@ -46,42 +47,48 @@ const SERVICES: Service[] = [
     duration: "90 mins",
     price: "Starting from ₹24,999",
     description: "Permanent, natural-looking tooth replacements utilizing top-tier titanium implants.",
-    icon: "implants"
+    icon: "implants",
+    img: "/assets/yourdentist/interior_operatory.jpg"
   },
   {
     name: "Porcelain Veneers & Smile Makeovers",
     duration: "120 mins",
     price: "Starting from ₹12,000/tooth",
     description: "Porcelain and composite veneers for full arch cosmetic smile transformations.",
-    icon: "whitening"
+    icon: "whitening",
+    img: "/assets/yourdentist/veneer_case_1.png"
   },
   {
     name: "Clear Aligners",
     duration: "30 mins",
     price: "Starting from ₹45,000",
     description: "Invisible teeth straightening braces with complete digital 3D planning.",
-    icon: "aligners"
+    icon: "aligners",
+    img: "/assets/yourdentist/dr_with_patient_1.jpg"
   },
   {
     name: "Painless Root Canal",
     duration: "90 mins",
     price: "Starting from ₹5,999",
     description: "Save damaged teeth with computerized micro-dentistry under local anesthesia.",
-    icon: "rootcanal"
+    icon: "rootcanal",
+    img: "/assets/yourdentist/clinic_in_action.jpg"
   },
   {
     name: "Laser Teeth Whitening",
     duration: "60 mins",
     price: "Starting from ₹4,999",
     description: "Brighten your smile up to 8 shades in a single session with our painless laser technology.",
-    icon: "cleaning"
+    icon: "cleaning",
+    img: "/assets/yourdentist/patient_happy_1.jpg"
   },
   {
     name: "Teeth Cleaning & Polish",
     duration: "45 mins",
     price: "Starting from ₹999",
     description: "Deep scaling to remove plaque and calculus, finished with professional stains polishing.",
-    icon: "pediatric"
+    icon: "pediatric",
+    img: "/assets/yourdentist/patient_happy_3.png"
   }
 ];
 
@@ -113,7 +120,7 @@ const BEFORE_AFTER_IMAGES = [
   },
   {
     title: "Premium Smile Makeover",
-    before: "/assets/yourdentist/gap_before.png",
+    before: "/assets/yourdentist/gap_case_2.png",
     after: "/assets/yourdentist/veneer_case_1.png",
     desc: "Porcelain veneers for full arch cosmetic smile designing."
   },
@@ -194,7 +201,7 @@ const PATIENT_CASES = [
     patientName: "Anjali S. (Patna)",
     testimonial: "I couldn't smile confidently for years. Dr. Aryan completed my veneers in just 2 sessions. Completely painless and life-changing.",
     video: "/assets/yourdentist/posto_reel_insta_optimized.mp4",
-    thumbnail: "/assets/yourdentist/gap_after.png"
+    thumbnail: "/assets/yourdentist/patient_happy_1.jpg"
   },
   {
     title: "Dental Implant Rehabilitation",
@@ -319,7 +326,7 @@ export default function DentistWebsite() {
       <SEOHead
         title="YOUR DENTIST | Dr. Aryan Parmar Patna — Painless Dentistry"
         description="Premium dental clinic in Patna. Painless implants, laser whitening, root canals, and invisible aligners under Dr. Aryan Parmar."
-        image="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=1200"
+        image="/assets/yourdentist/exterior_day.jpg"
         imageAlt="YOUR DENTIST Patna Clinic"
         canonicalUrl="https://creatorarmour.com/dentist-website"
         jsonLd={{
@@ -498,28 +505,28 @@ export default function DentistWebsite() {
               </div>
             </div>
 
-            {/* Right Column: Real Patient Outcomes Image (CRO Priority 2) */}
+            {/* Right Column: Real Clinic Consultation (Authenticity Focused) */}
             <div className="lg:col-span-6 flex justify-center relative min-h-[300px] lg:min-h-[400px] items-center">
               <div className="absolute w-[280px] h-[280px] bg-[#5b72ff]/10 rounded-full blur-[80px] opacity-40 mix-blend-screen pointer-events-none" />
               
-              {/* Premium Patient Outcomes Frame */}
-              <div className="relative z-10 w-full max-w-sm rounded-3xl overflow-hidden border border-neutral-200/80 bg-white p-2.5 shadow-xl">
-                <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-neutral-50 border border-neutral-100 relative">
+              {/* Premium Clinical Consultation Frame */}
+              <div className="relative z-10 w-full max-w-md rounded-[32px] overflow-hidden border border-neutral-200/80 bg-white p-3 shadow-2xl">
+                <div className="aspect-[4/3] w-full rounded-[24px] overflow-hidden bg-neutral-50 border border-neutral-100 relative">
                   <img
-                    src="/assets/yourdentist/veneer_case_1.png"
-                    alt="Real Patient Smile outcome"
+                    src="/assets/yourdentist/dr_with_patient_1.jpg"
+                    alt="Dr. Aryan Parmar in Consultation"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute top-3 left-3 bg-neutral-900/90 border border-neutral-800 px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest text-emerald-400">
-                    ✓ Smile Makeover Result
+                  <div className="absolute top-4 left-4 bg-neutral-900/90 border border-neutral-800 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest text-emerald-400">
+                    ✓ Direct Diagnostic Consultation
                   </div>
-                  <div className="absolute bottom-3 right-3 bg-neutral-900/90 border border-neutral-800 px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-widest text-neutral-200">
-                    Veneers · 2 Visits
+                  <div className="absolute bottom-4 right-4 bg-neutral-900/90 border border-neutral-800 px-3 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest text-neutral-200">
+                    Patliputra Colony, Patna
                   </div>
                 </div>
-                <div className="p-3 text-left space-y-1">
-                  <h4 className="text-[10px] font-black uppercase text-neutral-800 tracking-wider">Outcome-Driven Restorative Design</h4>
-                  <p className="text-[9px] text-neutral-500 font-medium">Actual smile transformation achieved at Patliputra Clinic</p>
+                <div className="p-4 text-left space-y-1">
+                  <h4 className="text-[10px] font-black uppercase text-neutral-800 tracking-wider">Clinical Standards in Action</h4>
+                  <p className="text-[9px] text-neutral-500 font-medium">Dr. Aryan Parmar consulting a patient using digital 3D scans</p>
                 </div>
               </div>
             </div>
@@ -809,9 +816,9 @@ export default function DentistWebsite() {
             {/* Reels Mockup Grid */}
             <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
-                { views: "450K+", type: "Implants", file: "/assets/yourdentist/posto_reel_insta_optimized.mp4", thumbnail: "/assets/yourdentist/gap_after.png" },
-                { views: "820K+", type: "Veneers", file: "/assets/yourdentist/posto_reel_insta_optimized.mp4", thumbnail: "/assets/yourdentist/veneer_case_1.png" },
-                { views: "1.2M+", type: "Aligners", file: "/assets/yourdentist/simba_reel_optimized.mp4", thumbnail: "/assets/yourdentist/patient_happy_4.jpg" }
+                { views: "450K+", type: "Clinic Tour", file: "/assets/yourdentist/posto_reel_insta_optimized.mp4", thumbnail: "/assets/yourdentist/clinic_in_action.jpg" },
+                { views: "820K+", type: "Patient Consult", file: "/assets/yourdentist/posto_reel_insta_optimized.mp4", thumbnail: "/assets/yourdentist/dr_with_patient_1.jpg" },
+                { views: "1.2M+", type: "Aesthetics", file: "/assets/yourdentist/simba_reel_optimized.mp4", thumbnail: "/assets/yourdentist/patient_happy_3.png" }
               ].map((reel, idx) => (
                 <div
                   key={idx}
@@ -867,31 +874,42 @@ export default function DentistWebsite() {
                   const el = document.getElementById('booking');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="bg-white border border-neutral-200 hover:border-neutral-900 p-6 sm:p-8 rounded-3xl transition-all duration-300 flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-lg"
+                className="bg-white border border-neutral-200 hover:border-neutral-900 rounded-3xl transition-all duration-300 flex flex-col justify-between group cursor-pointer shadow-sm hover:shadow-lg overflow-hidden"
               >
-                <div className="space-y-5 text-left">
-                  <div className="w-10 h-10 rounded-2xl bg-neutral-50 border border-neutral-100 flex items-center justify-center transition-all group-hover:bg-[#5b72ff]/5">
+                {/* Authentic Service/Treatment Image */}
+                <div className="aspect-[16/10] w-full bg-neutral-100 border-b border-neutral-200 overflow-hidden relative">
+                  <img
+                    src={service.img}
+                    alt={service.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 left-4 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-md flex items-center justify-center shadow-sm">
                     {renderServiceIcon(service.icon)}
                   </div>
-                  <div>
-                    <h3 className="text-base font-black uppercase text-neutral-900 tracking-tight">{service.name}</h3>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <span className="text-[8px] text-neutral-900 font-mono font-black uppercase bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded">
-                        {service.duration}
-                      </span>
-                      <span className="text-[8px] text-[#5b72ff] font-mono font-black uppercase bg-[#5b72ff]/5 border border-[#5b72ff]/10 px-2 py-0.5 rounded">
-                        {service.price}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-neutral-500 font-medium leading-relaxed">
-                    {service.description}
-                  </p>
                 </div>
-                
-                <div className="pt-6 border-t border-neutral-50 mt-6 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-[#5b72ff] group-hover:underline">
-                  <span>Select & Book Consultation</span>
-                  <span>&rarr;</span>
+
+                <div className="p-6 sm:p-8 flex-grow flex flex-col justify-between">
+                  <div className="space-y-4 text-left">
+                    <div>
+                      <h3 className="text-base font-black uppercase text-neutral-900 tracking-tight">{service.name}</h3>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <span className="text-[8px] text-neutral-900 font-mono font-black uppercase bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded">
+                          {service.duration}
+                        </span>
+                        <span className="text-[8px] text-[#5b72ff] font-mono font-black uppercase bg-[#5b72ff]/5 border border-[#5b72ff]/10 px-2 py-0.5 rounded">
+                          {service.price}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-neutral-500 font-medium leading-relaxed">
+                      {service.description}
+                    </p>
+                  </div>
+                  
+                  <div className="pt-6 border-t border-neutral-50 mt-6 flex items-center justify-between text-[9px] font-black uppercase tracking-widest text-[#5b72ff] group-hover:underline">
+                    <span>Select & Book Consultation</span>
+                    <span>&rarr;</span>
+                  </div>
                 </div>
               </div>
             ))}
