@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOHead } from '@/components/seo/SEOHead';
+import { FAQSchema } from '@/components/seo/SchemaMarkup';
 import { toast } from 'sonner';
 import {
   Sparkles,
@@ -339,6 +340,59 @@ export default function DentistWebsite() {
         description="Premium dental clinic in Patna. Painless implants, laser whitening, root canals, and pediatric dentistry under Dr. Aryan Parmar."
         image="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&q=80&w=1200"
         imageAlt="YOUR DENTIST Patna Clinic"
+        canonicalUrl="https://creatorarmour.com/dentist-website"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Dentist",
+          "name": "YOUR DENTIST - Dr. Aryan Parmar",
+          "image": "https://creatorarmour.com/assets/yourdentist/exterior_day.jpg",
+          "@id": "https://creatorarmour.com/dentist-website#clinic",
+          "url": "https://creatorarmour.com/dentist-website",
+          "telephone": "+919876543210",
+          "priceRange": "INR",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "H/No 12, Pataliputra Colony",
+            "addressLocality": "Patna",
+            "addressRegion": "Bihar",
+            "postalCode": "800013",
+            "addressCountry": "IN"
+          },
+          "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday"
+            ],
+            "opens": "10:00",
+            "closes": "20:00"
+          }
+        }}
+      />
+
+      <FAQSchema
+        faqs={[
+          {
+            question: "Is dental implant treatment painful?",
+            answer: "No. Implants are performed under local computerized anesthesia, meaning you won't feel anything during the process. Post-treatment discomfort is minimal and easily managed with prescribed pain relievers."
+          },
+          {
+            question: "Do you offer EMI payments for expensive treatments?",
+            answer: "Yes! We offer 0% EMI financing options through Bajaj Finance and other banking partners for dental treatments above ₹5,000, making implants and straightening affordable."
+          },
+          {
+            question: "How long does teeth whitening last?",
+            answer: "Typically, professional laser whitening results last between 1 to 2 years, depending on your lifestyle and diet (coffee, tea, smoking etc). We also provide touch-up packages to preserve brightness."
+          },
+          {
+            question: "Do you accept health insurance policies?",
+            answer: "Yes, we accept major health insurance plans covering dental procedures, including Star Health, Niva Bupa, and ICICI Lombard. Please consult our front desk before booking."
+          }
+        ]}
       />
 
       {/* Ticker Banner (Missing Urgency Component) */}
