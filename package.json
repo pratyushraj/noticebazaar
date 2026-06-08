@@ -20,9 +20,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsx scripts/generate-sitemap.ts && vite build && rm -rf build && cp -R dist build && node scripts/run-react-snap.mjs",
-    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && rm -rf build && cp -R dist build && node scripts/run-react-snap.mjs",
-    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && rm -rf build && cp -R dist build && node scripts/run-react-snap.mjs",
+    "build": "tsx scripts/generate-sitemap.ts && vite build && rm -rf build && cp -R dist build && tsx scripts/run-react-snap.ts",
+    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && rm -rf build && cp -R dist build && tsx scripts/run-react-snap.ts",
+    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && rm -rf build && cp -R dist build && tsx scripts/run-react-snap.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
