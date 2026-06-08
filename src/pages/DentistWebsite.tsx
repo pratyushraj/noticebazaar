@@ -933,7 +933,7 @@ export default function DentistWebsite() {
       <section id="dr-aryan" className="py-28 px-6 bg-neutral-50 relative overflow-hidden border-y border-neutral-100">
         {/* Watermark */}
         <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          ALIGNERS
+          PAINLESS DENTISTRY
         </div>
 
         <div className="max-w-6xl mx-auto space-y-16 relative z-10">
@@ -1072,7 +1072,7 @@ export default function DentistWebsite() {
       <section id="studio-gallery" className="py-28 px-6 bg-white relative overflow-hidden border-b border-neutral-100">
         {/* Watermark */}
         <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          TRANSFORMATIONS
+          RESTORE STUDIO
         </div>
 
         <div className="max-w-6xl mx-auto space-y-16 relative z-10">
@@ -1130,7 +1130,7 @@ export default function DentistWebsite() {
                   <div className="leading-tight">
                     <h4 className={`text-[10px] font-black uppercase tracking-wider ${activeStudioPhoto.id === item.id ? 'text-white' : 'text-neutral-900'}`}>{item.name}</h4>
                     <p className={`text-[8px] font-bold uppercase tracking-wider mt-1 ${activeStudioPhoto.id === item.id ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                      {item.id.includes('exterior') ? 'External Facade' : 'Clinical Area'}
+                      {item.id === 'lobby' ? 'Reception Lounge' : item.id === 'consult' ? 'Consultation Room' : item.id.includes('exterior') ? 'External Facade' : 'Clinical Area'}
                     </p>
                   </div>
                 </button>
@@ -1144,7 +1144,7 @@ export default function DentistWebsite() {
       <section id="booking" className="py-32 px-6 bg-white relative overflow-hidden">
         {/* Watermark */}
         <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          SMILE DESIGN
+          CONSULTATION
         </div>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch relative z-10">
