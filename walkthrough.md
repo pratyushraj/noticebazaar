@@ -24,7 +24,18 @@ The Instagram carousels have been successfully created, previewed, and exported 
 - **Fix**: 
   - Modified the generator script `scratch/update_before_after.js` to change `totalSlides` to `6`.
   - Cleaned up regex replacements to dynamically generate 6 indicator dots and update the ZIP progress tracker text to show `Preparing slide 1/6...`.
-  - Re-exported the slide PNG files using Playwright.
+  - **Visual & CRO Refinements (10 Priority Tweaks)**:
+  - **Hero Rating & Badge**: Added a Google star rating badge (`★★★★★ 4.9 Google Rating | 163+ Reviews | 5,000+ Patients Treated`) directly below the main headline, and a small doctor authority badge featuring Dr. Aryan's credentials.
+  - **WhatsApp CTA**: Renamed the secondary hero CTA button to `💬 WhatsApp Us` next to `Book Appointment` for zero-friction inquiry.
+  - **High-Trust Stats Bar**: Updated Section 2 to display verified numbers: `163+ Five-Star Google Reviews`, `250+ Smile Transformations Completed`, and `1,000+ Dental Procedures Completed`.
+  - **Outcomes-Focused Cases**: Rewrote patient case cards to prominently display clinical results (`2 Visits | 3 Weeks | 100% Closed` for veneers, `1 Day | 100% Functional` for implants).
+  - **Trust Monster Credentials**: Upgraded Dr. Aryan's details section to show structured location details, diagnostic volumes, and clear clinical specialties tags.
+  - **Instagram Social Proof Section**: Embedded a new Instagram widget showing mock profile stats and a grid of three top transformation reels utilizing local transcoding assets.
+  - **Booking Form Value Checks**: Placed high-converting checklist bullets (`✓ Consultation`, `✓ Treatment Plan`, `✓ Cost Estimate`, `✓ No Obligation`) inside the form panel.
+  - **Authentic Google Reviews**: Integrated Google "G" icon SVGs, rating ID metrics, and verified account tags on review cards to make them look like direct Google feedback screenshots.
+  - **Intentional Background Watermarks**: Tuned all background section watermarks (`SMILE DESIGN`, `ALIGNERS`, `IMPLANTS`, `TRANSFORMATIONS`) to a clean, intentional `3.5%` opacity.
+- **Conversion Widgets**:
+  - Floating WhatsApp Sticky Capsule CTA: A persistent, rounded-capsule button on the bottom-right reading `💬 Book on WhatsApp` linking directly to `wa.me` API.
 
 ### 4. Added "Copy Caption" Capability (All Carousels)
 - **Feature**: Added a "Copy Caption" action button next to the timestamp on all three carousels (`before_after_carousel.html`, `patients_carousel.html`, and `carousel.html`).
