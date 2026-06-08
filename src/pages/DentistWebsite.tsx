@@ -127,6 +127,11 @@ const BEFORE_AFTER_IMAGES = [
   }
 ];
 
+const DENTISTS = [
+  { name: "Dr. Clara Collins", role: "Prosthodontist", img: "/assets/yourdentist/clara_collins.png" },
+  { name: "Dr. Mason Carter", role: "Implant Specialist", img: "/assets/yourdentist/mason_carter.png" }
+];
+
 const GALLERY_ITEMS = [
   {
     title: "Modern Operatory Setup",
@@ -222,6 +227,34 @@ export default function DentistWebsite() {
   const [patientPhone, setPatientPhone] = useState<string>("");
   const [bookingConfirmed, setBookingConfirmed] = useState<boolean>(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [activeDentistIndex, setActiveDentistIndex] = useState<number>(0);
+  const [timeString, setTimeString] = useState<string>('');
+  const [scrolled, setScrolled] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const options: Intl.DateTimeFormatOptions = {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      };
+      const formatter = new Intl.DateTimeFormat([], options);
+      setTimeString(formatter.format(new Date()));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
   const [activeGalleryTab, setActiveGalleryTab] = useState<string>('all');
   const [activeTourIndex, setActiveTourIndex] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);
@@ -396,179 +429,154 @@ export default function DentistWebsite() {
       />
 
       {/* Ticker Banner (Missing Urgency Component) */}
-      <div className="bg-black text-white text-center py-2.5 px-4 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 relative z-50">
+      <div className="bg-black text-white text-center py-2.5 px-4 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 relative z-50 border-b border-white/5">
         <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
         <span>This Month: ✓ Free Smile Assessment · ✓ Aligner Consultation · ✓ Implant Eligibility Check</span>
         <a href="#booking" className="underline hover:text-neutral-300 ml-2">Secure Free Slot &rarr;</a>
       </div>
 
-      {/* Modern Premium Navbar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-200/80 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      {/* Modern Premium Floating Navbar capsule */}
+      <nav className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-full max-w-5xl px-6 ${scrolled ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+        <div className="bg-neutral-950/80 backdrop-blur-xl border border-white/10 px-8 py-3.5 rounded-3xl flex items-center justify-between text-white shadow-2xl">
           <div className="flex items-center gap-2">
-            <img
-              src="/assets/yourdentist/logo_cropped.png"
-              alt="YOUR DENTIST Logo"
-              className="w-8 h-8 object-contain"
-            />
+            <Smile className="h-5 w-5 text-white shrink-0" />
             <div>
-              <span className="text-base font-black tracking-wide text-neutral-900 block">YOUR DENTIST</span>
-              <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block">Dr. Aryan Parmar</span>
+              <span className="text-xs font-black tracking-widest text-white uppercase block leading-none">Denta</span>
+              <span className="text-[8px] font-bold text-neutral-400 uppercase tracking-widest block mt-0.5">Dr. Aryan Parmar</span>
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-neutral-500">
-            <a href="#services" className="hover:text-black transition-colors">Services</a>
-            <a href="#gallery" className="hover:text-black transition-colors">Smile Gallery</a>
-            <a href="#timeline" className="hover:text-black transition-colors">Roadmap</a>
-            <a href="#tour" className="hover:text-black transition-colors">Clinic Tour</a>
-            <a href="#booking" className="hover:text-black transition-colors">Free Assessment</a>
-            <a href="#reviews" className="hover:text-black transition-colors">Reviews</a>
-            <a href="#about" className="hover:text-black transition-colors">Clinic</a>
+          <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest text-white/70">
+            <a href="#services" className="hover:text-white transition-colors">Services</a>
+            <a href="#gallery" className="hover:text-white transition-colors">Smile Gallery</a>
+            <a href="#timeline" className="hover:text-white transition-colors">Roadmap</a>
+            <a href="#tour" className="hover:text-white transition-colors">Clinic Tour</a>
+            <a href="#reviews" className="hover:text-white transition-colors">Reviews</a>
           </div>
 
-          <div className="flex items-center gap-3">
-            <a
-              href="https://wa.me/919876543210?text=Hi,%20I%20want%20to%20book%20a%20free%20smile%20assessment."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 border border-neutral-200 text-xs font-black uppercase tracking-wider rounded-xl text-neutral-800 hover:bg-neutral-50 transition-colors"
-            >
-              📲 WhatsApp Now
-            </a>
-            <a
-              href="#booking"
-              className="px-5 py-2.5 bg-black text-white hover:bg-neutral-800 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-neutral-950/10 active:scale-[0.98]"
-            >
-              Free Smile Assessment
-            </a>
-          </div>
+          <a
+            href="#booking"
+            className="px-5 py-2.5 bg-white text-black hover:bg-neutral-100 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md shadow-neutral-950/10 active:scale-[0.98]"
+          >
+            Free Assessment
+          </a>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-16 pb-24 px-6 overflow-hidden bg-neutral-50/50">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-neutral-100 rounded-full blur-[100px] pointer-events-none opacity-60" />
+      {/* Redesigned Premium Hero Showcase Card wrapper (Black outer area) */}
+      <section className="bg-neutral-950 pt-8 pb-20 px-4 sm:px-6 relative overflow-hidden">
+        {/* Glowy background element */}
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-orange-600/5 rounded-full blur-[120px] pointer-events-none" />
 
-        <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10"
-        >
-          {/* Left Text content */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            {/* Google Reviews Moved to Hero for Social Proof */}
-            <motion.div 
-              variants={fadeInUp}
-              className="inline-flex flex-wrap justify-center lg:justify-start items-center gap-2 bg-white border border-neutral-200/80 px-4 py-2 rounded-2xl shadow-sm text-xs font-bold"
-            >
-              <div className="flex text-amber-500">
-                <Star className="h-4 w-4 fill-amber-500" />
-                <Star className="h-4 w-4 fill-amber-500" />
-                <Star className="h-4 w-4 fill-amber-500" />
-                <Star className="h-4 w-4 fill-amber-500" />
-                <Star className="h-4 w-4 fill-amber-500" />
+        <div className="max-w-7xl mx-auto rounded-[36px] overflow-hidden bg-gradient-to-br from-[#ae3f15] via-[#862905] to-[#c75525] text-white p-6 sm:p-10 relative border border-[#ca572b]/20 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between min-h-[680px]">
+          {/* Card Navbar */}
+          <div className="flex justify-between items-center w-full mb-8 relative z-20">
+            <div className="flex items-center gap-2">
+              <Smile className="h-6 w-6 text-white shrink-0" />
+              <div>
+                <span className="text-lg font-black tracking-widest text-white uppercase block leading-none">Denta</span>
+                <span className="text-[9px] font-bold text-neutral-200 uppercase tracking-widest block mt-0.5">Dr. Aryan Parmar</span>
               </div>
-              <span className="text-neutral-950 font-black">5.0 Rating</span>
-              <span className="text-neutral-400">|</span>
-              <span className="text-neutral-600">Trusted by 163+ Patients in Patna</span>
-            </motion.div>
+            </div>
 
-            <motion.h1 
-              variants={fadeInUp}
-              className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-neutral-900 leading-tight"
-            >
-              Painless Dentistry. <br className="hidden sm:inline" />
-              <span className="text-neutral-500">Perfect Smiles.</span>
-            </motion.h1>
+            <div className="hidden md:flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-white/80">
+              <a href="#services" className="hover:text-white transition-colors flex items-center gap-1.5"><span className="text-white/30 font-black leading-none">•</span> Services</a>
+              <a href="#gallery" className="hover:text-white transition-colors flex items-center gap-1.5"><span className="text-white/30 font-black leading-none">•</span> Implants</a>
+              <a href="#tour" className="hover:text-white transition-colors flex items-center gap-1.5"><span className="text-white/30 font-black leading-none">•</span> Price</a>
+              <a href="#booking" className="hover:text-white transition-colors flex items-center gap-1.5"><span className="text-white/30 font-black leading-none">•</span> Preventive Care</a>
+            </div>
 
-            <motion.p 
-              variants={fadeInUp}
-              className="text-lg text-neutral-600 max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed"
+            <a
+              href="#booking"
+              className="px-5 py-2.5 border border-white/30 hover:bg-white/10 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all hover:border-white"
             >
-              Experience state-of-the-art dental care with computerized micro-dentistry under Dr. Aryan Parmar. From digital smile makeovers to single-visit pain-free implants.
-            </motion.p>
-
-            {/* Quick Stats Grid */}
-            <motion.div 
-              variants={fadeInUp}
-              className="grid grid-cols-3 gap-6 pt-4 max-w-md mx-auto lg:mx-0 text-center lg:text-left"
-            >
-              <div className="group cursor-pointer">
-                <p className="text-2xl sm:text-3xl font-black font-mono text-neutral-900 group-hover:scale-105 transition-transform origin-left duration-300">1000+</p>
-                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider mt-1">Smiles Treated</p>
-              </div>
-              <div className="border-x border-neutral-200 px-2 group cursor-pointer">
-                <p className="text-2xl sm:text-3xl font-black font-mono text-neutral-900 group-hover:scale-105 transition-transform duration-300">15+</p>
-                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider mt-1">Years Experience</p>
-              </div>
-              <div className="group cursor-pointer">
-                <p className="text-2xl sm:text-3xl font-black font-mono text-neutral-900 group-hover:scale-105 transition-transform origin-right duration-300">163+</p>
-                <p className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider mt-1">Google Reviews</p>
-              </div>
-            </motion.div>
-
-            {/* CTA Panel with WhatsApp Action Option */}
-            <motion.div 
-              variants={fadeInUp}
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-6"
-            >
-              <a
-                href="#booking"
-                className="w-full sm:w-auto px-8 py-4 bg-black text-white hover:bg-neutral-800 rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 group active:scale-[0.98] shadow-md shadow-neutral-950/10"
-              >
-                Free Smile Assessment <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </a>
-              <a
-                href="https://wa.me/919876543210?text=Hi,%20I%20want%20to%20book%20a%20free%20smile%20assessment."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-md shadow-emerald-600/10"
-              >
-                📲 WhatsApp Now
-              </a>
-            </motion.div>
+              Health Check
+            </a>
           </div>
 
-          {/* Right Image/Banner Mockup */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-            className="lg:col-span-5 relative flex justify-center"
-          >
-            <motion.div 
-              animate={{
-                y: [0, -8, 0]
-              }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="relative w-full max-w-md aspect-[4/5] rounded-[32px] overflow-hidden border border-neutral-200 shadow-xl group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent z-10" />
+          {/* Hero Core Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-grow py-4 relative z-10">
+            {/* Left side text and title */}
+            <div className="lg:col-span-4 space-y-8 text-center lg:text-left flex flex-col justify-center h-full">
+              <p className="text-xs sm:text-sm text-white/90 font-medium leading-relaxed max-w-xs mx-auto lg:mx-0">
+                From preventive care to complex restorations, a comprehensive approach to your dental health.
+              </p>
+              <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-black uppercase tracking-tight leading-[0.95] text-white">
+                Modern Care for a Perfect Smile
+              </h1>
+              {/* Star rating for trust */}
+              <div className="flex items-center justify-center lg:justify-start gap-2 pt-2">
+                <div className="flex text-amber-300">
+                  <Star className="h-4 w-4 fill-amber-300 text-transparent" />
+                  <Star className="h-4 w-4 fill-amber-300 text-transparent" />
+                  <Star className="h-4 w-4 fill-amber-300 text-transparent" />
+                  <Star className="h-4 w-4 fill-amber-300 text-transparent" />
+                  <Star className="h-4 w-4 fill-amber-300 text-transparent" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-white/80">5.0 PATIENT RATING</span>
+              </div>
+            </div>
+
+            {/* Center 3D Dental Implant Image */}
+            <div className="lg:col-span-4 flex justify-center relative min-h-[320px] lg:min-h-[420px] items-center">
+              <div className="absolute w-[240px] h-[240px] bg-amber-400 rounded-full blur-[80px] opacity-30 mix-blend-screen pointer-events-none animate-pulse" />
               <img
-                src="/assets/yourdentist/dr_with_patient_1.jpg"
-                alt="Dr. Aryan Parmar with Patient"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                src="/assets/yourdentist/dental_implant_hero.png"
+                alt="3D Dental Implant render"
+                className="w-[260px] sm:w-[320px] h-auto object-contain relative z-10 drop-shadow-[0_35px_45px_rgba(0,0,0,0.5)] hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute bottom-6 left-6 right-6 z-20 bg-white/95 border border-neutral-200/80 p-5 rounded-2xl shadow-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-neutral-100 flex items-center justify-center font-bold text-neutral-800">
-                    <Stethoscope className="h-5 w-5" />
+            </div>
+
+            {/* Right side carousel */}
+            <div className="lg:col-span-4 flex flex-col justify-between items-center lg:items-end gap-8 h-full text-center lg:text-right">
+              <p className="text-xs sm:text-sm text-white/90 font-medium leading-relaxed max-w-xs mx-auto lg:mx-0">
+                Select from our team of highly skilled and experienced dentists
+              </p>
+
+              {/* Specialist mini carousel */}
+              <div className="w-full max-w-xs space-y-3 relative z-20">
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white/60">Our Specialists</span>
+                  <button 
+                    onClick={() => setActiveDentistIndex((prev) => (prev + 1) % DENTISTS.length)}
+                    className="text-[10px] font-black uppercase tracking-wider hover:underline flex items-center gap-1 text-white hover:text-amber-200 transition-colors"
+                  >
+                    Next <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+                
+                <div className="relative overflow-hidden h-[160px] w-full rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-3 flex gap-4 items-center shadow-lg hover:border-white/25 transition-all">
+                  <div className="w-[100px] h-[136px] rounded-xl overflow-hidden shrink-0 bg-neutral-900 border border-white/10 shadow-inner">
+                    <img 
+                      src={DENTISTS[activeDentistIndex].img} 
+                      alt={DENTISTS[activeDentistIndex].name} 
+                      className="w-full h-full object-cover" 
+                    />
                   </div>
-                  <div>
-                    <h4 className="text-xs font-black uppercase text-neutral-900">Patliputra Clinic</h4>
-                    <p className="text-[10px] text-neutral-500 font-bold mt-1">H/No 12, Pataliputra Colony, Patna</p>
+                  <div className="flex flex-col justify-center text-left">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-[#fbd3c6]">{DENTISTS[activeDentistIndex].role}</span>
+                    <h4 className="text-lg font-black uppercase text-white mt-1 leading-tight">{DENTISTS[activeDentistIndex].name}</h4>
+                    <p className="text-[9px] text-white/70 font-semibold mt-1">Dr. Aryan's Premium Partner</p>
+                    <a 
+                      href="#booking" 
+                      className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-black bg-white hover:bg-neutral-100 px-3 py-1.5 rounded-lg mt-3 transition-all w-fit shadow-md"
+                    >
+                      Book Free Slot &rarr;
+                    </a>
                   </div>
                 </div>
               </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+            </div>
+          </div>
+
+          {/* Card Footer row */}
+          <div className="border-t border-white/15 pt-6 mt-8 flex flex-col sm:flex-row justify-between items-center w-full gap-4 text-[9px] font-black uppercase tracking-widest text-white/50 relative z-20">
+            <span>Best Dentistry 2026</span>
+            <span className="font-mono text-white/70">{`Patna, India — ${timeString || '22:00:00'} GMT+5:30`}</span>
+            <span>Advanced Dental Technologies</span>
+          </div>
+        </div>
       </section>
 
       {/* Why Patients Choose Us Section */}
