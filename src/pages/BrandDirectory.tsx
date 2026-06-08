@@ -44,6 +44,8 @@ const BrandDirectory = () => {
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
 
+  const isPrerendering = typeof window !== 'undefined' && (window as any).__PRERENDER__;
+
   // Fetch brands from database
   const { data: brands = [], isLoading } = useBrands({
     industry: industryFilter !== 'all' ? industryFilter : undefined,
@@ -51,6 +53,7 @@ const BrandDirectory = () => {
     verifiedOnly: false,
     bookmarkedOnly: bookmarkedOnly,
     searchTerm: debouncedSearchTerm || undefined,
+    enabled: !isPrerendering,
   });
 
   const toggleBookmarkMutation = useToggleBrandBookmark();
@@ -59,6 +62,7 @@ const BrandDirectory = () => {
 
   // Track brand views for analytics
   useEffect(() => {
+    if (isPrerendering) return;
     if (!isLoading && brands.length > 0) {
       brands.forEach((brand) => {
         if (!viewedBrands.current.has(brand.id)) {
@@ -67,7 +71,7 @@ const BrandDirectory = () => {
         }
       });
     }
-  }, [brands, isLoading, trackBrandView]);
+  }, [brands, isLoading, trackBrandView, isPrerendering]);
 
   // Apply client-side filters that aren't handled by the hook
   const filteredBrands = useMemo(() => {

@@ -14,6 +14,9 @@ interface ShootVideo {
   is_selected: boolean;
   uploaded_by: string;
   category: string;
+  approved_for_reel?: boolean;
+  approved_for_story?: boolean;
+  approved_for_ad?: boolean;
 }
 
 const SHOOT_CATEGORIES = [
@@ -178,6 +181,29 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
       if (vidError) throw vidError;
 
+      // Merge local storage approvals if schema is not updated
+      let loadedVideos = (vidData || []) as ShootVideo[];
+      try {
+        const storedApprovalsStr = localStorage.getItem(`shoot_approvals_${workspaceId}`);
+        if (storedApprovalsStr) {
+          const storedApprovals = JSON.parse(storedApprovalsStr);
+          loadedVideos = loadedVideos.map(v => {
+            const approval = storedApprovals.find((a: any) => a.id === v.id);
+            if (approval) {
+              return {
+                ...v,
+                approved_for_reel: approval.approved_for_reel ?? v.approved_for_reel,
+                approved_for_story: approval.approved_for_story ?? v.approved_for_story,
+                approved_for_ad: approval.approved_for_ad ?? v.approved_for_ad
+              };
+            }
+            return v;
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to parse stored approvals:', err);
+      }
+
       setWorkspace(wsData);
       setScriptText(wsData.script || '');
       setSongText(wsData.song_option || '');
@@ -191,7 +217,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
       setCreatorHookText(wsData.creator_hook || '');
       setCreatorHookText2(wsData.creator_hook_2 || '');
       setCreatorCaptionText(wsData.creator_caption || '');
-      setVideos(vidData || []);
+      setVideos(loadedVideos);
     } catch (error: any) {
       console.error('Error loading workspace:', error);
       if (error.code === '42P01') {
@@ -400,6 +426,39 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
     }
   };
 
+  const toggleVideoApproval = async (videoId: string, approvalType: 'reel' | 'story' | 'ad', currentStatus: boolean) => {
+    try {
+      const field = `approved_for_${approvalType}`;
+      const { error } = await supabase
+        .from('shoot_videos')
+        .update({ [field]: !currentStatus })
+        .eq('id', videoId);
+
+      if (error) throw error;
+
+      const updated = videos.map(v => v.id === videoId ? { ...v, [field]: !currentStatus } : v);
+      setVideos(updated);
+      localStorage.setItem(`shoot_approvals_${id}`, JSON.stringify(updated.map(v => ({
+        id: v.id,
+        approved_for_reel: v.approved_for_reel,
+        approved_for_story: v.approved_for_story,
+        approved_for_ad: v.approved_for_ad
+      }))));
+      toast.success(`Approval for ${approvalType.toUpperCase()} updated`);
+    } catch (error: any) {
+      console.error('Update error:', error);
+      const updated = videos.map(v => v.id === videoId ? { ...v, [`approved_for_${approvalType}`]: !currentStatus } : v);
+      setVideos(updated);
+      localStorage.setItem(`shoot_approvals_${id}`, JSON.stringify(updated.map(v => ({
+        id: v.id,
+        approved_for_reel: v.approved_for_reel,
+        approved_for_story: v.approved_for_story,
+        approved_for_ad: v.approved_for_ad
+      }))));
+      toast.info(`Updated locally (mock fallback)`);
+    }
+  };
+
   const saveScript = async () => {
     if (!workspace) return;
     setSavingScript(true);
@@ -503,7 +562,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center text-cyan-400">
+      <div className="min-h-screen dark bg-ds-bg flex items-center justify-center text-ds-accent">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
@@ -511,7 +570,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
 
   if (!id || !workspace) {
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center text-white">
+      <div className="min-h-screen dark bg-ds-bg flex items-center justify-center text-ds-text">
         <p>Workspace not found. Check the URL.</p>
       </div>
     );
@@ -521,19 +580,19 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
   const guidelines = CATEGORY_GUIDELINES[guidelineTab] || CATEGORY_GUIDELINES.treatment;
 
   return (
-    <div className="min-h-screen bg-[#030712] text-[#f3f4f6] font-sans antialiased">
+    <div className="min-h-screen dark bg-ds-bg text-ds-text font-sans antialiased">
       <SEOHead 
         title={`${workspace.title} - Shoot Approval`} 
         description="Collaborative video approval and script feedback workspace." 
         image="https://creatorarmour.com/og-dentist-workspace.png"
       />
 
-      <header className="border-b border-white/[0.06] bg-[#090d16] p-6">
+      <header className="border-b border-ds-border bg-ds-surface1 p-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-xl font-black uppercase text-white tracking-wide">{workspace.title}</h1>
-            <p className="text-[10px] text-neutral-400 font-mono uppercase tracking-wider mt-1.5">
-              Role: <span className={role === 'dentist' ? 'text-cyan-400' : 'text-purple-400'}>{role}</span>
+            <h1 className="text-xl font-black uppercase text-ds-text tracking-wide">{workspace.title}</h1>
+            <p className="text-[10px] text-ds-text-muted font-mono uppercase tracking-wider mt-1.5">
+              Role: <span className={role === 'dentist' ? 'text-ds-accent font-bold' : 'text-purple-400 font-bold'}>{role}</span>
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -542,7 +601,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                 navigator.clipboard.writeText(window.location.href);
                 toast.success('Link copied!');
               }}
-              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-white/10"
+              className="flex items-center gap-2 bg-ds-surface3 hover:bg-ds-hover px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-ds-border text-ds-text"
             >
               <Share2 className="w-3.5 h-3.5" /> Share Link
             </button>
@@ -554,13 +613,13 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         
         <section className="lg:col-span-2 space-y-6">
           {role === 'influencer' && (
-            <div className="bg-[#090d16] border border-white/[0.06] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="bg-ds-surface1 border border-ds-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <label className="text-[10px] font-black uppercase tracking-wider text-neutral-400">Target Category:</label>
+                <label className="text-[10px] font-black uppercase tracking-wider text-ds-text-muted">Target Category:</label>
                 <select 
                   value={selectedCategoryForUpload} 
                   onChange={(e) => setSelectedCategoryForUpload(e.target.value)}
-                  className="bg-black/60 border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-500/50"
+                  className="bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text outline-none focus:border-ds-accent/50"
                 >
                   {SHOOT_CATEGORIES.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.icon} {cat.name}</option>
@@ -568,7 +627,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                 </select>
               </div>
               
-              <label className="cursor-pointer bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600 text-white px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all">
+              <label className="cursor-pointer bg-gradient-to-r from-ds-accent to-purple-600 hover:opacity-90 text-white px-4 py-2.5 rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all">
                 {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                 Upload Clip to Category
                 <input type="file" className="hidden" accept="video/*" onChange={handleFileUpload} disabled={uploading} />
@@ -580,25 +639,25 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
             {SHOOT_CATEGORIES.map(cat => {
               const catVideos = videos.filter(v => v.category === cat.id);
               return (
-                <div key={cat.id} className="bg-[#090d16]/30 border border-white/[0.04] rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center justify-between border-b border-white/[0.04] pb-2">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
+                <div key={cat.id} className="bg-ds-surface2 border border-ds-border/50 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-ds-border pb-2">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-ds-text flex items-center gap-2">
                       <span className="text-sm">{cat.icon}</span> 
                       <span>{cat.name}</span>
                     </h3>
-                    <span className="bg-white/5 border border-white/[0.06] text-neutral-400 px-2.5 py-0.5 rounded-full text-[9px] font-mono">
+                    <span className="bg-ds-surface3 border border-ds-border text-ds-text-muted px-2.5 py-0.5 rounded-full text-[9px] font-mono">
                       {catVideos.length} {catVideos.length === 1 ? 'video' : 'videos'}
                     </span>
                   </div>
                   
                   {catVideos.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-neutral-500 border border-dashed border-white/[0.04] rounded-xl bg-black/10">
+                    <div className="py-6 text-center text-xs text-ds-text-subtle border border-dashed border-ds-border rounded-xl bg-ds-bg/40">
                       No clips uploaded under this category yet.
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {catVideos.map(video => (
-                        <div key={video.id} className={`bg-[#090d16] border rounded-xl overflow-hidden group ${video.is_selected ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'border-white/[0.06]'}`}>
+                        <div key={video.id} className={`bg-ds-surface1 border rounded-xl overflow-hidden group ${video.is_selected ? 'border-ds-accent/60 shadow-[0_0_15px_var(--ds-accent-soft)]' : 'border-ds-border'}`}>
                           <div 
                             className="aspect-video bg-black relative flex items-center justify-center w-full cursor-pointer overflow-hidden group/thumb"
                             onClick={() => setActiveModalVideo(video)}
@@ -613,24 +672,25 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             </div>
 
                             {video.is_selected && (
-                              <div className="absolute top-2 right-2 bg-emerald-500 text-black px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg z-10">
+                              <div className="absolute top-2 right-2 bg-ds-accent text-white px-2 py-1 rounded text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-lg z-10">
                                 <CheckCircle className="w-3 h-3" /> Selected
                               </div>
                             )}
                           </div>
-                          <div className="p-3 flex justify-between items-center gap-2">
+                          
+                          <div className="p-3 flex justify-between items-center gap-2 border-b border-ds-border/30">
                             <div className="flex items-center gap-2 min-w-0 flex-1">
                               <button 
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   deleteVideo(video);
                                 }}
-                                className="text-neutral-500 hover:text-rose-500 p-1 rounded hover:bg-white/5 transition-colors shrink-0"
+                                className="text-ds-text-subtle hover:text-rose-500 p-1 rounded hover:bg-ds-surface3 transition-colors shrink-0"
                                 title="Delete video"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
-                              <p className="text-xs font-mono truncate text-neutral-300">{video.file_name}</p>
+                              <p className="text-xs font-mono truncate text-ds-text-muted">{video.file_name}</p>
                             </div>
                             
                             {role === 'dentist' && (
@@ -645,6 +705,78 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                               </button>
                             )}
                           </div>
+
+                          {/* Content Selection Mode approvals */}
+                          <div className="px-3 py-2 flex flex-wrap gap-1.5 items-center justify-between bg-ds-bg/30">
+                            <span className="text-[8px] font-black uppercase tracking-wider text-ds-text-subtle">Approvals:</span>
+                            <div className="flex gap-1">
+                              {role === 'dentist' ? (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleVideoApproval(video.id, 'reel', !!video.approved_for_reel);
+                                    }}
+                                    className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all border ${
+                                      video.approved_for_reel 
+                                        ? 'bg-ds-accent-soft text-ds-accent border-ds-accent-soft-border font-black' 
+                                        : 'bg-ds-surface3 text-ds-text-subtle border-ds-border hover:text-ds-text'
+                                    }`}
+                                  >
+                                    🎬 Reel
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleVideoApproval(video.id, 'story', !!video.approved_for_story);
+                                    }}
+                                    className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all border ${
+                                      video.approved_for_story 
+                                        ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 font-black' 
+                                        : 'bg-ds-surface3 text-ds-text-subtle border-ds-border hover:text-ds-text'
+                                    }`}
+                                  >
+                                    📖 Story
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleVideoApproval(video.id, 'ad', !!video.approved_for_ad);
+                                    }}
+                                    className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all border ${
+                                      video.approved_for_ad 
+                                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/30 font-black' 
+                                        : 'bg-ds-surface3 text-ds-text-subtle border-ds-border hover:text-ds-text'
+                                    }`}
+                                  >
+                                    📢 Ad
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  {video.approved_for_reel && (
+                                    <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase bg-ds-accent-soft text-ds-accent border border-ds-accent-soft-border">
+                                      🎬 Reel
+                                    </span>
+                                  )}
+                                  {video.approved_for_story && (
+                                    <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                                      📖 Story
+                                    </span>
+                                  )}
+                                  {video.approved_for_ad && (
+                                    <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                      📢 Ad
+                                    </span>
+                                  )}
+                                  {!video.approved_for_reel && !video.approved_for_story && !video.approved_for_ad && (
+                                    <span className="text-[8px] font-black uppercase text-ds-text-subtle italic">Pending Review</span>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+
                         </div>
                       ))}
                     </div>
@@ -656,83 +788,83 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
         </section>
 
         <section className="space-y-6">
-          <div className="bg-[#090d16] border border-white/[0.06] rounded-xl p-5 space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
+          <div className="bg-ds-surface1 border border-ds-border rounded-xl p-5 space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-ds-text flex items-center gap-2">
               <span>📋</span> Guidelines Directory
             </h3>
 
             {workspace.song_option && (
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 flex items-start gap-2.5">
-                <span className="text-purple-400 mt-0.5">🎵</span>
+              <div className="bg-ds-accent-soft border border-ds-accent-soft-border rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-ds-accent mt-0.5">🎵</span>
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-purple-400">Background Audio / Song 1</div>
-                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option}</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-ds-accent">Background Audio / Song 1</div>
+                  <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.song_option}</div>
                 </div>
               </div>
             )}
 
             {workspace.song_option_2 && (
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 flex items-start gap-2.5">
-                <span className="text-purple-400 mt-0.5">🎵</span>
+              <div className="bg-ds-accent-soft border border-ds-accent-soft-border rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-ds-accent mt-0.5">🎵</span>
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-purple-400">Background Audio / Song 2</div>
-                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option_2}</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-ds-accent">Background Audio / Song 2</div>
+                  <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.song_option_2}</div>
                 </div>
               </div>
             )}
 
             {workspace.hook_option && (
-              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 flex items-start gap-2.5">
-                <span className="text-cyan-400 mt-0.5">🪝</span>
+              <div className="bg-ds-surface3 border border-ds-border rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-ds-accent mt-0.5">🪝</span>
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-cyan-400">Video Hook 1</div>
-                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.hook_option}</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-ds-accent">Video Hook 1</div>
+                  <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.hook_option}</div>
                 </div>
               </div>
             )}
 
             {workspace.hook_option_2 && (
-              <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 flex items-start gap-2.5">
-                <span className="text-cyan-400 mt-0.5">🪝</span>
+              <div className="bg-ds-surface3 border border-ds-border rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-ds-accent mt-0.5">🪝</span>
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-cyan-400">Video Hook 2</div>
-                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.hook_option_2}</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-ds-accent">Video Hook 2</div>
+                  <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.hook_option_2}</div>
                 </div>
               </div>
             )}
 
             {workspace.caption_option && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 flex items-start gap-2.5">
-                <span className="text-emerald-400 mt-0.5">📝</span>
+              <div className="bg-ds-surface3 border border-ds-border rounded-lg p-3 flex items-start gap-2.5">
+                <span className="text-ds-accent mt-0.5">📝</span>
                 <div>
-                  <div className="text-[9px] font-black uppercase tracking-wider text-emerald-400">Video Caption</div>
-                  <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.caption_option}</div>
+                  <div className="text-[9px] font-black uppercase tracking-wider text-ds-accent">Video Caption</div>
+                  <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.caption_option}</div>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-4 gap-1 border border-white/[0.06] rounded-lg p-0.5 bg-black/40">
+            <div className="grid grid-cols-4 gap-1 border border-ds-border rounded-lg p-0.5 bg-ds-surface3">
               {SHOOT_CATEGORIES.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setGuidelineTab(cat.id)}
                   title={cat.name}
-                  className={`py-1 rounded text-center text-xs transition-all ${guidelineTab === cat.id ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-sm' : 'text-neutral-500 hover:text-neutral-300'}`}
+                  className={`py-1 rounded text-center text-xs transition-all ${guidelineTab === cat.id ? 'bg-ds-accent-soft text-ds-accent border border-ds-accent-soft-border shadow-sm' : 'text-ds-text-subtle hover:text-ds-text'}`}
                 >
                   {cat.icon}
                 </button>
               ))}
             </div>
 
-            <div className="bg-white/[0.01] border border-white/[0.04] rounded-lg p-3.5 space-y-2.5">
-              <div className="text-[10px] font-black uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+            <div className="bg-ds-surface3 border border-ds-border rounded-lg p-3.5 space-y-2.5">
+              <div className="text-[10px] font-black uppercase tracking-wider text-ds-text flex items-center gap-1.5">
                 <span>{categoryInfo.icon}</span>
                 <span>{categoryInfo.name}</span>
               </div>
               <ul className="space-y-2">
                 {guidelines.map((guide, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-xs text-neutral-300 leading-relaxed">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 mt-1.5 shrink-0" />
+                  <li key={idx} className="flex items-start gap-2 text-xs text-ds-text-muted leading-relaxed">
+                    <span className="w-1.5 h-1.5 rounded-full bg-ds-accent mt-1.5 shrink-0" />
                     <span>{guide}</span>
                   </li>
                 ))}
@@ -741,82 +873,82 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           </div>
 
           {/* Final Script & Song Section */}
-          <div className="bg-[#090d16] border border-white/[0.06] rounded-xl p-5 flex flex-col space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
-              <FileText className="w-4 h-4 text-emerald-400" /> Final Production specs
+          <div className="bg-ds-surface1 border border-ds-border rounded-xl p-5 flex flex-col space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-ds-text flex items-center gap-2">
+              <FileText className="w-4 h-4 text-ds-accent" /> Final Production specs
             </h3>
             
-            <div className="space-y-4 bg-black/20 border border-white/[0.04] rounded-lg p-3">
+            <div className="space-y-4 bg-ds-surface2/30 border border-ds-border rounded-lg p-3">
               {role === 'dentist' ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Background Audio 1</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Background Audio 1</label>
                     <input 
                       type="text"
                       value={songText}
                       onChange={(e) => setSongText(e.target.value)}
                       placeholder="e.g., Trending Instagram audio track, upbeat jazz"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Background Audio 2</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Background Audio 2</label>
                     <input 
                       type="text"
                       value={songText2}
                       onChange={(e) => setSongText2(e.target.value)}
                       placeholder="e.g., Soft instrumental, second audio option"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Video Hook 1</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Video Hook 1</label>
                     <input 
                       type="text"
                       value={hookText}
                       onChange={(e) => setHookText(e.target.value)}
                       placeholder="e.g., Did you know scaling doesn't loosen teeth?"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Video Hook 2</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Video Hook 2</label>
                     <input 
                       type="text"
                       value={hookText2}
                       onChange={(e) => setHookText2(e.target.value)}
                       placeholder="e.g., Stop brushing your teeth like this!"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Video Caption</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Video Caption</label>
                     <textarea
                       value={captionText}
                       onChange={(e) => setCaptionText(e.target.value)}
                       placeholder="e.g., Healthy smiles start here! Book consult today."
-                      className="w-full h-32 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
+                      className="w-full h-32 bg-ds-surface3 border border-ds-border rounded-lg p-3 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none resize-none transition-all"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Script directions</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Script directions</label>
                     <textarea
                       value={scriptText}
                       onChange={(e) => setScriptText(e.target.value)}
                       placeholder="Write the final script and directions here..."
-                      className="w-full h-64 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
+                      className="w-full h-64 bg-ds-surface3 border border-ds-border rounded-lg p-3 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none resize-none transition-all"
                     />
                   </div>
 
                   <button 
                     onClick={saveScript}
                     disabled={savingScript}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-black py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    className="w-full bg-ds-accent hover:bg-ds-accent-2 text-white py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                   >
                     {savingScript ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                     Save Production Specs
@@ -825,71 +957,71 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               ) : (
                 <div className="space-y-3.5">
                   {workspace.song_option ? (
-                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2.5 flex items-start gap-2">
-                      <span className="text-purple-400 text-xs">🎵</span>
+                    <div className="bg-ds-accent-soft border border-ds-accent-soft-border rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-ds-accent text-xs">🎵</span>
                       <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-purple-400">Chosen Background Audio 1</div>
-                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option}</div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-ds-accent">Chosen Background Audio 1</div>
+                        <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.song_option}</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-neutral-500 italic">No final audio 1 specified yet.</div>
+                    <div className="text-[10px] text-ds-text-subtle italic">No final audio 1 specified yet.</div>
                   )}
 
                   {workspace.song_option_2 ? (
-                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-2.5 flex items-start gap-2">
-                      <span className="text-purple-400 text-xs">🎵</span>
+                    <div className="bg-ds-accent-soft border border-ds-accent-soft-border rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-ds-accent text-xs">🎵</span>
                       <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-purple-400">Chosen Background Audio 2</div>
-                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.song_option_2}</div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-ds-accent">Chosen Background Audio 2</div>
+                        <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.song_option_2}</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-neutral-500 italic">No final audio 2 specified yet.</div>
+                    <div className="text-[10px] text-ds-text-subtle italic">No final audio 2 specified yet.</div>
                   )}
 
                   {workspace.hook_option ? (
-                    <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-2.5 flex items-start gap-2">
-                      <span className="text-cyan-400 text-xs">🪝</span>
+                    <div className="bg-ds-surface3 border border-ds-border rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-ds-accent text-xs">🪝</span>
                       <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-cyan-400">Chosen Video Hook 1</div>
-                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.hook_option}</div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-ds-accent">Chosen Video Hook 1</div>
+                        <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.hook_option}</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-neutral-500 italic">No final hook 1 specified yet.</div>
+                    <div className="text-[10px] text-ds-text-subtle italic">No final hook 1 specified yet.</div>
                   )}
 
                   {workspace.hook_option_2 ? (
-                    <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-2.5 flex items-start gap-2">
-                      <span className="text-cyan-400 text-xs">🪝</span>
+                    <div className="bg-ds-surface3 border border-ds-border rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-ds-accent text-xs">🪝</span>
                       <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-cyan-400">Chosen Video Hook 2</div>
-                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.hook_option_2}</div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-ds-accent">Chosen Video Hook 2</div>
+                        <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.hook_option_2}</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-neutral-500 italic">No final hook 2 specified yet.</div>
+                    <div className="text-[10px] text-ds-text-subtle italic">No final hook 2 specified yet.</div>
                   )}
 
                   {workspace.caption_option ? (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2.5 flex items-start gap-2">
-                      <span className="text-emerald-400 text-xs">📝</span>
+                    <div className="bg-ds-surface3 border border-ds-border rounded-lg p-2.5 flex items-start gap-2">
+                      <span className="text-ds-accent text-xs">📝</span>
                       <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-emerald-400">Chosen Video Caption</div>
-                        <div className="text-xs text-neutral-200 font-bold mt-0.5 select-all">{workspace.caption_option}</div>
+                        <div className="text-[8px] font-black uppercase tracking-wider text-ds-accent">Chosen Video Caption</div>
+                        <div className="text-xs text-ds-text font-bold mt-0.5 select-all">{workspace.caption_option}</div>
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-neutral-500 italic">No final caption specified yet.</div>
+                    <div className="text-[10px] text-ds-text-subtle italic">No final caption specified yet.</div>
                   )}
 
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Final Script</div>
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Final Script</div>
                     {workspace.script ? (
-                      <p className="text-xs text-neutral-300 whitespace-pre-wrap leading-relaxed bg-black/30 border border-white/[0.04] rounded p-2.5 font-mono">{workspace.script}</p>
+                      <p className="text-xs text-ds-text-muted whitespace-pre-wrap leading-relaxed bg-ds-surface3 border border-ds-border rounded p-2.5 font-mono">{workspace.script}</p>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic bg-black/20 border border-dashed border-white/[0.04] p-3 rounded text-center">
+                      <div className="text-[10px] text-ds-text-subtle italic bg-ds-surface3 border border-dashed border-ds-border p-3 rounded text-center">
                         The dentist will save the final script here.
                       </div>
                     )}
@@ -900,75 +1032,75 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           </div>
 
           {/* Creator Suggestions Section */}
-          <div className="bg-[#090d16] border border-white/[0.06] rounded-xl p-5 flex flex-col space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
+          <div className="bg-ds-surface1 border border-ds-border rounded-xl p-5 flex flex-col space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-widest text-ds-text flex items-center gap-2">
               <FileText className="w-4 h-4 text-purple-400" /> Creator Suggestions
             </h3>
             
-            <div className="space-y-4 bg-black/20 border border-white/[0.04] rounded-lg p-3">
+            <div className="space-y-4 bg-ds-surface2/30 border border-ds-border rounded-lg p-3">
               {role === 'influencer' ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Song / Audio 1</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Suggest a Song / Audio 1</label>
                     <input 
                       type="text"
                       value={creatorSongText}
                       onChange={(e) => setCreatorSongText(e.target.value)}
                       placeholder="e.g., Lofi aesthetic, trending audio link"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Song / Audio 2</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Suggest a Song / Audio 2</label>
                     <input 
                       type="text"
                       value={creatorSongText2}
                       onChange={(e) => setCreatorSongText2(e.target.value)}
                       placeholder="e.g., Electronic beats, alternate audio track"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Video Hook 1</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Suggest a Video Hook 1</label>
                     <input 
                       type="text"
                       value={creatorHookText}
                       onChange={(e) => setCreatorHookText(e.target.value)}
                       placeholder="e.g., 3 mistakes you make at the dentist!"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Video Hook 2</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Suggest a Video Hook 2</label>
                     <input 
                       type="text"
                       value={creatorHookText2}
                       onChange={(e) => setCreatorHookText2(e.target.value)}
                       placeholder="e.g., Why scaling is actually good for you!"
-                      className="w-full bg-black/40 border border-white/[0.06] rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none transition-all"
+                      className="w-full bg-ds-surface3 border border-ds-border rounded-lg px-3 py-1.5 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none transition-all"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest a Caption</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Suggest a Caption</label>
                     <textarea
                       value={creatorCaptionText}
                       onChange={(e) => setCreatorCaptionText(e.target.value)}
                       placeholder="e.g., Alternative dental vlog caption idea!"
-                      className="w-full h-32 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
+                      className="w-full h-32 bg-ds-surface3 border border-ds-border rounded-lg p-3 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none resize-none transition-all"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-[9px] font-black uppercase tracking-wider text-neutral-400 mb-1">Suggest Script adjustments</label>
+                    <label className="block text-[9px] font-black uppercase tracking-wider text-ds-text-muted mb-1">Suggest Script adjustments</label>
                     <textarea
                       value={creatorScriptText}
                       onChange={(e) => setCreatorScriptText(e.target.value)}
                       placeholder="Suggest video captions or script ideas here..."
-                      className="w-full h-64 bg-black/40 border border-white/[0.06] rounded-lg p-3 text-xs text-white placeholder:text-neutral-600 focus:border-cyan-500/50 outline-none resize-none transition-all"
+                      className="w-full h-64 bg-ds-surface3 border border-ds-border rounded-lg p-3 text-xs text-ds-text placeholder:text-ds-text-subtle focus:border-ds-accent outline-none resize-none transition-all"
                     />
                   </div>
 
@@ -984,7 +1116,7 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
               ) : (
                 <div className="space-y-3.5">
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted flex justify-between items-center">
                       <span>Suggested Song 1</span>
                       {workspace.creator_song && (
                         <button 
@@ -992,23 +1124,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             setSongText(workspace.creator_song);
                             toast.success('Song 1 copied to editor input');
                           }}
-                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                          className="text-[9px] text-ds-accent hover:underline font-bold uppercase"
                         >
                           Use Song 1
                         </button>
                       )}
                     </div>
                     {workspace.creator_song ? (
-                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                      <div className="text-xs text-ds-text font-bold select-all mt-1 bg-ds-surface3 border border-ds-border p-2 rounded">
                         🎵 {workspace.creator_song}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1">No song suggestion 1 yet.</div>
+                      <div className="text-[10px] text-ds-text-subtle italic mt-1">No song suggestion 1 yet.</div>
                     )}
                   </div>
 
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted flex justify-between items-center">
                       <span>Suggested Song 2</span>
                       {workspace.creator_song_2 && (
                         <button 
@@ -1016,23 +1148,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             setSongText2(workspace.creator_song_2);
                             toast.success('Song 2 copied to editor input');
                           }}
-                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                          className="text-[9px] text-ds-accent hover:underline font-bold uppercase"
                         >
                           Use Song 2
                         </button>
                       )}
                     </div>
                     {workspace.creator_song_2 ? (
-                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                      <div className="text-xs text-ds-text font-bold select-all mt-1 bg-ds-surface3 border border-ds-border p-2 rounded">
                         🎵 {workspace.creator_song_2}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1">No song suggestion 2 yet.</div>
+                      <div className="text-[10px] text-ds-text-subtle italic mt-1">No song suggestion 2 yet.</div>
                     )}
                   </div>
 
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted flex justify-between items-center">
                       <span>Suggested Hook 1</span>
                       {workspace.creator_hook && (
                         <button 
@@ -1040,23 +1172,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             setHookText(workspace.creator_hook);
                             toast.success('Hook 1 copied to editor input');
                           }}
-                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                          className="text-[9px] text-ds-accent hover:underline font-bold uppercase"
                         >
                           Use Hook 1
                         </button>
                       )}
                     </div>
                     {workspace.creator_hook ? (
-                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                      <div className="text-xs text-ds-text font-bold select-all mt-1 bg-ds-surface3 border border-ds-border p-2 rounded">
                         🪝 {workspace.creator_hook}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1">No hook suggestion 1 yet.</div>
+                      <div className="text-[10px] text-ds-text-subtle italic mt-1">No hook suggestion 1 yet.</div>
                     )}
                   </div>
 
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted flex justify-between items-center">
                       <span>Suggested Hook 2</span>
                       {workspace.creator_hook_2 && (
                         <button 
@@ -1064,23 +1196,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             setHookText2(workspace.creator_hook_2);
                             toast.success('Hook 2 copied to editor input');
                           }}
-                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                          className="text-[9px] text-ds-accent hover:underline font-bold uppercase"
                         >
                           Use Hook 2
                         </button>
                       )}
                     </div>
                     {workspace.creator_hook_2 ? (
-                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                      <div className="text-xs text-ds-text font-bold select-all mt-1 bg-ds-surface3 border border-ds-border p-2 rounded">
                         🪝 {workspace.creator_hook_2}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1">No hook suggestion 2 yet.</div>
+                      <div className="text-[10px] text-ds-text-subtle italic mt-1">No hook suggestion 2 yet.</div>
                     )}
                   </div>
 
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted flex justify-between items-center">
                       <span>Suggested Caption</span>
                       {workspace.creator_caption && (
                         <button 
@@ -1088,23 +1220,23 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             setCaptionText(workspace.creator_caption);
                             toast.success('Caption copied to editor input');
                           }}
-                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                          className="text-[9px] text-ds-accent hover:underline font-bold uppercase"
                         >
                           Use Caption
                         </button>
                       )}
                     </div>
                     {workspace.creator_caption ? (
-                      <div className="text-xs text-white font-bold select-all mt-1 bg-black/30 border border-white/[0.04] p-2 rounded">
+                      <div className="text-xs text-ds-text font-bold select-all mt-1 bg-ds-surface3 border border-ds-border p-2 rounded">
                         📝 {workspace.creator_caption}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1">No caption suggestion yet.</div>
+                      <div className="text-[10px] text-ds-text-subtle italic mt-1">No caption suggestion yet.</div>
                     )}
                   </div>
 
                   <div>
-                    <div className="text-[9px] font-black uppercase tracking-wider text-neutral-400 flex justify-between items-center">
+                    <div className="text-[9px] font-black uppercase tracking-wider text-ds-text-muted flex justify-between items-center">
                       <span>Suggested Script</span>
                       {workspace.creator_script && (
                         <button 
@@ -1112,16 +1244,16 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
                             setScriptText(workspace.creator_script);
                             toast.success('Script copied to editor input');
                           }}
-                          className="text-[9px] text-cyan-400 hover:text-cyan-300 font-bold uppercase"
+                          className="text-[9px] text-ds-accent hover:underline font-bold uppercase"
                         >
                           Use Script
                         </button>
                       )}
                     </div>
                     {workspace.creator_script ? (
-                      <p className="text-xs text-neutral-300 whitespace-pre-wrap leading-relaxed mt-1 bg-black/30 border border-white/[0.04] p-2.5 rounded font-mono">{workspace.creator_script}</p>
+                      <p className="text-xs text-ds-text-muted whitespace-pre-wrap leading-relaxed mt-1 bg-ds-surface3 border border-ds-border p-2.5 rounded font-mono">{workspace.creator_script}</p>
                     ) : (
-                      <div className="text-[10px] text-neutral-500 italic mt-1 bg-black/20 border border-dashed border-white/[0.04] p-3 rounded text-center">
+                      <div className="text-[10px] text-ds-text-subtle italic mt-1 bg-ds-surface3 border border-dashed border-ds-border p-3 rounded text-center">
                         Influencer suggestions will display here.
                       </div>
                     )}
@@ -1132,6 +1264,128 @@ export default function ShootWorkspace({ idOverride, roleOverride }: ShootWorksp
           </div>
         </section>
       </main>
+
+      {/* FINAL PRODUCTION HANDOFF PACK */}
+      <div className="max-w-6xl mx-auto px-6 pb-12">
+        <div className="bg-ds-surface1 border-2 border-ds-accent/30 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-ds-accent/5 rounded-full blur-[80px] pointer-events-none" />
+          
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ds-border pb-4">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">⭐</span>
+              <div>
+                <h3 className="text-sm font-black uppercase text-ds-text tracking-widest">Final Production Handoff Pack</h3>
+                <p className="text-[9px] text-ds-text-subtle font-mono uppercase tracking-wider mt-0.5">Editor Deliverable Package</p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => {
+                const reels = videos.filter(v => v.approved_for_reel).map(v => `• ${v.file_name} (${v.file_url})`).join('\n') || 'None';
+                const stories = videos.filter(v => v.approved_for_story).map(v => `• ${v.file_name} (${v.file_url})`).join('\n') || 'None';
+                const ads = videos.filter(v => v.approved_for_ad).map(v => `• ${v.file_name} (${v.file_url})`).join('\n') || 'None';
+                
+                const packText = `--- FINAL PRODUCTION HANDOFF PACK ---
+WORKSPACE: ${workspace.title}
+
+APPROVED REEL CLIPS:
+${reels}
+
+APPROVED STORY CLIPS:
+${stories}
+
+APPROVED AD CLIPS:
+${ads}
+
+FINAL MUSIC/AUDIO:
+Song 1: ${songText || 'Not specified'}
+Song 2: ${songText2 || 'Not specified'}
+
+FINAL HOOKS:
+Hook 1: ${hookText || 'Not specified'}
+Hook 2: ${hookText2 || 'Not specified'}
+
+FINAL CAPTION:
+${captionText || 'Not specified'}
+
+FINAL SCRIPT DIRECTIONS:
+${scriptText || 'Not specified'}`;
+
+                navigator.clipboard.writeText(packText);
+                toast.success('Production Pack copied to clipboard!');
+              }}
+              className="px-5 py-2.5 bg-ds-accent hover:bg-ds-accent-2 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md flex items-center gap-2 active:scale-95 animate-pulse"
+            >
+              📋 Copy Handoff Pack
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-[10px] font-black uppercase tracking-wider text-ds-accent">Approved Channel Assets</h4>
+                <div className="mt-2.5 space-y-3">
+                  <div className="bg-ds-surface2 border border-ds-border rounded-xl p-3 space-y-1.5">
+                    <span className="text-[9px] font-black uppercase text-cyan-400">🎬 Approved for Reels:</span>
+                    <ul className="text-[10px] text-ds-text-muted space-y-1">
+                      {videos.filter(v => v.approved_for_reel).map((v, i) => (
+                        <li key={i} className="truncate font-mono">✓ {v.file_name}</li>
+                      ))}
+                      {videos.filter(v => v.approved_for_reel).length === 0 && (
+                        <li className="italic text-ds-text-subtle text-[9px]">No Reel clips approved yet.</li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="bg-ds-surface2 border border-ds-border rounded-xl p-3 space-y-1.5">
+                    <span className="text-[9px] font-black uppercase text-purple-400">📖 Approved for Stories:</span>
+                    <ul className="text-[10px] text-ds-text-muted space-y-1">
+                      {videos.filter(v => v.approved_for_story).map((v, i) => (
+                        <li key={i} className="truncate font-mono">✓ {v.file_name}</li>
+                      ))}
+                      {videos.filter(v => v.approved_for_story).length === 0 && (
+                        <li className="italic text-ds-text-subtle text-[9px]">No Story clips approved yet.</li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="bg-ds-surface2 border border-ds-border rounded-xl p-3 space-y-1.5">
+                    <span className="text-[9px] font-black uppercase text-amber-400">📢 Approved for Ads:</span>
+                    <ul className="text-[10px] text-ds-text-muted space-y-1">
+                      {videos.filter(v => v.approved_for_ad).map((v, i) => (
+                        <li key={i} className="truncate font-mono">✓ {v.file_name}</li>
+                      ))}
+                      {videos.filter(v => v.approved_for_ad).length === 0 && (
+                        <li className="italic text-ds-text-subtle text-[9px]">No Ad clips approved yet.</li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black uppercase tracking-wider text-ds-accent">Production Specification Summary</h4>
+              <div className="bg-ds-surface2 border border-ds-border rounded-xl p-4 space-y-3.5 text-xs">
+                <div>
+                  <span className="block text-[8px] font-black text-ds-text-subtle uppercase">Audio Mappings</span>
+                  <p className="font-bold text-ds-text mt-0.5">1: {songText || 'Pending'}</p>
+                  <p className="font-bold text-ds-text mt-0.5">2: {songText2 || 'Pending'}</p>
+                </div>
+                <div>
+                  <span className="block text-[8px] font-black text-ds-text-subtle uppercase">Hook Mappings</span>
+                  <p className="font-bold text-ds-text mt-0.5">1: {hookText || 'Pending'}</p>
+                  <p className="font-bold text-ds-text mt-0.5">2: {hookText2 || 'Pending'}</p>
+                </div>
+                <div>
+                  <span className="block text-[8px] font-black text-ds-text-subtle uppercase">Caption Handoff</span>
+                  <p className="text-ds-text-muted italic truncate mt-0.5">{captionText || 'Pending'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Video Modal (Google Photos style) */}
       {activeModalVideo && (

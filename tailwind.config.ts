@@ -19,6 +19,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        editorial: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sora: ['Sora', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
