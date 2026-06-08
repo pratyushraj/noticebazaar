@@ -178,9 +178,9 @@ const PATIENT_CASES = [
     title: "Diastema Gap Closure",
     treatment: "Porcelain Veneers",
     metrics: [
+      { label: "Visits", value: "2 Visits" },
       { label: "Duration", value: "3 Weeks" },
-      { label: "Visits", value: "2" },
-      { label: "Satisfaction", value: "10/10" }
+      { label: "Result", value: "100% Closed" }
     ],
     patientName: "Anjali S. (Patna)",
     testimonial: "I couldn't smile confidently for years. Dr. Aryan completed my veneers in just 2 sessions. Completely painless and life-changing.",
@@ -188,12 +188,12 @@ const PATIENT_CASES = [
     thumbnail: "/assets/yourdentist/gap_after.png"
   },
   {
-    title: "Full Arch Rehabilitation",
+    title: "Dental Implant Rehabilitation",
     treatment: "Premium Titanium Implants",
     metrics: [
-      { label: "Duration", value: "1 Day" },
-      { label: "Pain Level", value: "Minimal" },
-      { label: "Recovery", value: "48 Hours" }
+      { label: "Procedure", value: "1 Day" },
+      { label: "Function", value: "100% Functional" },
+      { label: "Comfort", value: "99%" }
     ],
     patientName: "Dr. Smita Prasad (Patna)",
     testimonial: "As a doctor myself, I was highly critical of safety. The computerized implant surgery was painless, and the new teeth feel completely natural.",
@@ -201,15 +201,15 @@ const PATIENT_CASES = [
     thumbnail: "/assets/yourdentist/patient_happy_2.png"
   },
   {
-    title: "Invisible Alignment Journey",
-    treatment: "Clear Aligners",
+    title: "Complete Smile Makeover",
+    treatment: "Porcelain Veneers",
     metrics: [
-      { label: "Duration", value: "6 Months" },
-      { label: "Comfort", value: "10/10" },
-      { label: "Visits", value: "4" }
+      { label: "Veneers", value: "8 Veneers" },
+      { label: "Duration", value: "14 Days" },
+      { label: "Satisfaction", value: "10/10" }
     ],
     patientName: "Rishav Raj (Patna)",
-    testimonial: "Invisible aligners were super comfortable. The 3D digital planning showed me my future smile before starting.",
+    testimonial: "Clear veneers changed my life. Dr. Aryan explained everything so well. Gaps closed and teeth whitened in exactly 14 days as predicted.",
     video: "/assets/yourdentist/simba_reel_optimized.mp4",
     thumbnail: "/assets/yourdentist/patient_happy_4.jpg"
   }
@@ -392,7 +392,7 @@ export default function DentistWebsite() {
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
         {/* Giant Outlined Watermark behind Hero */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[16vw] font-black text-neutral-950/[0.015] border-text select-none pointer-events-none tracking-widest uppercase text-center font-sans z-0">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[16vw] font-black text-neutral-950/[0.035] border-text select-none pointer-events-none tracking-widest uppercase text-center font-sans z-0">
           SMILE MAKEOVER
         </div>
 
@@ -430,19 +430,35 @@ export default function DentistWebsite() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center flex-grow py-4 relative z-10">
             {/* Left Column: Heading and Tagline */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left flex flex-col justify-center h-full">
-              {/* Trust stats above the fold (CRO Priority 1) */}
-              <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-200/80 rounded-full px-4 py-1.5 w-fit mx-auto lg:mx-0 text-[10px] font-black uppercase tracking-wider text-neutral-700">
-                <span className="text-amber-500">★ 4.9 Rating</span>
-                <span className="text-neutral-300">|</span>
-                <span className="text-neutral-600">5,000+ Patients</span>
-                <span className="text-neutral-300">|</span>
-                <span className="text-neutral-600">163+ Google Reviews</span>
-              </div>
-
               <h1 className="text-4xl sm:text-5xl lg:text-[62px] font-black uppercase tracking-tight leading-[0.95] text-neutral-900">
                 Smile With <br />
                 <span className="text-neutral-500 font-editorial italic normal-case block font-light mt-1">Confidence Again</span>
               </h1>
+
+              {/* Trust stats directly below the headline */}
+              <div className="flex flex-wrap items-center gap-3 py-2 bg-neutral-100/50 border-y border-neutral-200/80 my-2 justify-center lg:justify-start w-fit mx-auto lg:mx-0 text-[10px] font-black uppercase tracking-wider text-neutral-700 px-4 rounded-lg">
+                <span className="text-amber-500 font-mono tracking-normal text-xs leading-none">★★★★★</span>
+                <span className="text-neutral-900 font-bold">4.9 Google Rating</span>
+                <span className="text-neutral-300">|</span>
+                <span className="text-neutral-600">163+ Reviews</span>
+                <span className="text-neutral-300">|</span>
+                <span className="text-neutral-600">5,000+ Patients Treated</span>
+              </div>
+
+              {/* Doctor badge for quick clinical authority */}
+              <div className="flex items-center gap-3 bg-white border border-neutral-200/80 rounded-2xl p-2.5 w-fit mx-auto lg:mx-0 shadow-sm">
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-neutral-100 shrink-0 border border-neutral-200">
+                  <img
+                    src="/assets/yourdentist/doctor_profile.png"
+                    alt="Dr. Aryan Parmar avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="text-left leading-tight">
+                  <h4 className="text-[10px] font-black uppercase tracking-wider text-neutral-900 leading-none">Dr. Aryan Parmar</h4>
+                  <p className="text-[8px] text-neutral-500 font-black uppercase tracking-widest mt-1 leading-none">Implants • Aligners • Veneers</p>
+                </div>
+              </div>
               
               <p className="text-xs sm:text-sm text-[#5b72ff] font-black uppercase tracking-widest">
                 Premium Dental Implants, Aligners & Smile Makeovers in Patna
@@ -455,9 +471,9 @@ export default function DentistWebsite() {
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start pt-2">
                 <a
                   href="#booking"
-                  className="px-6 py-3.5 bg-neutral-900 text-white hover:bg-neutral-800 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg text-center"
+                  className="px-6 py-3.5 bg-neutral-900 text-white hover:bg-neutral-800 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg text-center animate-pulse"
                 >
-                  Book Assessment
+                  Book Appointment
                 </a>
                 <a
                   href="https://wa.me/919876543210?text=Hi%20Dr.%20Aryan,%20I'd%20like%20to%20reserve%20a%20free%20smile%20assessment."
@@ -465,7 +481,7 @@ export default function DentistWebsite() {
                   rel="noopener noreferrer"
                   className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all text-center flex items-center justify-center gap-2 shadow-md"
                 >
-                  💬 WhatsApp Booking
+                  💬 WhatsApp Us
                 </a>
               </div>
             </div>
@@ -511,15 +527,15 @@ export default function DentistWebsite() {
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-neutral-100">
           <div className="space-y-1 py-2 md:py-0">
             <span className="block text-2xl font-black text-neutral-900 font-mono tracking-tight">★★★★★</span>
-            <span className="block text-[9px] text-neutral-400 font-black uppercase tracking-widest">163 Verified Google Reviews</span>
+            <span className="block text-[9px] text-neutral-400 font-black uppercase tracking-widest">163+ Five-Star Google Reviews</span>
           </div>
           <div className="space-y-1 py-2 md:py-0">
-            <span className="block text-2xl font-black text-neutral-900 font-mono tracking-tight">5,000+</span>
-            <span className="block text-[9px] text-neutral-400 font-black uppercase tracking-widest">Patient Transformations</span>
+            <span className="block text-2xl font-black text-neutral-900 font-mono tracking-tight">250+</span>
+            <span className="block text-[9px] text-neutral-400 font-black uppercase tracking-widest">Smile Transformations Completed</span>
           </div>
           <div className="space-y-1 py-2 md:py-0">
-            <span className="block text-2xl font-black text-neutral-900 font-mono tracking-tight">4.9 / 5.0</span>
-            <span className="block text-[9px] text-neutral-400 font-black uppercase tracking-widest">Patient Satisfaction Rating</span>
+            <span className="block text-2xl font-black text-neutral-900 font-mono tracking-tight">1,000+</span>
+            <span className="block text-[9px] text-neutral-400 font-black uppercase tracking-widest">Dental Procedures Completed</span>
           </div>
           <div className="space-y-1 py-2 md:py-0">
             <span className="block text-lg font-black text-neutral-900 uppercase tracking-tight leading-none mt-1">PATLIPUTRA COLONY</span>
@@ -531,7 +547,7 @@ export default function DentistWebsite() {
       {/* SECTION 3: BEFORE / AFTER TRANSFORMATIONS (CRO Priority 3) */}
       <section id="transformations" className="py-28 px-6 bg-white relative overflow-hidden">
         {/* Watermark */}
-        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-900/[0.015] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
           SMILE DESIGN
         </div>
 
@@ -642,8 +658,8 @@ export default function DentistWebsite() {
       {/* SECTION 4: CLINICAL SUCCESS CASES (CRO Priority 3 & 5) */}
       <section id="cases" className="py-28 px-6 bg-neutral-50 relative overflow-hidden border-y border-neutral-100">
         {/* Watermark */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-900/[0.015] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          PAINLESS DENTISTRY
+        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+          IMPLANTS
         </div>
 
         <div className="max-w-6xl mx-auto space-y-16 relative z-10">
@@ -716,11 +732,106 @@ export default function DentistWebsite() {
         </div>
       </section>
 
+      {/* SECTION: INSTAGRAM SOCIAL PROOF (CRO Priority 6) */}
+      <section className="py-28 px-6 bg-white border-t border-neutral-100 relative overflow-hidden">
+        {/* Watermark */}
+        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+          TRANSFORMATIONS
+        </div>
+
+        <div className="max-w-6xl mx-auto space-y-16 relative z-10">
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <span className="text-[9px] font-black text-[#5b72ff] uppercase tracking-widest">Social Connection</span>
+            <h2 className="text-3xl sm:text-4xl font-black uppercase text-neutral-900 leading-tight">
+              Follow Our <span className="font-editorial italic normal-case font-light text-neutral-500">Smile Transformations</span>
+            </h2>
+            <p className="text-xs text-neutral-500 font-medium leading-relaxed">
+              We document real patient smiles daily. See behind-the-scenes clinic standards, raw transformation timelines, and doctor tips on Instagram.
+            </p>
+          </div>
+
+          {/* Instagram Stats Profile Card */}
+          <div className="bg-neutral-50 border border-neutral-200/80 rounded-[32px] p-6 sm:p-8 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-center shadow-sm">
+            <div className="md:col-span-4 space-y-4 text-center md:text-left flex flex-col items-center md:items-start">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-yellow-500 via-red-500 to-purple-600 shrink-0 shadow-md">
+                  <div className="w-full h-full rounded-full overflow-hidden bg-white p-0.5">
+                    <img
+                      src="/assets/yourdentist/logo_cropped.png"
+                      alt="Your Dentist Instagram Logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <div className="text-left leading-tight">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-neutral-900">@yourdentist_patna</h4>
+                  <p className="text-[9px] text-neutral-500 font-bold uppercase tracking-wider">Dr. Aryan Parmar Clinic</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 w-full border-t border-neutral-200/60 pt-4">
+                <div className="text-center md:text-left">
+                  <span className="block text-sm font-black text-neutral-900 font-mono leading-none">420+</span>
+                  <span className="block text-[7px] text-neutral-400 font-black uppercase tracking-widest mt-1">Posts</span>
+                </div>
+                <div className="text-center md:text-left">
+                  <span className="block text-sm font-black text-neutral-900 font-mono leading-none">12.4K</span>
+                  <span className="block text-[7px] text-neutral-400 font-black uppercase tracking-widest mt-1">Followers</span>
+                </div>
+                <div className="text-center md:text-left">
+                  <span className="block text-sm font-black text-neutral-900 font-mono leading-none">2.4M</span>
+                  <span className="block text-[7px] text-neutral-400 font-black uppercase tracking-widest mt-1">Views</span>
+                </div>
+              </div>
+
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 bg-[#5b72ff] hover:bg-[#7a5cff] text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all text-center block shadow-md shadow-[#5b72ff]/10"
+              >
+                Follow Profile
+              </a>
+            </div>
+
+            {/* Reels Mockup Grid */}
+            <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {[
+                { views: "450K+", type: "Implants", file: "/assets/yourdentist/posto_reel_insta_optimized.mp4", thumbnail: "/assets/yourdentist/gap_after.png" },
+                { views: "820K+", type: "Veneers", file: "/assets/yourdentist/posto_reel_insta_optimized.mp4", thumbnail: "/assets/yourdentist/veneer_case_1.png" },
+                { views: "1.2M+", type: "Aligners", file: "/assets/yourdentist/simba_reel_optimized.mp4", thumbnail: "/assets/yourdentist/patient_happy_4.jpg" }
+              ].map((reel, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => setActiveVideoUrl(reel.file)}
+                  className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-neutral-950 border border-neutral-200/80 shadow-md cursor-pointer hover:shadow-lg transition-all duration-300"
+                >
+                  <img
+                    src={reel.thumbnail}
+                    alt={`${reel.type} transformation reel`}
+                    className="w-full h-full object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/45 transition-colors flex flex-col justify-between p-3">
+                    <span className="self-end bg-black/60 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-widest text-white border border-white/5">
+                      ▶ {reel.views}
+                    </span>
+                    <div>
+                      <span className="block text-[8px] font-black uppercase tracking-widest text-[#5b72ff]">{reel.type}</span>
+                      <span className="block text-[7px] text-neutral-200 font-bold uppercase tracking-wider mt-0.5">View Makeover &rarr;</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* SECTION 5: SERVICES (Treatments Grid with Cost - CRO Priority 4) */}
       <section id="services" className="py-28 px-6 bg-white relative overflow-hidden">
         {/* Watermark */}
-        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-900/[0.015] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          DENTAL IMPLANTS
+        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+          ALIGNERS
         </div>
 
         <div className="max-w-6xl mx-auto space-y-16 relative z-10">
@@ -779,7 +890,7 @@ export default function DentistWebsite() {
       {/* SECTION 6: DR. ARYAN (Credentials, Bio & Clinic Photo - CRO Priority 6) */}
       <section id="dr-aryan" className="py-28 px-6 bg-neutral-50 relative overflow-hidden border-y border-neutral-100">
         {/* Watermark */}
-        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-900/[0.015] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+        <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
           ALIGNERS
         </div>
 
@@ -832,29 +943,37 @@ export default function DentistWebsite() {
             {/* Right: Bio Details */}
             <div className="lg:col-span-4 flex flex-col justify-center space-y-6 text-left">
               <div className="space-y-3">
-                <h3 className="text-lg font-black uppercase text-neutral-900">Credentials & Specialties</h3>
+                <h3 className="text-lg font-black uppercase text-neutral-900">Credentials & Authority</h3>
                 <p className="text-xs text-neutral-500 font-medium leading-relaxed">
-                  Dr. Aryan Parmar holds standard BDS & MDS dental credentials and specializes in pain-free restoring procedures. He treats patients at two primary locations: **Patna** and **Purnea**.
+                  Dr. Aryan Parmar holds verified BDS & MDS credentials and specializes in pain-free restoring procedures. He treats patients at two primary locations: **Patna** and **Purnea**.
                 </p>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white border border-neutral-200 p-4 rounded-2xl text-center shadow-sm">
-                  <span className="block text-lg font-black text-neutral-900 font-mono tracking-tight">5,000+</span>
-                  <span className="block text-[8px] text-neutral-400 font-black uppercase tracking-widest mt-1">Patients Treated</span>
-                </div>
-                <div className="bg-white border border-neutral-200 p-4 rounded-2xl text-center shadow-sm">
-                  <span className="block text-lg font-black text-neutral-900 font-mono tracking-tight">15+ Yrs</span>
-                  <span className="block text-[8px] text-neutral-400 font-black uppercase tracking-widest mt-1">Clinical Experience</span>
-                </div>
+              {/* Credentials Trust Monster List */}
+              <div className="space-y-2.5">
+                {[
+                  { label: "Clinical Volume", value: "5,000+ Patients Treated" },
+                  { label: "Patient Feedback", value: "163+ Five Star Reviews" },
+                  { label: "Active Practice", value: "Patna & Purnea Studios" },
+                  { label: "Diagnostic Tech", value: "Modern Digital Dentistry" }
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3 bg-white border border-neutral-200/80 p-3 rounded-xl shadow-sm">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-[10px] font-bold shrink-0">
+                      ✓
+                    </div>
+                    <div>
+                      <span className="block text-[7px] text-neutral-400 font-bold uppercase tracking-wider leading-none">{item.label}</span>
+                      <span className="text-xs font-black uppercase text-neutral-850 tracking-wide mt-1 block">{item.value}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              {/* Specialties List */}
+              {/* Expertise Chips */}
               <div className="bg-white border border-neutral-200 rounded-2xl p-4.5 space-y-3 shadow-sm">
-                <h4 className="text-[9px] font-black uppercase tracking-widest text-[#5b72ff]">Primary Specialties</h4>
+                <h4 className="text-[9px] font-black uppercase tracking-widest text-[#5b72ff]">Expertise Chips</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {["Dental Implants", "Porcelain Veneers", "Clear Aligners", "Root Canal (RCT)"].map((spec) => (
+                  {["Dental Implants", "Smile Design", "Veneers", "Aligners", "Root Canal"].map((spec) => (
                     <span key={spec} className="px-2.5 py-1 bg-[#5b72ff]/5 border border-[#5b72ff]/10 rounded-lg text-[10px] font-black uppercase text-[#5b72ff] tracking-wider">
                       {spec}
                     </span>
@@ -870,8 +989,8 @@ export default function DentistWebsite() {
       {/* SECTION 7: CONSULTATION BOOKING (Urgency Form - CRO Priority 7) */}
       <section id="booking" className="py-32 px-6 bg-white relative overflow-hidden">
         {/* Watermark */}
-        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-900/[0.015] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          SMILE MAKEOVER
+        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+          SMILE DESIGN
         </div>
 
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch relative z-10">
@@ -947,6 +1066,26 @@ export default function DentistWebsite() {
                       <h3 className="text-base font-black uppercase tracking-widest text-white mt-1">
                         Book Smile Assessment
                       </h3>
+                    </div>
+
+                    {/* Form Trust indicators */}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 bg-neutral-900 border border-white/5 rounded-2xl p-4 text-[9px] font-black uppercase tracking-wider text-neutral-300">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-emerald-400">✓</span>
+                        <span>Consultation with Dr. Aryan</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-emerald-400">✓</span>
+                        <span>Treatment Plan</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-emerald-400">✓</span>
+                        <span>Cost Estimate</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-emerald-400">✓</span>
+                        <span>No Obligation</span>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1104,8 +1243,8 @@ export default function DentistWebsite() {
 
       {/* SECTION 8: GOOGLE REVIEWS SCREENSHOTS (CRO Priority 10) */}
       <section id="reviews" className="py-28 px-6 bg-[#0c0d12] text-white relative overflow-hidden border-t border-white/5">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[14vw] font-black text-white/[0.01] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
-          SMILE DESIGN
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[14vw] font-black text-white/[0.03] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+          REVIEWS
         </div>
 
         <div className="max-w-6xl mx-auto space-y-16 relative z-10">
@@ -1122,86 +1261,128 @@ export default function DentistWebsite() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Review Screenshot Mockup 1 */}
-            <div className="bg-neutral-900/50 border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 text-left shadow-lg relative overflow-hidden">
-              <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#16A34A]/10 border border-[#16A34A]/20 px-2 py-0.5 rounded text-[8px] font-black uppercase text-emerald-400 font-mono">
-                ✓ Verified Account
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black uppercase text-[#5b72ff] border border-white/5 font-mono">
-                  RS
+            <div className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 text-left shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#EA4335"
+                        d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.137 4.2-3.417 0-6.19-2.772-6.19-6.185 0-3.413 2.773-6.185 6.19-6.185 1.54 0 2.946.568 4.027 1.505l3.14-3.14C19.16 2.062 15.936 1 12.24 1 5.86 1 .69 6.17.69 12.5S5.86 24 12.24 24c6.16 0 11.23-4.43 11.23-11.285 0-.76-.07-1.49-.2-2.185H12.24z"
+                      />
+                    </svg>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-neutral-400">Google Review</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[7px] font-black uppercase text-emerald-400 font-mono">
+                    ✓ Verified Account
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-wider text-white">Rahul Sharma</h4>
-                  <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Patna Local Guide</p>
+                
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black uppercase text-[#5b72ff] border border-white/5 font-mono">
+                    RS
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-white">Rahul Sharma</h4>
+                    <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Patna Local Guide</p>
+                  </div>
                 </div>
+                <div className="flex text-amber-400">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3 w-3 fill-amber-400 text-transparent" />
+                  ))}
+                </div>
+                <blockquote className="text-xs text-neutral-300 font-medium leading-relaxed italic border-l-2 border-[#5b72ff] pl-3.5">
+                  "Pain-free root canal. Highly recommended. I went in with severe toothache and got a root canal. Micro-dentistry anesthesia was so effective I didn't feel a single needle."
+                </blockquote>
               </div>
-              <div className="flex text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3 w-3 fill-amber-400 text-transparent" />
-                ))}
-              </div>
-              <blockquote className="text-xs text-neutral-300 font-medium leading-relaxed italic border-l-2 border-[#5b72ff] pl-3.5">
-                "Pain-free root canal. Highly recommended. I went in with severe toothache and got a root canal. Micro-dentistry anesthesia was so effective I didn't feel a single needle."
-              </blockquote>
-              <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-neutral-500 pt-2 border-t border-white/5">
-                <span>Google Review ID: 839218</span>
-                <span>★★★★★</span>
+              <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-neutral-500 pt-3 border-t border-white/5 mt-4">
+                <span>Review ID: 839218</span>
+                <span className="text-emerald-500">★★★★★</span>
               </div>
             </div>
 
             {/* Review Screenshot Mockup 2 */}
-            <div className="bg-neutral-900/50 border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 text-left shadow-lg relative overflow-hidden">
-              <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#16A34A]/10 border border-[#16A34A]/20 px-2 py-0.5 rounded text-[8px] font-black uppercase text-emerald-400 font-mono">
-                ✓ Verified Account
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black uppercase text-[#5b72ff] border border-white/5 font-mono">
-                  SP
+            <div className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 text-left shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#EA4335"
+                        d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.137 4.2-3.417 0-6.19-2.772-6.19-6.185 0-3.413 2.773-6.185 6.19-6.185 1.54 0 2.946.568 4.027 1.505l3.14-3.14C19.16 2.062 15.936 1 12.24 1 5.86 1 .69 6.17.69 12.5S5.86 24 12.24 24c6.16 0 11.23-4.43 11.23-11.285 0-.76-.07-1.49-.2-2.185H12.24z"
+                      />
+                    </svg>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-neutral-400">Google Review</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[7px] font-black uppercase text-emerald-400 font-mono">
+                    ✓ Verified Account
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-wider text-white">Dr. Smita Prasad</h4>
-                  <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Medical Officer (Patna)</p>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black uppercase text-[#5b72ff] border border-white/5 font-mono">
+                    SP
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-white">Dr. Smita Prasad</h4>
+                    <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Medical Officer (Patna)</p>
+                  </div>
                 </div>
+                <div className="flex text-amber-400">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3 w-3 fill-amber-400 text-transparent" />
+                  ))}
+                </div>
+                <blockquote className="text-xs text-neutral-300 font-medium leading-relaxed italic border-l-2 border-[#5b72ff] pl-3.5">
+                  "Best dental implant clinic in Patna. The entire procedure was smooth. Dr. Aryan explained every step. The replacement tooth feels totally natural and strong."
+                </blockquote>
               </div>
-              <div className="flex text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3 w-3 fill-amber-400 text-transparent" />
-                ))}
-              </div>
-              <blockquote className="text-xs text-neutral-300 font-medium leading-relaxed italic border-l-2 border-[#5b72ff] pl-3.5">
-                "Best dental implant clinic in Patna. The entire procedure was smooth. Dr. Aryan explained every step. The replacement tooth feels totally natural and strong."
-              </blockquote>
-              <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-neutral-500 pt-2 border-t border-white/5">
-                <span>Google Review ID: 290183</span>
-                <span>★★★★★</span>
+              <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-neutral-500 pt-3 border-t border-white/5 mt-4">
+                <span>Review ID: 290183</span>
+                <span className="text-emerald-500">★★★★★</span>
               </div>
             </div>
 
             {/* Review Screenshot Mockup 3 */}
-            <div className="bg-neutral-900/50 border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 text-left shadow-lg relative overflow-hidden">
-              <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#16A34A]/10 border border-[#16A34A]/20 px-2 py-0.5 rounded text-[8px] font-black uppercase text-emerald-400 font-mono">
-                ✓ Verified Account
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black uppercase text-[#5b72ff] border border-white/5 font-mono">
-                  RR
+            <div className="bg-neutral-900/40 border border-white/10 rounded-2xl p-5 sm:p-6 space-y-4 text-left shadow-lg relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="h-4 w-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#EA4335"
+                        d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.2-5.137 4.2-3.417 0-6.19-2.772-6.19-6.185 0-3.413 2.773-6.185 6.19-6.185 1.54 0 2.946.568 4.027 1.505l3.14-3.14C19.16 2.062 15.936 1 12.24 1 5.86 1 .69 6.17.69 12.5S5.86 24 12.24 24c6.16 0 11.23-4.43 11.23-11.285 0-.76-.07-1.49-.2-2.185H12.24z"
+                      />
+                    </svg>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-neutral-400">Google Review</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[7px] font-black uppercase text-emerald-400 font-mono">
+                    ✓ Verified Account
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-wider text-white">Rishav Raj</h4>
-                  <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Patient (Patna)</p>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-black uppercase text-[#5b72ff] border border-white/5 font-mono">
+                    RR
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-white">Rishav Raj</h4>
+                    <p className="text-[8px] text-neutral-500 font-bold uppercase tracking-wider">Patient (Patna)</p>
+                  </div>
                 </div>
+                <div className="flex text-amber-400">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className="h-3 w-3 fill-amber-400 text-transparent" />
+                  ))}
+                </div>
+                <blockquote className="text-xs text-neutral-300 font-medium leading-relaxed italic border-l-2 border-[#5b72ff] pl-3.5">
+                  "Clear aligners changed my life. Dr. Aryan explained everything so well. Gaps closed in 6 months exactly as predicted. Transparent pricing was a huge help."
+                </blockquote>
               </div>
-              <div className="flex text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3 w-3 fill-amber-400 text-transparent" />
-                ))}
-              </div>
-              <blockquote className="text-xs text-neutral-300 font-medium leading-relaxed italic border-l-2 border-[#5b72ff] pl-3.5">
-                "Clear aligners changed my life. Dr. Aryan explained everything so well. Gaps closed in 6 months exactly as predicted. Transparent pricing was a huge help."
-              </blockquote>
-              <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-neutral-500 pt-2 border-t border-white/5">
-                <span>Google Review ID: 890124</span>
-                <span>★★★★★</span>
+              <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-neutral-500 pt-3 border-t border-white/5 mt-4">
+                <span>Review ID: 890124</span>
+                <span className="text-emerald-500">★★★★★</span>
               </div>
             </div>
           </div>
