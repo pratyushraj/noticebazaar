@@ -268,6 +268,18 @@ export default function DentistWebsite() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Clinic Studio Gallery Auto-playing fast slideshow (2.5s interval)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStudioPhoto((prevPhoto) => {
+        const currentIndex = CLINIC_PHOTOS.findIndex((p) => p.id === prevPhoto.id);
+        const nextIndex = (currentIndex + 1) % CLINIC_PHOTOS.length;
+        return CLINIC_PHOTOS[nextIndex];
+      });
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     const updateTime = () => {
       const options: Intl.DateTimeFormatOptions = {
