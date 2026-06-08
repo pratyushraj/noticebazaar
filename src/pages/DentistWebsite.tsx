@@ -125,6 +125,15 @@ const BEFORE_AFTER_IMAGES = [
   }
 ];
 
+const CLINIC_PHOTOS = [
+  { id: "operatory", name: "Operatory Studio", desc: "Sterile surgical operatory with digital alignment systems.", img: "/assets/yourdentist/interior_operatory.jpg" },
+  { id: "consult", name: "Clinical Consult", desc: "Dr. Aryan performing diagnostic digital scanner screening with a patient.", img: "/assets/yourdentist/dr_with_patient_1.jpg" },
+  { id: "treatment", name: "Clinical Action", desc: "Dr. Aryan operating under computerized micro-dentistry systems.", img: "/assets/yourdentist/clinic_in_action.jpg" },
+  { id: "lobby", name: "Executive Lobby", desc: "Patient lounge and custom wall branding reception.", img: "/assets/yourdentist/wall_brand.png" },
+  { id: "exterior_day", name: "Day Exterior", desc: "Centrally located premium clinic facade in Patliputra Colony.", img: "/assets/yourdentist/exterior_day.jpg" },
+  { id: "exterior_night", name: "Night Exterior", desc: "Lighted facade for convenient after-hours consultation.", img: "/assets/yourdentist/exterior_night.jpg" }
+];
+
 const DENTISTS = [
   { name: "Dr. Clara Collins", role: "Prosthodontist", img: "/assets/yourdentist/clara_collins.png" },
   { name: "Dr. Mason Carter", role: "Implant Specialist", img: "/assets/yourdentist/mason_carter.png" }
@@ -233,6 +242,9 @@ export default function DentistWebsite() {
 
   // Video modal state
   const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
+
+  // Active studio photo for interactive gallery
+  const [activeStudioPhoto, setActiveStudioPhoto] = useState(CLINIC_PHOTOS[0]);
 
   // AI Assistant Widget States
   const [chatOpen, setChatOpen] = useState<boolean>(false);
@@ -887,7 +899,7 @@ export default function DentistWebsite() {
         </div>
       </section>
 
-      {/* SECTION 6: DR. ARYAN (Credentials, Bio & Clinic Photo - CRO Priority 6) */}
+      {/* SECTION 6: MEDICAL BOARD TEAM (3 Specialists Grid & Credentials Details) */}
       <section id="dr-aryan" className="py-28 px-6 bg-neutral-50 relative overflow-hidden border-y border-neutral-100">
         {/* Watermark */}
         <div className="absolute right-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
@@ -898,89 +910,201 @@ export default function DentistWebsite() {
           <div className="text-center space-y-4 max-w-2xl mx-auto">
             <span className="text-[9px] font-black text-[#5b72ff] uppercase tracking-widest">Clinical Leadership</span>
             <h2 className="text-3xl sm:text-4xl font-black uppercase text-neutral-900 leading-tight">
-              Dr. Aryan Parmar <br />
-              <span className="font-editorial italic normal-case font-light text-neutral-500">Restorative surgery with precision</span>
+              Medical Specialist Board <br />
+              <span className="font-editorial italic normal-case font-light text-neutral-500">World-class clinical expertise in Patna</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
-            {/* Left Doctor Profile Card */}
-            <div className="lg:col-span-4 relative flex justify-center">
-              <div className="relative w-full max-w-sm aspect-[4/5] rounded-[32px] overflow-hidden border border-neutral-200 shadow-xl group bg-white p-3 flex flex-col justify-between">
-                <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-neutral-950">
-                  <img
-                    src="/assets/yourdentist/doctor_profile.png"
-                    alt="Dr. Aryan Parmar"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                <div className="absolute bottom-6 left-6 right-6 z-20 bg-neutral-950/95 border border-white/5 p-4 rounded-xl shadow-2xl text-white">
-                  <h4 className="text-xs font-black uppercase tracking-wider">Dr. Aryan Parmar</h4>
-                  <p className="text-[7px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Lead Surgeon & Restorative Director</p>
-                  <p className="text-[9px] text-[#5b72ff] font-mono font-black uppercase tracking-widest mt-2">BDS, MDS</p>
-                </div>
+          {/* 3-Specialist Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Dr. Aryan Parmar Card */}
+            <div className="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden border border-neutral-200 shadow-xl group bg-white p-3 flex flex-col justify-between">
+              <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-neutral-950">
+                <img
+                  src="/assets/yourdentist/doctor_profile.png"
+                  alt="Dr. Aryan Parmar"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="absolute bottom-6 left-6 right-6 z-20 bg-neutral-950/95 border border-white/5 p-4 rounded-xl shadow-2xl text-white">
+                <h4 className="text-xs font-black uppercase tracking-wider">Dr. Aryan Parmar</h4>
+                <p className="text-[7px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Lead Surgeon & Restorative Director</p>
+                <p className="text-[9px] text-[#5b72ff] font-mono font-black uppercase tracking-widest mt-2">BDS, MDS • 12+ Years Exp</p>
               </div>
             </div>
 
-            {/* Center: Clinic Interior Photo (CRO Priority 6) */}
-            <div className="lg:col-span-4 relative flex justify-center">
-              <div className="relative w-full max-w-sm aspect-[4/5] rounded-[32px] overflow-hidden border border-neutral-200 shadow-xl group bg-white p-3 flex flex-col justify-between">
-                <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-neutral-950">
-                  <img
-                    src="/assets/yourdentist/interior_operatory.jpg"
-                    alt="YOUR DENTIST Clinic Interior Setup"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                <div className="absolute bottom-6 left-6 right-6 z-20 bg-neutral-950/95 border border-white/5 p-4 rounded-xl shadow-2xl text-white">
-                  <h4 className="text-xs font-black uppercase tracking-wider">Patliputra Restorative Studio</h4>
-                  <p className="text-[7px] text-neutral-400 font-bold uppercase tracking-widest mt-1">State-Of-The-Art Equipment</p>
-                  <p className="text-[9px] text-emerald-400 font-mono font-black uppercase tracking-widest mt-2">Certified Sterile Setup</p>
-                </div>
+            {/* Dr. Clara Collins Card */}
+            <div className="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden border border-neutral-200 shadow-xl group bg-white p-3 flex flex-col justify-between">
+              <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-neutral-950">
+                <img
+                  src="/assets/yourdentist/clara_collins.png"
+                  alt="Dr. Clara Collins"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="absolute bottom-6 left-6 right-6 z-20 bg-neutral-950/95 border border-white/5 p-4 rounded-xl shadow-2xl text-white">
+                <h4 className="text-xs font-black uppercase tracking-wider">Dr. Clara Collins</h4>
+                <p className="text-[7px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Prosthodontist & Veneer Specialist</p>
+                <p className="text-[9px] text-[#5b72ff] font-mono font-black uppercase tracking-widest mt-2">BDS, MDS • 8+ Years Exp</p>
               </div>
             </div>
 
-            {/* Right: Bio Details */}
-            <div className="lg:col-span-4 flex flex-col justify-center space-y-6 text-left">
+            {/* Dr. Mason Carter Card */}
+            <div className="relative w-full aspect-[4/5] rounded-[32px] overflow-hidden border border-neutral-200 shadow-xl group bg-white p-3 flex flex-col justify-between">
+              <div className="relative w-full h-full rounded-[24px] overflow-hidden bg-neutral-950">
+                <img
+                  src="/assets/yourdentist/mason_carter.png"
+                  alt="Dr. Mason Carter"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="absolute bottom-6 left-6 right-6 z-20 bg-neutral-950/95 border border-white/5 p-4 rounded-xl shadow-2xl text-white">
+                <h4 className="text-xs font-black uppercase tracking-wider">Dr. Mason Carter</h4>
+                <p className="text-[7px] text-neutral-400 font-bold uppercase tracking-widest mt-1">Implantologist & Oral Surgeon</p>
+                <p className="text-[9px] text-[#5b72ff] font-mono font-black uppercase tracking-widest mt-2">BDS, MDS • 10+ Years Exp</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Details Row: Credentials & Specialties vs Purexa post-care partnership */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-16 border-t border-neutral-200/60">
+            {/* Left Column: Credentials and Specialties */}
+            <div className="lg:col-span-7 space-y-8 text-left">
               <div className="space-y-3">
-                <h3 className="text-lg font-black uppercase text-neutral-900">Credentials & Authority</h3>
+                <h3 className="text-lg font-black uppercase text-neutral-900">Clinical Excellence & Authority</h3>
                 <p className="text-xs text-neutral-500 font-medium leading-relaxed">
-                  Dr. Aryan Parmar holds verified BDS & MDS credentials and specializes in pain-free restoring procedures. He treats patients at two primary locations: **Patna** and **Purnea**.
+                  Our specialist board holds verified MDS/BDS credentials from India's premier dental institutes, executing combined therapy with computerized precision. Dr. Aryan treats patients at two primary locations: Patna and Purnea.
                 </p>
               </div>
 
-              {/* Credentials Trust Monster List */}
-              <div className="space-y-2.5">
+              {/* Grid of Credentials */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   { label: "Clinical Volume", value: "5,000+ Patients Treated" },
                   { label: "Patient Feedback", value: "163+ Five Star Reviews" },
                   { label: "Active Practice", value: "Patna & Purnea Studios" },
                   { label: "Diagnostic Tech", value: "Modern Digital Dentistry" }
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 bg-white border border-neutral-200/80 p-3 rounded-xl shadow-sm">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-[10px] font-bold shrink-0">
+                  <div key={idx} className="flex items-center gap-3 bg-white border border-neutral-200/80 p-3.5 rounded-xl shadow-sm">
+                    <div className="w-5.5 h-5.5 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center text-[10px] font-bold shrink-0">
                       ✓
                     </div>
                     <div>
                       <span className="block text-[7px] text-neutral-400 font-bold uppercase tracking-wider leading-none">{item.label}</span>
-                      <span className="text-xs font-black uppercase text-neutral-850 tracking-wide mt-1 block">{item.value}</span>
+                      <span className="text-xs font-black uppercase text-neutral-800 tracking-wide mt-1 block">{item.value}</span>
                     </div>
                   </div>
                 ))}
               </div>
 
               {/* Expertise Chips */}
-              <div className="bg-white border border-neutral-200 rounded-2xl p-4.5 space-y-3 shadow-sm">
-                <h4 className="text-[9px] font-black uppercase tracking-widest text-[#5b72ff]">Expertise Chips</h4>
+              <div className="bg-white border border-neutral-200 rounded-2xl p-5 space-y-3.5 shadow-sm">
+                <h4 className="text-[9px] font-black uppercase tracking-widest text-[#5b72ff]">Specialty Focus Areas</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {["Dental Implants", "Smile Design", "Veneers", "Aligners", "Root Canal"].map((spec) => (
-                    <span key={spec} className="px-2.5 py-1 bg-[#5b72ff]/5 border border-[#5b72ff]/10 rounded-lg text-[10px] font-black uppercase text-[#5b72ff] tracking-wider">
+                  {["Computerized Implants", "Veneer Smile Design", "Clear Aligners", "Painless RCT", "Laser Whitening", "Pediatric Care"].map((spec) => (
+                    <span key={spec} className="px-3 py-1.5 bg-[#5b72ff]/5 border border-[#5b72ff]/10 rounded-lg text-[10px] font-black uppercase text-[#5b72ff] tracking-wider">
                       {spec}
                     </span>
                   ))}
                 </div>
-                <p className="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Available Locations: Patna | Purnea</p>
               </div>
+            </div>
+
+            {/* Right Column: Purexa Collaboration Card */}
+            <div className="lg:col-span-5 bg-white border border-neutral-200/80 rounded-[32px] p-5 flex flex-col justify-between shadow-sm relative overflow-hidden group text-left">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 rounded">✓ Certified Partnership</span>
+                </div>
+                <h3 className="text-base font-black uppercase text-neutral-900 tracking-tight leading-snug">
+                  Premium Post-Care <br />
+                  <span className="font-editorial italic normal-case font-light text-neutral-500">Purexa Oral Hygiene Systems</span>
+                </h3>
+                <p className="text-xs text-neutral-500 font-medium leading-relaxed">
+                  Every implant, veneers, or whitening treatment includes a custom Purexa clinical recovery kit to accelerate healing and protect enamel.
+                </p>
+              </div>
+              
+              {/* Product Image Frame */}
+              <div className="aspect-[16/10] w-full rounded-2xl overflow-hidden bg-neutral-50 border border-neutral-100 relative mt-4">
+                <img
+                  src="/assets/yourdentist/purexa_products.png"
+                  alt="Purexa Clinical Products partnership"
+                  className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* NEW SECTION: RESTORATIVE STUDIO GALLERY (Clinic Environment Slideshow) */}
+      <section id="studio-gallery" className="py-28 px-6 bg-white relative overflow-hidden border-b border-neutral-100">
+        {/* Watermark */}
+        <div className="absolute left-10 top-1/2 -translate-y-1/2 text-[14vw] font-black text-neutral-950/[0.035] select-none pointer-events-none tracking-widest uppercase font-sans z-0">
+          TRANSFORMATIONS
+        </div>
+
+        <div className="max-w-6xl mx-auto space-y-16 relative z-10">
+          <div className="text-center space-y-4 max-w-2xl mx-auto">
+            <span className="text-[9px] font-black text-[#5b72ff] uppercase tracking-widest">Physical Proof</span>
+            <h2 className="text-3xl sm:text-4xl font-black uppercase text-neutral-900 leading-tight">
+              Restorative Studio Gallery <br />
+              <span className="font-editorial italic normal-case font-light text-neutral-500">Explore our premium clinical environment</span>
+            </h2>
+            <p className="text-xs text-neutral-500 font-medium leading-relaxed">
+              Verify our hygiene, clinical tools, and accessibility. Tap the views below to tour our Patliputra Colony facility.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Left Viewport - Featured Photo */}
+            <div className="lg:col-span-8 flex flex-col justify-between">
+              <div className="relative rounded-[28px] overflow-hidden border border-neutral-200 bg-neutral-950 shadow-xl aspect-[16/10] flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={activeStudioPhoto.id}
+                    src={activeStudioPhoto.img}
+                    alt={activeStudioPhoto.name}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full object-cover"
+                  />
+                </AnimatePresence>
+                <div className="absolute bottom-6 left-6 right-6 z-20 bg-neutral-950/90 border border-white/5 p-5 rounded-2xl text-white backdrop-blur-sm text-left">
+                  <span className="text-[8px] font-black text-[#5b72ff] uppercase tracking-widest">Studio Perspective</span>
+                  <h4 className="text-sm font-black uppercase tracking-wider mt-1">{activeStudioPhoto.name}</h4>
+                  <p className="text-xs text-neutral-400 font-medium mt-1.5 leading-relaxed">{activeStudioPhoto.desc}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side - Vertical Selectors */}
+            <div className="lg:col-span-4 flex flex-col gap-3 justify-center">
+              {CLINIC_PHOTOS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveStudioPhoto(item)}
+                  className={`group text-left p-3.5 rounded-2xl border transition-all duration-300 flex items-center gap-4 ${
+                    activeStudioPhoto.id === item.id
+                      ? 'bg-neutral-950 text-white border-neutral-950 shadow-lg'
+                      : 'bg-neutral-50 hover:bg-neutral-100 text-neutral-800 border-neutral-200/60'
+                  }`}
+                >
+                  {/* Small image preview in the button */}
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-neutral-200 shrink-0 border border-neutral-300/40">
+                    <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="leading-tight">
+                    <h4 className={`text-[10px] font-black uppercase tracking-wider ${activeStudioPhoto.id === item.id ? 'text-white' : 'text-neutral-900'}`}>{item.name}</h4>
+                    <p className={`text-[8px] font-bold uppercase tracking-wider mt-1 ${activeStudioPhoto.id === item.id ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                      {item.id.includes('exterior') ? 'External Facade' : 'Clinical Area'}
+                    </p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>
