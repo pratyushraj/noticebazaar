@@ -174,10 +174,12 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
 
   // Determine clinic context based on authenticated user email
   let activeClinic = 'Shree Ram Dental Care Patna';
-  if (userEmail === 'test@creatorarmour.com' || userEmail === 'test@noticebazaar.com') {
+  if (userEmail?.toLowerCase().includes('yourdentist')) {
     activeClinic = 'Your Dentist';
-  } else if (userEmail === 'demo@creatorarmour.com' || userEmail === 'brand-demo@creatorarmour.com') {
+  } else if (userEmail?.toLowerCase().includes('shreeramdental')) {
     activeClinic = 'Shree Ram Dental Care Patna';
+  } else if (userEmail === 'test@creatorarmour.com' || userEmail === 'test@noticebazaar.com') {
+    activeClinic = 'Your Dentist';
   } else {
     // If not matched, read from localStorage fallback
     activeClinic = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna';
