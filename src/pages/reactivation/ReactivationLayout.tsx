@@ -79,9 +79,9 @@ const NAV_ITEMS: NavItem[] = [
 // ─── Page title map ───────────────────────────────────────────────────────────
 
 const PAGE_TITLES: Record<string, string> = {
-  '/reactivation': 'Dashboard',
+  '/reactivation': 'Dental CRM',
   '/reactivation/receptionist': 'AI Receptionist',
-  '/reactivation/customers': 'Customers',
+  '/reactivation/customers': 'Patients',
   '/reactivation/segments': 'Segments',
   '/reactivation/campaigns': 'Campaigns',
   '/reactivation/analytics': 'Analytics',
@@ -187,11 +187,11 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
               <ZapIcon size={14} className="text-indigo-400" />
             </div>
             <span className="text-[15px] font-bold text-white tracking-tight leading-none">
-              AI Reactivation
+              Dental CRM
             </span>
           </div>
           <p className="text-[10px] text-white/25 tracking-wider pl-[38px] font-medium">
-            Powered by CreatorArmour
+            WhatsApp follow-ups, bookings, and patient rechecks
           </p>
         </div>
 
@@ -220,7 +220,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
             </div>
             <div className="flex flex-col gap-0.5 min-w-0">
               <span className="text-[11px] font-semibold text-emerald-400 leading-none">
-                Receptionist Active
+                WhatsApp Assistant Active
               </span>
               <span className="text-[9px] text-emerald-500/60 font-medium tracking-wide leading-none">
                 AI Status
@@ -258,6 +258,22 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
 
           {/* Right side chips */}
           <div className="flex items-center gap-3">
+            {/* Clinic Switcher */}
+            <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-lg">
+              <span className="text-[10px] uppercase font-bold text-white/30 tracking-widest shrink-0">Clinic:</span>
+              <select
+                value={localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna'}
+                onChange={(e) => {
+                  localStorage.setItem('reactivation_clinic_name', e.target.value);
+                  window.location.reload(); // Reload page to update global EMR context
+                }}
+                className="bg-transparent text-[11.5px] font-semibold text-white outline-none cursor-pointer border-0 p-0 pr-1 shrink-0"
+              >
+                <option value="Shree Ram Dental Care Patna" style={{ background: '#0D1220', color: '#fff' }}>Shree Ram Dental Care</option>
+                <option value="Your Dentist" style={{ background: '#0D1220', color: '#fff' }}>Your Dentist</option>
+              </select>
+            </div>
+
             {/* WhatsApp connection chip */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08]">
               <div className="relative flex-shrink-0">

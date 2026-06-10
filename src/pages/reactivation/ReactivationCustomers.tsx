@@ -1927,8 +1927,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <button
                             type="button"
                             onClick={() => {
+                              const clinicName = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care';
                               const summary = estimateItems.map((item) => `• ${item.procedure}${item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹${item.cost.toLocaleString('en-IN')}`).join('\n');
-                              const text = `*Shree Ram Dental Care - Treatment Proposal*\n\nHi ${form.name},\n\nHere is your customized treatment cost estimate:\n\n${summary}\n\n*Subtotal:* ₹${calculatedSubtotal.toLocaleString('en-IN')}\n*Discount (${estimateDiscount}%):* -₹${calculatedDiscountAmount.toLocaleString('en-IN')}\n*GST (Cosmetic):* ₹${calculatedGST.toLocaleString('en-IN')}\n*Estimated Grand Total:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}\n\nOur patient manager will schedule your operatories slots. Let us know if we can proceed!`;
+                              const text = `*${clinicName} - Treatment Proposal*\n\nHi ${form.name},\n\nHere is your customized treatment cost estimate:\n\n${summary}\n\n*Subtotal:* ₹${calculatedSubtotal.toLocaleString('en-IN')}\n*Discount (${estimateDiscount}%):* -₹${calculatedDiscountAmount.toLocaleString('en-IN')}\n*GST (Cosmetic):* ₹${calculatedGST.toLocaleString('en-IN')}\n*Estimated Grand Total:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}\n\nOur patient manager will schedule your operatories slots. Let us know if we can proceed!`;
                               navigator.clipboard.writeText(text);
                               setCopiedEstimate(true);
                               setTimeout(() => setCopiedEstimate(false), 2000);
@@ -1942,7 +1943,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <div className="bg-black/30 border border-white/[0.05] rounded-xl p-3 text-[12px] font-mono leading-relaxed text-white/70">
                           <span className="text-[10px] text-indigo-400 font-bold block">MESSAGE PREVIEW:</span>
                           <div className="whitespace-pre-wrap select-all bg-black/20 p-2.5 rounded border border-white/[0.03]">
-                            <strong>Shree Ram Dental Care - Treatment Proposal</strong><br/><br/>
+                            <strong>{localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care'} - Treatment Proposal</strong><br/><br/>
                             Hi {form.name},<br/><br/>
                             Here is your customized treatment cost estimate:<br/>
                             {estimateItems.map((item, idx) => (
