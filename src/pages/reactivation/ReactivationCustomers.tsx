@@ -31,6 +31,8 @@ import {
   CheckSquare,
   Square,
   Zap,
+  Mic,
+  Volume2,
 } from 'lucide-react';
 import {
   Dialog,
@@ -679,10 +681,120 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'programs'>('general');
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
+  // AI Scribe states
+  const [scribeTranscript, setScribeTranscript] = useState('');
+  const [scribeStatus, setScribeStatus] = useState<'idle' | 'listening' | 'analyzing' | 'done'>('idle');
+  const recognitionRef = React.useRef<any>(null);
+
   React.useEffect(() => {
     setForm(getInitialForm(customer));
     setActiveTab('general');
+    setScribeTranscript('');
+    setScribeStatus('idle');
   }, [customer, open]);
+
+  const startScribeSpeech = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Chrome or use the mock presets.");
+      return;
+    }
+    setScribeStatus('listening');
+    setScribeTranscript('Listening to your consultation... Speak now.');
+    
+    const rec = new SpeechRecognition();
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.lang = 'en-IN'; // Indian accent focus
+    
+    rec.onresult = (event: any) => {
+      const resultText = event.results[0][0].transcript;
+      setScribeTranscript(resultText);
+      setScribeStatus('done');
+    };
+    
+    rec.onerror = (err: any) => {
+      console.error(err);
+      setScribeStatus('done');
+      setScribeTranscript('Speech recognition error. Please select a mock preset or type manual notes.');
+    };
+    
+    rec.onend = () => {
+      setScribeStatus((prev) => prev === 'listening' ? 'done' : prev);
+    };
+    
+    recognitionRef.current = rec;
+    rec.start();
+  };
+
+  const stopScribeSpeech = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setScribeStatus('done');
+  };
+
+  const parseScribeTranscript = (text: string) => {
+    if (!text.trim()) return;
+    setScribeStatus('analyzing');
+    
+    setTimeout(() => {
+      const lower = text.toLowerCase();
+      // Match FDI numbers (11 to 48)
+      const toothMatches = lower.match(/\b(11|12|13|14|15|16|17|18|21|22|23|24|25|26|27|28|31|32|33|34|35|36|37|38|41|42|43|44|45|46|47|48)\b/g);
+      
+      const newProblemTeeth = [...(form.problemTeeth || [])];
+      const newConditions = { ...form.toothConditions };
+      const newNotes = { ...form.toothNotes };
+      
+      let taggedCount = 0;
+      
+      if (toothMatches) {
+        toothMatches.forEach((toothStr) => {
+          const t = parseInt(toothStr, 10);
+          if (!newProblemTeeth.includes(t)) {
+            newProblemTeeth.push(t);
+          }
+          
+          // Determine pathology/treatment
+          let condition = 'Decayed / Cavity';
+          let noteText = 'Diagnosed via AI Scribe';
+          
+          if (lower.includes('root canal') || lower.includes('rct') || lower.includes('root-canal')) {
+            condition = 'Root Canal Needed';
+            noteText = 'Root canal therapy required';
+          } else if (lower.includes('implant')) {
+            condition = 'Dental Implant';
+            noteText = 'Implant replacement planned';
+          } else if (lower.includes('crown') || lower.includes('bridge')) {
+            condition = 'Crown / Bridge';
+            noteText = 'Restoration crown required';
+          } else if (lower.includes('missing') || lower.includes('extract')) {
+            condition = 'Missing Tooth';
+            noteText = 'Missing tooth area';
+          } else if (lower.includes('healthy') || lower.includes('clean')) {
+            condition = 'Healthy / Treated';
+            noteText = 'Checked & clean';
+          }
+          
+          newConditions[t] = condition;
+          newNotes[t] = noteText;
+          taggedCount++;
+        });
+      }
+      
+      handleChange('problemTeeth', newProblemTeeth.sort((a, b) => a - b));
+      handleChange('toothConditions', newConditions);
+      handleChange('toothNotes', newNotes);
+      setScribeStatus('done');
+      
+      if (taggedCount > 0) {
+        alert(`AI Scribe analyzed consultation: successfully tagged ${taggedCount} teeth in the chart.`);
+      } else {
+        alert("AI Scribe did not detect any FDI tooth numbers (11-48) in the voice note. Please try a preset!");
+      }
+    }, 1200);
+  };
 
   const handleChange = (field: keyof Customer, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -934,6 +1046,96 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {/* Body - Medical tab */}
                 {activeTab === 'medical' && (
                   <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
+                    {/* AI Dental Scribe (Voice to Chart) */}
+                    <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4.5 space-y-3 relative overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded bg-indigo-500/20 flex items-center justify-center">
+                            <Mic size={12} className="text-indigo-400" />
+                          </div>
+                          <div>
+                            <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">AI Dental Scribe</h4>
+                            <p className="text-[10px] text-white/40 mt-0.5">Dictate consultation notes to automatically populate EMR conditions & tag teeth</p>
+                          </div>
+                        </div>
+
+                        {scribeStatus === 'listening' ? (
+                          <button
+                            type="button"
+                            onClick={stopScribeSpeech}
+                            className="px-2.5 py-1 bg-rose-500 hover:bg-rose-600 rounded text-[11px] font-bold text-white flex items-center gap-1.5 animate-pulse"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                            Stop Recording
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={startScribeSpeech}
+                            disabled={scribeStatus === 'analyzing'}
+                            className="px-2.5 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-[11px] font-bold text-indigo-300 flex items-center gap-1.5 transition-all"
+                          >
+                            <Mic size={11} />
+                            Start AI Scribe
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Transcript Window */}
+                      {(scribeTranscript || scribeStatus === 'listening') && (
+                        <div className="bg-black/45 border border-white/[0.05] rounded-lg p-3 space-y-3">
+                          <p className="text-[11.5px] font-mono text-white/80 leading-relaxed whitespace-pre-wrap">
+                            {scribeTranscript}
+                          </p>
+
+                          {scribeStatus === 'done' && (
+                            <div className="flex justify-end">
+                              <button
+                                type="button"
+                                onClick={() => parseScribeTranscript(scribeTranscript)}
+                                className="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-[11px] font-bold transition-all shadow-md shadow-indigo-500/20"
+                              >
+                                Analyze & Tag Chart
+                              </button>
+                            </div>
+                          )}
+
+                          {scribeStatus === 'analyzing' && (
+                            <div className="flex items-center gap-2 text-[11px] text-indigo-400 font-medium font-mono">
+                              <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                              </svg>
+                              Analyzing EMR symptoms & extracting teeth...
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Mock consult presets */}
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[9.5px] text-white/30 uppercase font-bold tracking-wider">Voice Dictation Presets (Standard Indian Clinic Examples)</span>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            { label: 'Tooth 14 Cavity', text: 'Patient presents with severe food lodgement in upper right. Deep distal cavity found on tooth 14 requiring composite restoration.' },
+                            { label: 'Tooth 15 RCT', text: 'Acute pain and tenderness on percussion. Tooth 15 has deep decay with pulpal involvement. Root canal treatment needed.' },
+                            { label: 'Tooth 46 Implant', text: 'Old missing tooth in lower right quadrant. Pre-implant bone width looks good. Dental implant replacement planned for tooth 46.' }
+                          ].map((preset, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setScribeTranscript(preset.text);
+                                setScribeStatus('done');
+                              }}
+                              className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded text-[10.5px] text-white/60 hover:text-white/95 transition-all text-left"
+                            >
+                              🎤 {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                     {/* Medical Alerts (if any are active) */}
                     {((form.allergies && form.allergies.length > 0) || (form.medicalConditions && form.medicalConditions.length > 0)) && (
                       <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3.5 flex gap-3 items-start">
