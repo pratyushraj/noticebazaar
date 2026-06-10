@@ -105,6 +105,15 @@ interface Customer {
   programEnrollmentDate?: string;
   programCurrentStep?: number; // step index (1-based or 0-based, let's use 1-based)
   programStatus?: 'Active' | 'Paused' | 'Completed';
+  estimates?: Array<{
+    id: string;
+    date: string;
+    items: Array<{ tooth?: number; procedure: string; cost: number; isCosmetic: boolean }>;
+    discount: number;
+    tax: number;
+    grandTotal: number;
+    status: 'Draft' | 'Sent' | 'Approved';
+  }>;
 }
 
 type SortField = 'lastVisit' | 'totalSpend' | null;
@@ -675,10 +684,33 @@ const getToothName = (num: number): string => {
   return `${quadNames[quadrant]} ${toothNames[code]} (Tooth ${num})`;
 };
 
+const DEMO_PRE_OP_RVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" style="background:%23151b2d;"><text x="20" y="30" fill="%23ef4444" font-family="monospace" font-size="12" font-weight="bold">PRE-OP RVG: CAVITY DIAGNOSIS</text><path d="M 170,120 Q 200,60 230,120 Q 240,180 200,230 Q 160,180 170,120 Z" fill="%232c3858" stroke="%23556897" stroke-width="3"/><path d="M 185,90 Q 200,75 215,90 Q 210,120 200,130 Q 190,120 185,90 Z" fill="%230d1324" opacity="0.8"/><text x="180" y="115" fill="%23ef4444" font-family="sans-serif" font-size="10" font-weight="bold">DECAY</text><circle cx="200" cy="95" r="8" fill="%23ef4444" opacity="0.3"/><line x1="20" y1="210" x2="380" y2="210" stroke="%23475569" stroke-width="4" stroke-dasharray="8 4"/><text x="20" y="230" fill="%2364748b" font-family="sans-serif" font-size="10">Bone Level: Normal | Subgingival decay detected on Tooth 15</text></svg>`;
+
+const DEMO_POST_OP_RVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" style="background:%23151b2d;"><text x="20" y="30" fill="%2310b981" font-family="monospace" font-size="12" font-weight="bold">POST-OP RVG: COMPLETED ROOT CANAL</text><path d="M 170,120 Q 200,60 230,120 Q 240,180 200,230 Q 160,180 170,120 Z" fill="%232c3858" stroke="%23556897" stroke-width="3"/><path d="M 198,80 L 198,180" stroke="%23ffffff" stroke-width="4" stroke-linecap="round" filter="drop-shadow(0 0 4px %23ffffff)"/><path d="M 202,80 L 202,180" stroke="%23ffffff" stroke-width="4" stroke-linecap="round" filter="drop-shadow(0 0 4px %23ffffff)"/><path d="M 185,90 Q 200,75 215,90 Q 210,120 200,130 Q 190,120 185,90 Z" fill="%2394a3b8" opacity="0.8"/><text x="180" y="115" fill="%2310b981" font-family="sans-serif" font-size="10" font-weight="bold">OBTURATED</text><line x1="20" y1="210" x2="380" y2="210" stroke="%23475569" stroke-width="4" stroke-dasharray="8 4"/><text x="20" y="230" fill="%2364748b" font-family="sans-serif" font-size="10">Obturation: Complete (Gutta-Percha hermetic seal) | Tooth 15</text></svg>`;
+
+interface Procedure {
+  name: string;
+  category: 'Therapeutic' | 'Cosmetic';
+  defaultCost: number;
+  gstRate: number; // 0 or 18
+}
+
+const PROCEDURES_CATALOG: Procedure[] = [
+  { name: 'Root Canal Treatment (RCT)', category: 'Therapeutic', defaultCost: 3500, gstRate: 0 },
+  { name: 'Composite Filling / Restoration', category: 'Therapeutic', defaultCost: 1500, gstRate: 0 },
+  { name: 'Dental Implant Placement', category: 'Therapeutic', defaultCost: 25000, gstRate: 0 },
+  { name: 'PFM Crown / Cap', category: 'Therapeutic', defaultCost: 4000, gstRate: 0 },
+  { name: 'Zirconia Premium Crown', category: 'Therapeutic', defaultCost: 8000, gstRate: 0 },
+  { name: 'Scaling & Deep Polishing', category: 'Therapeutic', defaultCost: 1200, gstRate: 0 },
+  { name: 'Laser Teeth Whitening', category: 'Cosmetic', defaultCost: 12000, gstRate: 18 },
+  { name: 'Clear Aligners (Standard)', category: 'Cosmetic', defaultCost: 45000, gstRate: 18 },
+  { name: 'Clear Aligners (Premium)', category: 'Cosmetic', defaultCost: 85000, gstRate: 18 }
+];
+
 const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, onSave }) => {
   const isEdit = !!customer?.id;
   const [form, setForm] = useState<Customer>(() => getInitialForm(customer));
-  const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'programs'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'estimates' | 'programs'>('general');
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   // AI Scribe states
@@ -686,12 +718,58 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [scribeStatus, setScribeStatus] = useState<'idle' | 'listening' | 'analyzing' | 'done'>('idle');
   const recognitionRef = React.useRef<any>(null);
 
+  // RVG slider state
+  const [xraySliderPos, setXraySliderPos] = useState(50);
+
+  // Estimate builder states
+  const [estimateItems, setEstimateItems] = useState<Array<{ tooth?: number; procedure: string; cost: number; isCosmetic: boolean }>>([]);
+  const [estimateDiscount, setEstimateDiscount] = useState(0);
+  const [estimateStatus, setEstimateStatus] = useState<'Draft' | 'Sent' | 'Approved'>('Draft');
+  
+  // Selected builder item
+  const [builderTooth, setBuilderTooth] = useState<string>('');
+  const [builderProcedureIdx, setBuilderProcedureIdx] = useState<string>('0');
+  const [builderCost, setBuilderCost] = useState<number>(3500);
+  const [copiedEstimate, setCopiedEstimate] = useState(false);
+
   React.useEffect(() => {
     setForm(getInitialForm(customer));
     setActiveTab('general');
     setScribeTranscript('');
     setScribeStatus('idle');
+    setCopiedEstimate(false);
+    
+    if (customer?.estimates && customer.estimates.length > 0) {
+      const activeEst = customer.estimates[0];
+      setEstimateItems(activeEst.items || []);
+      setEstimateDiscount(activeEst.discount || 0);
+      setEstimateStatus(activeEst.status || 'Draft');
+    } else {
+      setEstimateItems([]);
+      setEstimateDiscount(0);
+      setEstimateStatus('Draft');
+    }
   }, [customer, open]);
+
+  const calculatedSubtotal = useMemo(() => {
+    return estimateItems.reduce((sum, item) => sum + item.cost, 0);
+  }, [estimateItems]);
+
+  const calculatedDiscountAmount = useMemo(() => {
+    return Math.round((calculatedSubtotal * estimateDiscount) / 100);
+  }, [calculatedSubtotal, estimateDiscount]);
+
+  const calculatedGST = useMemo(() => {
+    return estimateItems.reduce((taxSum, item) => {
+      if (!item.isCosmetic) return taxSum;
+      const discountedItemCost = item.cost - (item.cost * estimateDiscount) / 100;
+      return taxSum + Math.round(discountedItemCost * 0.18);
+    }, 0);
+  }, [estimateItems, estimateDiscount]);
+
+  const calculatedGrandTotal = useMemo(() => {
+    return calculatedSubtotal - calculatedDiscountAmount + calculatedGST;
+  }, [calculatedSubtotal, calculatedDiscountAmount, calculatedGST]);
 
   const startScribeSpeech = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -828,6 +906,17 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   };
 
   const handleSave = () => {
+    // Generate/update estimate object if items exist
+    const estimateObj = {
+      id: customer?.estimates?.[0]?.id || `est_${Date.now()}`,
+      date: customer?.estimates?.[0]?.date || new Date().toISOString().split('T')[0],
+      items: estimateItems,
+      discount: estimateDiscount,
+      tax: calculatedGST,
+      grandTotal: calculatedGrandTotal,
+      status: estimateStatus
+    };
+
     const newCustomer: Customer = {
       ...form,
       id: form.id || String(Date.now()),
@@ -839,6 +928,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
       toothNotes: form.toothNotes || {},
       toothConditions: form.toothConditions || {},
       vitals: form.vitals || { bp: '', pulse: '', temp: '' },
+      estimates: estimateItems.length > 0 ? [estimateObj] : (form.estimates || []),
     };
     onSave(newCustomer);
     onClose();
@@ -891,11 +981,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Tab Selector */}
-                    <div className="flex bg-white/[0.04] p-1 rounded-lg border border-white/[0.08] mr-6">
+                    <div className="flex bg-white/[0.04] p-1 rounded-lg border border-white/[0.08] mr-6 gap-0.5">
                       <button
                         type="button"
                         onClick={() => setActiveTab('general')}
-                        className={`px-3.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all duration-150 ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 ${
                           activeTab === 'general'
                             ? 'bg-indigo-500 text-white shadow-md'
                             : 'text-white/40 hover:text-white/70'
@@ -906,28 +996,42 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       <button
                         type="button"
                         onClick={() => setActiveTab('medical')}
-                        className={`px-3.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1.5 ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
                           activeTab === 'medical'
                             ? 'bg-indigo-500 text-white shadow-md'
                             : 'text-white/40 hover:text-white/70'
                         }`}
                       >
-                        <Stethoscope size={11} />
-                        Medical Records
+                        <Stethoscope size={10} />
+                        Medical
                       </button>
                       {isEdit && (
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab('programs')}
-                          className={`px-3.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1.5 ${
-                            activeTab === 'programs'
-                              ? 'bg-indigo-500 text-white shadow-md'
-                              : 'text-white/40 hover:text-white/70'
-                          }`}
-                        >
-                          <Zap size={11} />
-                          Care Programs
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('estimates')}
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
+                              activeTab === 'estimates'
+                                ? 'bg-indigo-500 text-white shadow-md'
+                                : 'text-white/40 hover:text-white/70'
+                            }`}
+                          >
+                            <StickyNote size={10} />
+                            Billing & Estimates
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('programs')}
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
+                              activeTab === 'programs'
+                                ? 'bg-indigo-500 text-white shadow-md'
+                                : 'text-white/40 hover:text-white/70'
+                            }`}
+                          >
+                            <Zap size={10} />
+                            Programs
+                          </button>
+                        </>
                       )}
                     </div>
                   </DialogHeader>
@@ -1541,7 +1645,319 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           No radiographs attached. Use the uploader above to add scans.
                         </div>
                       )}
+
+                      {/* RVG Compare Slider sandbox */}
+                      {form.xrays && form.xrays.length >= 2 && (
+                        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 space-y-3 mt-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles size={11} className="text-indigo-400" />
+                              RVG Compare Sandbox (Before vs After)
+                            </span>
+                            <span className="text-[10px] text-white/40">Drag slider to review treatment margins</span>
+                          </div>
+                          
+                          {/* Interactive Slider Container */}
+                          <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-white/[0.08] bg-neutral-900 select-none">
+                            {/* Before Image (underneath) */}
+                            <img src={form.xrays[0]} alt="Before treatment RVG" className="absolute inset-0 w-full h-full object-cover" />
+                            
+                            {/* After Image (overlay) */}
+                            <div 
+                              className="absolute inset-y-0 left-0 overflow-hidden" 
+                              style={{ width: `${xraySliderPos}%` }}
+                            >
+                              <img 
+                                src={form.xrays[1]} 
+                                alt="After treatment RVG" 
+                                className="absolute inset-y-0 left-0 w-full h-full object-cover"
+                                style={{ width: '100%', maxWidth: 'none' }} 
+                              />
+                            </div>
+                            
+                            {/* Slider Handle */}
+                            <div 
+                              className="absolute inset-y-0 w-1 bg-indigo-500 cursor-ew-resize flex items-center justify-center"
+                              style={{ left: `${xraySliderPos}%` }}
+                            >
+                              <div className="w-6 h-6 rounded-full bg-indigo-500 border border-white/25 flex items-center justify-center text-white text-[10px] shadow-lg">
+                                ↔
+                              </div>
+                            </div>
+                            
+                            {/* Invisible range inputs overlay */}
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={xraySliderPos}
+                              onChange={(e) => setXraySliderPos(Number(e.target.value))}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
+                            />
+                            
+                            {/* Labels */}
+                            <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-rose-300">
+                              Pre-Op / Before
+                            </span>
+                            <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-emerald-300">
+                              Post-Op / After
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Load Demo X-Rays option if patient has none or 1 */}
+                      {(!form.xrays || form.xrays.length < 2) && (
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange('xrays', [DEMO_PRE_OP_RVG, DEMO_POST_OP_RVG]);
+                            }}
+                            className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded text-[10px] font-bold text-indigo-300 flex items-center gap-1 transition-all"
+                          >
+                            <Sparkles size={10} /> Load Pre/Post-Op Demo Scans
+                          </button>
+                        </div>
+                      )}
                     </div>
+                  </div>
+                )}
+
+                {/* Body - Estimates & Billing tab */}
+                {activeTab === 'estimates' && (
+                  <div className="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
+                    {/* Add Item Builder */}
+                    <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 space-y-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-indigo-500/20 flex items-center justify-center">
+                          <Plus size={12} className="text-indigo-400" />
+                        </div>
+                        <div>
+                          <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Add Treatment Item</h4>
+                          <p className="text-[10px] text-white/40 mt-0.5">Select tooth & procedure with GST categorization</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                        {/* Tooth selector */}
+                        <div>
+                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Select Tooth</label>
+                          <select
+                            value={builderTooth}
+                            onChange={(e) => setBuilderTooth(e.target.value)}
+                            className="w-full bg-[#121828] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[12px] text-white outline-none cursor-pointer"
+                          >
+                            <option value="">General (No Tooth)</option>
+                            {(form.problemTeeth || []).map((t) => (
+                              <option key={t} value={t}>Tooth {t} ({getToothName(t).split(' (Tooth ')[0]})</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Procedure selector */}
+                        <div className="md:col-span-2">
+                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Select Procedure</label>
+                          <select
+                            value={builderProcedureIdx}
+                            onChange={(e) => {
+                              const idx = e.target.value;
+                              setBuilderProcedureIdx(idx);
+                              setBuilderCost(PROCEDURES_CATALOG[Number(idx)].defaultCost);
+                            }}
+                            className="w-full bg-[#121828] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[12px] text-white outline-none cursor-pointer"
+                          >
+                            {PROCEDURES_CATALOG.map((p, idx) => (
+                              <option key={idx} value={idx}>
+                                {p.name} ({p.category === 'Cosmetic' ? '18% GST' : '0% GST'})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Cost */}
+                        <div>
+                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Cost (₹)</label>
+                          <input
+                            type="number"
+                            value={builderCost}
+                            onChange={(e) => setBuilderCost(Number(e.target.value))}
+                            className="w-full px-2.5 py-1.5 rounded-lg text-[12px] text-white outline-none transition-all"
+                            style={{
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const proc = PROCEDURES_CATALOG[Number(builderProcedureIdx)];
+                            setEstimateItems((prev) => [
+                              ...prev,
+                              {
+                                tooth: builderTooth ? Number(builderTooth) : undefined,
+                                procedure: proc.name,
+                                cost: builderCost,
+                                isCosmetic: proc.category === 'Cosmetic'
+                              }
+                            ]);
+                            setBuilderTooth('');
+                          }}
+                          className="px-3.5 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 shadow-md shadow-indigo-500/20"
+                        >
+                          <Plus size={11} /> Add to Estimate
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Estimate Items Table */}
+                    <div className="bg-white/[0.01] border border-white/[0.07] rounded-xl overflow-hidden">
+                      <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.07] flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-white uppercase tracking-wider">Current Estimate Details</span>
+                        <select
+                          value={estimateStatus}
+                          onChange={(e) => setEstimateStatus(e.target.value as any)}
+                          className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/10 border border-indigo-500/25 px-2 py-0.5 rounded-md outline-none cursor-pointer"
+                        >
+                          <option value="Draft" style={{ background: '#121828', color: '#fff' }}>Draft</option>
+                          <option value="Sent" style={{ background: '#121828', color: '#fff' }}>Sent to Patient</option>
+                          <option value="Approved" style={{ background: '#121828', color: '#fff' }}>Approved</option>
+                        </select>
+                      </div>
+
+                      {estimateItems.length > 0 ? (
+                        <div className="divide-y divide-white/[0.05]">
+                          {estimateItems.map((item, idx) => (
+                            <div key={idx} className="px-4 py-3 flex items-center justify-between text-[12px] hover:bg-white/[0.01] transition-colors">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5">
+                                  {item.tooth && (
+                                    <span className="text-[9px] font-bold text-rose-300 bg-rose-500/15 border border-rose-500/20 px-1 rounded">
+                                      T{item.tooth}
+                                    </span>
+                                  )}
+                                  <span className="text-white font-medium">{item.procedure}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+                                  <span>{item.isCosmetic ? 'Cosmetic Dental (18% GST)' : 'Therapeutic Care (Exempt / 0% GST)'}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3">
+                                <span className="text-white font-bold font-mono">₹{item.cost.toLocaleString('en-IN')}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setEstimateItems((prev) => prev.filter((_, i) => i !== idx))}
+                                  className="text-white/30 hover:text-rose-400 transition-colors p-1"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-8 text-center text-[11px] text-white/25 border-b border-white/[0.07]">
+                          No estimate items added. Add procedures above to build the billing proposal.
+                        </div>
+                      )}
+
+                      {/* Calculations summary panel */}
+                      <div className="bg-white/[0.02] p-4.5 space-y-2.5">
+                        <div className="flex justify-between text-[11px] text-white/50">
+                          <span>Subtotal</span>
+                          <span className="font-mono">₹{calculatedSubtotal.toLocaleString('en-IN')}</span>
+                        </div>
+
+                        {/* Discount row */}
+                        <div className="flex items-center justify-between text-[11px] text-white/50 gap-4">
+                          <span className="flex items-center gap-1.5 shrink-0">
+                            Discretionary Discount
+                          </span>
+                          <div className="flex items-center gap-2 justify-end w-full max-w-[180px]">
+                            <input
+                              type="range"
+                              min="0"
+                              max="30"
+                              value={estimateDiscount}
+                              onChange={(e) => setEstimateDiscount(Number(e.target.value))}
+                              className="w-full accent-indigo-500"
+                            />
+                            <span className="font-mono text-white text-[11.5px] font-bold shrink-0">{estimateDiscount}%</span>
+                          </div>
+                        </div>
+
+                        {calculatedDiscountAmount > 0 && (
+                          <div className="flex justify-between text-[11px] text-rose-400">
+                            <span>Discount Value</span>
+                            <span className="font-mono">-₹{calculatedDiscountAmount.toLocaleString('en-IN')}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between text-[11px] text-white/50">
+                          <span>CGST (9%) + SGST (9%) <span className="text-[9px] text-white/20">(Cosmetic only)</span></span>
+                          <span className="font-mono">₹{calculatedGST.toLocaleString('en-IN')}</span>
+                        </div>
+
+                        <div className="h-px bg-white/[0.08] my-1.5" />
+
+                        <div className="flex justify-between text-[13px] font-bold text-white">
+                          <span className="uppercase tracking-wider">Estimated Total</span>
+                          <span className="font-mono text-indigo-400">₹{calculatedGrandTotal.toLocaleString('en-IN')}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* WhatsApp Estimate Proposal Generator */}
+                    {estimateItems.length > 0 && (
+                      <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-[11.5px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles size={11} className="text-indigo-400" />
+                              WhatsApp Estimate Proposal (Simulated)
+                            </h4>
+                            <p className="text-[10px] text-white/40 mt-0.5">Copy message format to send to patient next to the chair</p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const summary = estimateItems.map((item) => `• ${item.procedure}${item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹${item.cost.toLocaleString('en-IN')}`).join('\n');
+                              const text = `*Shree Ram Dental Care - Treatment Proposal*\n\nHi ${form.name},\n\nHere is your customized treatment cost estimate:\n\n${summary}\n\n*Subtotal:* ₹${calculatedSubtotal.toLocaleString('en-IN')}\n*Discount (${estimateDiscount}%):* -₹${calculatedDiscountAmount.toLocaleString('en-IN')}\n*GST (Cosmetic):* ₹${calculatedGST.toLocaleString('en-IN')}\n*Estimated Grand Total:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}\n\nOur patient manager will schedule your operatories slots. Let us know if we can proceed!`;
+                              navigator.clipboard.writeText(text);
+                              setCopiedEstimate(true);
+                              setTimeout(() => setCopiedEstimate(false), 2000);
+                            }}
+                            className="px-2.5 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-[10.5px] font-bold text-indigo-300 flex items-center gap-1 transition-all"
+                          >
+                            {copiedEstimate ? 'Copied! ✓' : 'Copy Message'}
+                          </button>
+                        </div>
+
+                        <div className="bg-black/30 border border-white/[0.05] rounded-xl p-3 text-[12px] font-mono leading-relaxed text-white/70">
+                          <span className="text-[10px] text-indigo-400 font-bold block">MESSAGE PREVIEW:</span>
+                          <div className="whitespace-pre-wrap select-all bg-black/20 p-2.5 rounded border border-white/[0.03]">
+                            <strong>Shree Ram Dental Care - Treatment Proposal</strong><br/><br/>
+                            Hi {form.name},<br/><br/>
+                            Here is your customized treatment cost estimate:<br/>
+                            {estimateItems.map((item, idx) => (
+                              <span key={idx}>• {item.procedure}{item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹{item.cost.toLocaleString('en-IN')}<br/></span>
+                            ))}
+                            <br/>
+                            <strong>Subtotal:</strong> ₹{calculatedSubtotal.toLocaleString('en-IN')}<br/>
+                            <strong>Discount ({estimateDiscount}%):</strong> -₹{calculatedDiscountAmount.toLocaleString('en-IN')}<br/>
+                            <strong>GST (Cosmetic):</strong> ₹{calculatedGST.toLocaleString('en-IN')}<br/>
+                            <strong>Estimated Grand Total:</strong> ₹{calculatedGrandTotal.toLocaleString('en-IN')}<br/><br/>
+                            Our patient manager will schedule your operatories slots. Let us know if we can proceed!
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
