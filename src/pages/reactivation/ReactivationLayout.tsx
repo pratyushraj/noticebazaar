@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/domains/auth';
+import { useSession } from '@/contexts/SessionContext';
 import {
   Bot,
   LayoutDashboard,
@@ -169,7 +169,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
   const location = useLocation();
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'AI Reactivation';
 
-  const { user } = useAuth();
+  const { user } = useSession();
   const userEmail = user?.email;
 
   // Determine clinic context based on authenticated user email
