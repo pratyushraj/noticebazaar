@@ -27,6 +27,7 @@ import {
   IndianRupee,
   Eye,
 } from 'lucide-react';
+import { MOCK_CUSTOMERS } from './ReactivationCustomers';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -71,84 +72,12 @@ interface RevenueDataPoint {
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
-const kpiCards: KPICard[] = [
-  {
-    id: 'total_customers',
-    title: 'Total Customers',
-    value: 847,
-    icon: Users,
-    colorClass: 'text-indigo-400',
-    glowClass: 'shadow-indigo-500/20',
-    borderClass: 'border-indigo-500/20',
-    bgGradient: 'from-indigo-500/10 to-indigo-500/5',
-  },
-  {
-    id: 'inactive',
-    title: 'Inactive 6+ Months',
-    value: 312,
-    subLabel: '37% of base',
-    icon: UserX,
-    colorClass: 'text-amber-400',
-    glowClass: 'shadow-amber-500/20',
-    borderClass: 'border-amber-500/20',
-    bgGradient: 'from-amber-500/10 to-amber-500/5',
-  },
-  {
-    id: 'campaigns',
-    title: 'Active Campaigns',
-    value: 3,
-    icon: Megaphone,
-    colorClass: 'text-emerald-400',
-    glowClass: 'shadow-emerald-500/20',
-    borderClass: 'border-emerald-500/20',
-    bgGradient: 'from-emerald-500/10 to-emerald-500/5',
-  },
-  {
-    id: 'revenue',
-    title: 'Revenue Recovered',
-    value: 234000,
-    prefix: '₹',
-    subLabel: 'This Month',
-    icon: IndianRupee,
-    colorClass: 'text-emerald-300',
-    glowClass: 'shadow-emerald-400/30',
-    borderClass: 'border-emerald-400/30',
-    bgGradient: 'from-emerald-500/15 to-teal-500/10',
-    isHero: true,
-  },
-];
-
-const aiRecommendations: AIRecommendation[] = [
-  {
-    id: 'rec_1',
-    customerCount: 143,
-    insight: "customers haven't visited in 8+ months",
-    suggestedCampaign: 'Teeth Cleaning Checkup Campaign',
-    urgency: 'high',
-    emoji: '🦷',
-  },
-  {
-    id: 'rec_2',
-    customerCount: 28,
-    insight: 'patients had Whitening consultations but never booked',
-    suggestedCampaign: 'Whitening Follow-Up Offer',
-    urgency: 'medium',
-    emoji: '✨',
-  },
-  {
-    id: 'rec_3',
-    customerCount: 0,
-    insight: 'Diwali is in 12 days — perfect time for a festival offer',
-    suggestedCampaign: 'Diwali Smile Offer Campaign',
-    urgency: 'low',
-    emoji: '🪔',
-  },
-];
+// ─── Dynamic Data Computed Inside Component ───
 
 const campaignRows: CampaignRow[] = [
   {
     id: 'c1',
-    name: 'Teeth Cleaning Offer',
+    name: 'Scaling Recheckup Offer',
     status: 'Active',
     sent: 500,
     revenue: 42000,
@@ -157,39 +86,39 @@ const campaignRows: CampaignRow[] = [
   },
   {
     id: 'c2',
-    name: 'Hair Treatment Revival',
+    name: 'Whitening Revisit Flow',
     status: 'Completed',
     sent: 320,
     revenue: 28500,
     timeAgo: '1 week ago',
-    category: 'Beauty',
+    category: 'Dental',
   },
   {
     id: 'c3',
-    name: 'Gym Membership Renewal',
+    name: 'RCT Follow-Up Flow',
     status: 'Completed',
     sent: 180,
     revenue: 54000,
     timeAgo: '2 weeks ago',
-    category: 'Fitness',
+    category: 'Dental',
   },
   {
     id: 'c4',
-    name: 'Diwali Skin Special',
+    name: 'Implant Consultation Nudge',
     status: 'Draft',
     sent: null,
     revenue: null,
     timeAgo: 'Created today',
-    category: 'Skincare',
+    category: 'Dental',
   },
   {
     id: 'c5',
-    name: 'Bridal Season Alert',
+    name: 'Old Patient Winback',
     status: 'Active',
     sent: 240,
     revenue: 31200,
     timeAgo: '3 days ago',
-    category: 'Bridal',
+    category: 'Dental',
   },
 ];
 
@@ -287,6 +216,91 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 export default function ReactivationDashboard() {
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 
+  // Dynamic calculations from real patient list with realistic offsets for a dental clinic
+  const totalPatients = 837 + MOCK_CUSTOMERS.length;
+  const dueForRecheckup = 309 + MOCK_CUSTOMERS.filter(c => c.status === 'Inactive' || c.status === 'Follow Up Needed').length;
+  const activeFlows = 2 + MOCK_CUSTOMERS.filter(c => c.programStatus === 'Active').length;
+  const appointmentsRebooked = 176100 + MOCK_CUSTOMERS.filter(c => c.programStatus).reduce((sum, c) => sum + (c.totalSpend || 0), 0);
+
+  const eightMonthsAgo = new Date('2026-06-06');
+  eightMonthsAgo.setMonth(eightMonthsAgo.getMonth() - 8);
+  const overdueCount = 140 + MOCK_CUSTOMERS.filter(c => new Date(c.lastVisit) < eightMonthsAgo).length;
+  const consultNoBookCount = 84 + MOCK_CUSTOMERS.filter(c => c.status === 'New Lead' || c.status === 'Follow Up Needed').length;
+
+  const kpiCards: KPICard[] = [
+    {
+      id: 'total_customers',
+      title: 'Total Patients',
+      value: totalPatients,
+      icon: Users,
+      colorClass: 'text-indigo-400',
+      glowClass: 'shadow-indigo-500/20',
+      borderClass: 'border-indigo-500/20',
+      bgGradient: 'from-indigo-500/10 to-indigo-500/5',
+    },
+    {
+      id: 'inactive',
+      title: 'Due for Recheckup',
+      value: dueForRecheckup,
+      subLabel: 'Needs follow-up',
+      icon: UserX,
+      colorClass: 'text-amber-400',
+      glowClass: 'shadow-amber-500/20',
+      borderClass: 'border-amber-500/20',
+      bgGradient: 'from-amber-500/10 to-amber-500/5',
+    },
+    {
+      id: 'campaigns',
+      title: 'Active WhatsApp Flows',
+      value: activeFlows,
+      icon: Megaphone,
+      colorClass: 'text-emerald-400',
+      glowClass: 'shadow-emerald-500/20',
+      borderClass: 'border-emerald-500/20',
+      bgGradient: 'from-emerald-500/10 to-emerald-500/5',
+    },
+    {
+      id: 'revenue',
+      title: 'Appointments Rebooked',
+      value: appointmentsRebooked,
+      prefix: '₹',
+      subLabel: 'This Month',
+      icon: IndianRupee,
+      colorClass: 'text-emerald-300',
+      glowClass: 'shadow-emerald-400/30',
+      borderClass: 'border-emerald-400/30',
+      bgGradient: 'from-emerald-500/15 to-teal-500/10',
+      isHero: true,
+    },
+  ];
+
+  const aiRecommendations: AIRecommendation[] = [
+    {
+      id: 'rec_1',
+      customerCount: overdueCount,
+      insight: "patients haven't visited in 8+ months",
+      suggestedCampaign: 'Recheckup Reminder Campaign',
+      urgency: 'high',
+      emoji: '🦷',
+    },
+    {
+      id: 'rec_2',
+      customerCount: consultNoBookCount,
+      insight: 'patients had treatment consults but never booked',
+      suggestedCampaign: 'Treatment Follow-Up Offer',
+      urgency: 'medium',
+      emoji: '✨',
+    },
+    {
+      id: 'rec_3',
+      customerCount: 1,
+      insight: 'patient birthday or anniversary is coming up — good time for a WhatsApp nudge',
+      suggestedCampaign: 'Birthday Recheckup Campaign',
+      urgency: 'low',
+      emoji: '🪔',
+    },
+  ];
+
   const handleGenerateCampaign = (id: string) => {
     setGeneratingId(id);
     setTimeout(() => setGeneratingId(null), 1800);
@@ -323,15 +337,15 @@ export default function ReactivationDashboard() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-[0.18em]">
-                AI Reactivation
-              </span>
+            <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-[0.18em]">
+                Dental CRM
+            </span>
             </div>
             <h1 className="text-2xl font-bold text-white tracking-tight">
-              Customer Reactivation Hub
+              WhatsApp Patient Recheckup Hub
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
-              AI-powered campaigns to win back your dormant customers
+              AI-powered patient follow-ups, appointment booking, and medical note capture
             </p>
           </div>
 
@@ -345,7 +359,7 @@ export default function ReactivationDashboard() {
             }}
           >
             <Sparkles className="w-4 h-4" />
-            New Campaign
+            New WhatsApp Flow
           </motion.button>
         </motion.div>
 
@@ -461,7 +475,7 @@ export default function ReactivationDashboard() {
                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
                 <span className="absolute w-2.5 h-2.5 rounded-full bg-indigo-400 animate-ping opacity-75" />
               </div>
-              <h2 className="text-base font-bold text-white">🤖 AI Recommendations</h2>
+              <h2 className="text-base font-bold text-white">🤖 AI Recheckup Recommendations</h2>
             </div>
             <span className="text-[11px] text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-2.5 py-0.5 font-semibold">
               3 new
@@ -501,7 +515,7 @@ export default function ReactivationDashboard() {
                       <div className="text-3xl font-black text-white leading-none">
                         {rec.customerCount}
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">customers</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{rec.customerCount === 1 ? 'patient' : 'patients'}</div>
                     </>
                   ) : (
                     <div className="text-4xl">{rec.emoji}</div>
@@ -515,9 +529,9 @@ export default function ReactivationDashboard() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-slate-300 leading-snug">
                     {rec.customerCount > 0 && (
-                      <span className="text-white font-semibold">{rec.customerCount} customers</span>
+                      <span className="text-white font-semibold">{rec.customerCount} {rec.customerCount === 1 ? 'patient' : 'patients'}</span>
                     )}{' '}
-                    {rec.insight}
+                    {rec.insight.replace(/^patients?\s+/i, '')}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <Target className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
@@ -669,7 +683,7 @@ export default function ReactivationDashboard() {
             <div className="mb-5 flex items-end gap-3">
               <div>
                 <div className="text-2xl font-black text-emerald-400" style={{ textShadow: '0 0 20px rgba(16,185,129,0.4)' }}>
-                  ₹2,34,000
+                  ₹{appointmentsRebooked.toLocaleString('en-IN')}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-0.5">Total this month</div>
               </div>
