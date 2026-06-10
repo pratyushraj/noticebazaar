@@ -1,6 +1,7 @@
 import React, { type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/domains/auth';
 import {
   Bot,
   LayoutDashboard,
@@ -168,6 +169,28 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
   const location = useLocation();
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'AI Reactivation';
 
+  const { user } = useAuth();
+  const userEmail = user?.email;
+
+  // Determine clinic context based on authenticated user email
+  let activeClinic = 'Shree Ram Dental Care Patna';
+  if (userEmail === 'test@creatorarmour.com' || userEmail === 'test@noticebazaar.com') {
+    activeClinic = 'Your Dentist';
+  } else if (userEmail === 'demo@creatorarmour.com' || userEmail === 'brand-demo@creatorarmour.com') {
+    activeClinic = 'Shree Ram Dental Care Patna';
+  } else {
+    // If not matched, read from localStorage fallback
+    activeClinic = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna';
+  }
+
+  // Sync back to localStorage so that other pages read the correct active clinic context dynamically
+  React.useEffect(() => {
+    const currentLocal = localStorage.getItem('reactivation_clinic_name');
+    if (currentLocal !== activeClinic) {
+      localStorage.setItem('reactivation_clinic_name', activeClinic);
+    }
+  }, [activeClinic]);
+
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#080C14' }}>
       {/* ── Sidebar ──────────────────────────────────────────────── */}
@@ -258,20 +281,12 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
 
           {/* Right side chips */}
           <div className="flex items-center gap-3">
-            {/* Clinic Switcher */}
-            <div className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-3 py-1.5 rounded-lg">
-              <span className="text-[10px] uppercase font-bold text-white/30 tracking-widest shrink-0">Clinic:</span>
-              <select
-                value={localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna'}
-                onChange={(e) => {
-                  localStorage.setItem('reactivation_clinic_name', e.target.value);
-                  window.location.reload(); // Reload page to update global EMR context
-                }}
-                className="bg-transparent text-[11.5px] font-semibold text-white outline-none cursor-pointer border-0 p-0 pr-1 shrink-0"
-              >
-                <option value="Shree Ram Dental Care Patna" style={{ background: '#0D1220', color: '#fff' }}>Shree Ram Dental Care</option>
-                <option value="Your Dentist" style={{ background: '#0D1220', color: '#fff' }}>Your Dentist</option>
-              </select>
+            {/* Locked Clinic Branding Chip */}
+            <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-lg">
+              <span className="text-[10px] uppercase font-bold text-indigo-400 tracking-widest shrink-0">Clinic:</span>
+              <span className="text-[11.5px] font-bold text-white shrink-0 font-sans">
+                {activeClinic === 'Shree Ram Dental Care Patna' ? 'Shree Ram Dental Care' : 'Your Dentist'}
+              </span>
             </div>
 
             {/* WhatsApp connection chip */}
