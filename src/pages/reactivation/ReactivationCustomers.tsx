@@ -30,6 +30,7 @@ import {
   StickyNote,
   CheckSquare,
   Square,
+  Zap,
 } from 'lucide-react';
 import {
   Dialog,
@@ -63,6 +64,20 @@ import {
 
 type CustomerStatus = 'Active' | 'Inactive' | 'New Lead' | 'High Value' | 'Follow Up Needed';
 
+interface CareStep {
+  day: number;
+  message: string;
+  subLabel: string;
+}
+
+interface CareProgramTemplate {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  steps: CareStep[];
+}
+
 interface Customer {
   id: string;
   name: string;
@@ -73,6 +88,21 @@ interface Customer {
   status: CustomerStatus;
   notes: string;
   avatarColor: string;
+  problemTeeth?: number[];
+  xrays?: string[];
+  allergies?: string[];
+  medicalConditions?: string[];
+  toothNotes?: Record<number, string>;
+  toothConditions?: Record<number, string>;
+  vitals?: {
+    bp?: string;
+    pulse?: string;
+    temp?: string;
+  };
+  activeProgramId?: string;
+  programEnrollmentDate?: string;
+  programCurrentStep?: number; // step index (1-based or 0-based, let's use 1-based)
+  programStatus?: 'Active' | 'Paused' | 'Completed';
 }
 
 type SortField = 'lastVisit' | 'totalSpend' | null;
@@ -86,6 +116,53 @@ const AVATAR_COLORS = [
   '#F97316', '#84CC16',
 ];
 
+export const CARE_PROGRAMS: CareProgramTemplate[] = [
+  {
+    id: 'extraction',
+    name: '7-Day Post-Extraction Care',
+    category: 'Dental',
+    description: 'Precautions, bleeding, and recovery tracking post-extraction.',
+    steps: [
+      { day: 1, message: 'Hi {name}, how is the bleeding and discomfort? Keep cotton pack pressed. Avoid spitting and hot liquids today.', subLabel: 'Immediate post-op checklist' },
+      { day: 3, message: 'Hi {name}, is the swelling starting to decrease? You can start warm salt water rinses 4-5 times a day from today.', subLabel: 'Swelling & hygiene' },
+      { day: 7, message: 'Hi {name}, healing should be completed. If you have non-dissolvable sutures, let us schedule a suture removal slot.', subLabel: 'Final healing check' }
+    ]
+  },
+  {
+    id: 'implant',
+    name: '14-Day Dental Implant Osseointegration',
+    category: 'Dental',
+    description: 'Post-op guidance during critical healing weeks after implant placement.',
+    steps: [
+      { day: 1, message: 'Hi {name}, congrats on your new implant! Keep diet soft and cool. Do not rinse or spit aggressively today.', subLabel: 'Immediate implant care' },
+      { day: 4, message: 'Hi {name}, minor discomfort is expected. Continue soft diet, maintain hygiene, and do not chew directly on the site.', subLabel: 'Osseointegration hygiene' },
+      { day: 14, message: 'Hi {name}, let us schedule your implant healing check and suture removal visit. Reply to book a slot!', subLabel: 'Healing review' }
+    ]
+  },
+  {
+    id: 'aligners',
+    name: '6-Month Clear Aligners Compliance Track',
+    category: 'Dental',
+    description: 'Tray compliance monitoring and scan reminders.',
+    steps: [
+      { day: 1, message: 'Hi {name}, tray 1 is in! Wear aligners 22 hours daily. Clean with cold water only. Let is get that smile! 🚀', subLabel: 'Compliance onboarding' },
+      { day: 30, message: 'Hi {name}, time to change to tray 3. Any soreness or gaps? Text us if you need help.', subLabel: 'Tray check-in' },
+      { day: 90, message: 'Hi {name}, 3 months done! Let us book a mid-course check-in scan to make sure trays match your 3D smile model.', subLabel: 'Mid-term scan review' },
+      { day: 180, message: 'Hi {name}, you have reached final tray! Let us book your retainer impressions to secure your new smile permanently.', subLabel: 'Retainer phase start' }
+    ]
+  },
+  {
+    id: 'rct',
+    name: 'Post-RCT sensitivity & Crown follow-up',
+    category: 'Dental',
+    description: 'Checks post root canal to confirm occlusion and schedule crown placement.',
+    steps: [
+      { day: 2, message: 'Hi {name}, how is the root-canal treated tooth? Mild sensitivity is normal. Let us know if bite feels too high.', subLabel: 'Bite & pain check' },
+      { day: 10, message: 'Hi {name}, your RCT tooth is now ready for a permanent ceramic/zirconia crown to prevent fracture. Let us book a slot!', subLabel: 'Crown appointment' }
+    ]
+  }
+];
+
 const MOCK_CUSTOMERS: Customer[] = [
   {
     id: '1',
@@ -97,6 +174,17 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'Active',
     notes: 'Prefers morning appointments. Very punctual.',
     avatarColor: AVATAR_COLORS[0],
+    problemTeeth: [14, 15],
+    xrays: ['/assets/yourdentist/dental_xray.png'],
+    allergies: ['Penicillin'],
+    medicalConditions: ['Hypertension'],
+    vitals: { bp: '135/85', pulse: '76', temp: '98.4' },
+    toothConditions: { 14: 'Decayed / Cavity', 15: 'Root Canal Needed' },
+    toothNotes: { 14: 'Deep distal cavity', 15: 'Hot/cold sensitivity' },
+    activeProgramId: 'extraction',
+    programEnrollmentDate: '2025-04-12',
+    programCurrentStep: 2,
+    programStatus: 'Active'
   },
   {
     id: '2',
@@ -108,6 +196,17 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'Inactive',
     notes: 'Missed last 2 follow-up calls. Try evening slot.',
     avatarColor: AVATAR_COLORS[1],
+    problemTeeth: [26, 27],
+    xrays: [],
+    allergies: ['Latex'],
+    medicalConditions: ['Asthma'],
+    vitals: { bp: '120/80', pulse: '72', temp: '98.6' },
+    toothConditions: { 26: 'Crown / Bridge', 27: 'Decayed / Cavity' },
+    toothNotes: { 27: 'Incipient decay on occlusal surface' },
+    activeProgramId: 'aligners',
+    programEnrollmentDate: '2025-01-03',
+    programCurrentStep: 1,
+    programStatus: 'Paused'
   },
   {
     id: '3',
@@ -119,6 +218,17 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'High Value',
     notes: 'CEO of Kapoor Textiles. Refer him for dental implants.',
     avatarColor: AVATAR_COLORS[2],
+    problemTeeth: [36, 46],
+    xrays: ['/assets/yourdentist/dental_xray.png'],
+    allergies: [],
+    medicalConditions: ['Diabetes'],
+    vitals: { bp: '128/82', pulse: '80', temp: '99.1' },
+    toothConditions: { 36: 'Missing Tooth', 46: 'Dental Implant' },
+    toothNotes: { 36: 'Extracted in 2023', 46: 'Abutment check needed' },
+    activeProgramId: 'implant',
+    programEnrollmentDate: '2024-11-15',
+    programCurrentStep: 3,
+    programStatus: 'Completed'
   },
   {
     id: '4',
@@ -152,6 +262,8 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'High Value',
     notes: 'Referral from Dr. Reddy. Second implant planned for Q3.',
     avatarColor: AVATAR_COLORS[5],
+    problemTeeth: [11, 21, 22],
+    xrays: [],
   },
   {
     id: '7',
@@ -174,6 +286,8 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'New Lead',
     notes: 'First consultation done. Quote sent for full treatment.',
     avatarColor: AVATAR_COLORS[7],
+    problemTeeth: [41, 42],
+    xrays: [],
   },
   {
     id: '9',
@@ -207,6 +321,8 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'Inactive',
     notes: 'Second root canal deferred due to travel schedule.',
     avatarColor: AVATAR_COLORS[0],
+    problemTeeth: [34, 35],
+    xrays: [],
   },
   {
     id: '12',
@@ -229,6 +345,8 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'New Lead',
     notes: 'Referred by Rahul Sharma. First visit completed.',
     avatarColor: AVATAR_COLORS[2],
+    problemTeeth: [16, 17],
+    xrays: [],
   },
   {
     id: '14',
@@ -251,6 +369,8 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'High Value',
     notes: 'Long-term braces patient. Retainer phase starting.',
     avatarColor: AVATAR_COLORS[4],
+    problemTeeth: [12, 22],
+    xrays: ['/assets/yourdentist/dental_xray.png'],
   },
   {
     id: '16',
@@ -295,6 +415,8 @@ const MOCK_CUSTOMERS: Customer[] = [
     status: 'High Value',
     notes: 'Premium patient. Full mouth restoration underway.',
     avatarColor: AVATAR_COLORS[8],
+    problemTeeth: [36, 37, 46, 47],
+    xrays: ['/assets/yourdentist/dental_xray.png'],
   },
   {
     id: '20',
@@ -510,18 +632,87 @@ const EMPTY_CUSTOMER: Customer = {
   status: 'Active',
   notes: '',
   avatarColor: AVATAR_COLORS[0],
+  problemTeeth: [],
+  xrays: [],
+  allergies: [],
+  medicalConditions: [],
+  toothNotes: {},
+  toothConditions: {},
+  vitals: { bp: '', pulse: '', temp: '' },
+};
+
+const getInitialForm = (customer?: Customer): Customer => {
+  if (!customer) return { ...EMPTY_CUSTOMER };
+  return {
+    ...customer,
+    problemTeeth: customer.problemTeeth || [],
+    xrays: customer.xrays || [],
+    allergies: customer.allergies || [],
+    medicalConditions: customer.medicalConditions || [],
+    toothNotes: customer.toothNotes || {},
+    toothConditions: customer.toothConditions || {},
+    vitals: customer.vitals || { bp: '', pulse: '', temp: '' },
+  };
+};
+
+const getToothName = (num: number): string => {
+  const code = num % 10;
+  const quadrant = Math.floor(num / 10);
+  const quadNames = ["", "Upper Right", "Upper Left", "Lower Left", "Lower Right"];
+  const toothNames = [
+    "",
+    "Central Incisor",
+    "Lateral Incisor",
+    "Canine",
+    "First Premolar",
+    "Second Premolar",
+    "First Molar",
+    "Second Molar",
+    "Third Molar (Wisdom)"
+  ];
+  return `${quadNames[quadrant]} ${toothNames[code]} (Tooth ${num})`;
 };
 
 const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, onSave }) => {
   const isEdit = !!customer?.id;
-  const [form, setForm] = useState<Customer>(customer ?? EMPTY_CUSTOMER);
+  const [form, setForm] = useState<Customer>(() => getInitialForm(customer));
+  const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'programs'>('general');
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   React.useEffect(() => {
-    setForm(customer ?? EMPTY_CUSTOMER);
+    setForm(getInitialForm(customer));
+    setActiveTab('general');
   }, [customer, open]);
 
-  const handleChange = (field: keyof Customer, value: string | number) => {
+  const handleChange = (field: keyof Customer, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleToothToggle = (toothNum: number) => {
+    const activeTeeth = form.problemTeeth || [];
+    if (activeTeeth.includes(toothNum)) {
+      handleChange('problemTeeth', activeTeeth.filter((t) => t !== toothNum));
+    } else {
+      handleChange('problemTeeth', [...activeTeeth, toothNum].sort((a, b) => a - b));
+    }
+  };
+
+  const handleXrayUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          handleChange('xrays', [...(form.xrays || []), reader.result]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveXray = (idxToRemove: number) => {
+    handleChange('xrays', (form.xrays || []).filter((_, idx) => idx !== idxToRemove));
   };
 
   const handleSave = () => {
@@ -529,6 +720,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
       ...form,
       id: form.id || String(Date.now()),
       avatarColor: form.avatarColor || AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
+      problemTeeth: form.problemTeeth || [],
+      xrays: form.xrays || [],
+      allergies: form.allergies || [],
+      medicalConditions: form.medicalConditions || [],
+      toothNotes: form.toothNotes || {},
+      toothConditions: form.toothConditions || {},
+      vitals: form.vitals || { bp: '', pulse: '', temp: '' },
     };
     onSave(newCustomer);
     onClose();
@@ -542,173 +740,843 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   };
   const inputFocusStyle = 'focus:border-indigo-500/40';
 
+  // FDI World Dental Federation notation quadrants
+  const quad1 = [18, 17, 16, 15, 14, 13, 12, 11];
+  const quad2 = [21, 22, 23, 24, 25, 26, 27, 28];
+  const quad4 = [48, 47, 46, 45, 44, 43, 42, 41];
+  const quad3 = [31, 32, 33, 34, 35, 36, 37, 38];
+
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent
-        className="max-w-lg border-0 p-0 overflow-hidden"
-        style={{ background: '#0D1220', border: '1px solid rgba(255,255,255,0.1)' }}
-      >
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.97, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: 8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-            >
-              {/* Header */}
-              <div
-                className="px-6 py-5"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+    <>
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent
+          className="max-w-2xl border-0 p-0 overflow-hidden"
+          style={{ background: '#0D1220', border: '1px solid rgba(255,255,255,0.1)' }}
+        >
+          <AnimatePresence>
+            {open && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97, y: 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97, y: 8 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
-                <DialogHeader>
-                  <DialogTitle className="text-white text-[16px] font-semibold tracking-tight">
-                    {isEdit ? 'Edit Customer' : 'Add New Customer'}
-                  </DialogTitle>
-                  <p className="text-white/40 text-[12px] mt-0.5">
-                    {isEdit
-                      ? 'Update customer details and status'
-                      : 'Fill in the details to add a new customer'}
-                  </p>
-                </DialogHeader>
-              </div>
+                {/* Header */}
+                <div
+                  className="px-6 pt-5 pb-3"
+                  style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <DialogHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <DialogTitle className="text-white text-[16px] font-semibold tracking-tight">
+                        {isEdit ? 'Patient Profile' : 'Add New Patient'}
+                      </DialogTitle>
+                      <p className="text-white/40 text-[12px] mt-0.5">
+                        {isEdit
+                          ? 'Review medical records, X-rays, and contact info'
+                          : 'Create a new client record in database'}
+                      </p>
+                    </div>
 
-              {/* Body */}
-              <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
-                {/* Name + Phone row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                      Full Name <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      className={`${inputBase} ${inputFocusStyle}`}
-                      style={inputStyle}
-                      placeholder="e.g. Rahul Sharma"
-                      value={form.name}
-                      onChange={(e) => handleChange('name', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                      Phone <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      className={`${inputBase} ${inputFocusStyle}`}
-                      style={inputStyle}
-                      placeholder="+91 98765 43210"
-                      value={form.phone}
-                      onChange={(e) => handleChange('phone', e.target.value)}
-                    />
-                  </div>
+                    {/* Tab Selector */}
+                    <div className="flex bg-white/[0.04] p-1 rounded-lg border border-white/[0.08] mr-6">
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('general')}
+                        className={`px-3.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all duration-150 ${
+                          activeTab === 'general'
+                            ? 'bg-indigo-500 text-white shadow-md'
+                            : 'text-white/40 hover:text-white/70'
+                        }`}
+                      >
+                        General Info
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('medical')}
+                        className={`px-3.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1.5 ${
+                          activeTab === 'medical'
+                            ? 'bg-indigo-500 text-white shadow-md'
+                            : 'text-white/40 hover:text-white/70'
+                        }`}
+                      >
+                        <Stethoscope size={11} />
+                        Medical Records
+                      </button>
+                      {isEdit && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('programs')}
+                          className={`px-3.5 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1.5 ${
+                            activeTab === 'programs'
+                              ? 'bg-indigo-500 text-white shadow-md'
+                              : 'text-white/40 hover:text-white/70'
+                          }`}
+                        >
+                          <Zap size={11} />
+                          Care Programs
+                        </button>
+                      )}
+                    </div>
+                  </DialogHeader>
                 </div>
 
-                {/* Last Visit + Service */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                      Last Visit Date
-                    </label>
-                    <input
-                      type="date"
-                      className={`${inputBase} ${inputFocusStyle}`}
-                      style={{ ...inputStyle, colorScheme: 'dark' }}
-                      value={form.lastVisit}
-                      onChange={(e) => handleChange('lastVisit', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                      Service Used
-                    </label>
-                    <input
-                      className={`${inputBase} ${inputFocusStyle}`}
-                      style={inputStyle}
-                      placeholder="e.g. Teeth Cleaning"
-                      value={form.service}
-                      onChange={(e) => handleChange('service', e.target.value)}
-                    />
-                  </div>
-                </div>
+                {/* Body - General Tab */}
+                {activeTab === 'general' && (
+                  <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                    {/* Name + Phone row */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                          Full Name <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          className={`${inputBase} ${inputFocusStyle}`}
+                          style={inputStyle}
+                          placeholder="e.g. Rahul Sharma"
+                          value={form.name}
+                          onChange={(e) => handleChange('name', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                          Phone <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          className={`${inputBase} ${inputFocusStyle}`}
+                          style={inputStyle}
+                          placeholder="+91 98765 43210"
+                          value={form.phone}
+                          onChange={(e) => handleChange('phone', e.target.value)}
+                        />
+                      </div>
+                    </div>
 
-                {/* Spend + Status */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                      Total Spend (₹)
-                    </label>
-                    <input
-                      type="number"
-                      className={`${inputBase} ${inputFocusStyle}`}
-                      style={inputStyle}
-                      placeholder="e.g. 12500"
-                      value={form.totalSpend || ''}
-                      onChange={(e) => handleChange('totalSpend', Number(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                      Status
-                    </label>
-                    <select
-                      className={`${inputBase} ${inputFocusStyle} cursor-pointer`}
-                      style={inputStyle}
-                      value={form.status}
-                      onChange={(e) => handleChange('status', e.target.value as CustomerStatus)}
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s} style={{ background: '#0D1220' }}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                    {/* Last Visit + Service */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                          Last Visit Date
+                        </label>
+                        <input
+                          type="date"
+                          className={`${inputBase} ${inputFocusStyle}`}
+                          style={{ ...inputStyle, colorScheme: 'dark' }}
+                          value={form.lastVisit}
+                          onChange={(e) => handleChange('lastVisit', e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                          Service Used
+                        </label>
+                        <input
+                          className={`${inputBase} ${inputFocusStyle}`}
+                          style={inputStyle}
+                          placeholder="e.g. Teeth Cleaning"
+                          value={form.service}
+                          onChange={(e) => handleChange('service', e.target.value)}
+                        />
+                      </div>
+                    </div>
 
-                {/* Notes */}
-                <div>
-                  <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
-                    Notes
-                  </label>
-                  <textarea
-                    className={`${inputBase} ${inputFocusStyle} resize-none`}
-                    style={inputStyle}
-                    rows={3}
-                    placeholder="Any notes about this customer..."
-                    value={form.notes}
-                    onChange={(e) => handleChange('notes', e.target.value)}
-                  />
-                </div>
-              </div>
+                    {/* Spend + Status */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                          Total Spend (₹)
+                        </label>
+                        <input
+                          type="number"
+                          className={`${inputBase} ${inputFocusStyle}`}
+                          style={inputStyle}
+                          placeholder="e.g. 12500"
+                          value={form.totalSpend || ''}
+                          onChange={(e) => handleChange('totalSpend', Number(e.target.value))}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                          Status
+                        </label>
+                        <select
+                          className={`${inputBase} ${inputFocusStyle} cursor-pointer`}
+                          style={inputStyle}
+                          value={form.status}
+                          onChange={(e) => handleChange('status', e.target.value as CustomerStatus)}
+                        >
+                          {STATUS_OPTIONS.map((s) => (
+                            <option key={s} value={s} style={{ background: '#0D1220' }}>
+                              {s}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
 
-              {/* Footer */}
-              <DialogFooter
-                className="px-6 py-4 flex items-center justify-end gap-3"
-                style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+                    {/* Notes */}
+                    <div>
+                      <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        Notes
+                      </label>
+                      <textarea
+                        className={`${inputBase} ${inputFocusStyle} resize-none`}
+                        style={inputStyle}
+                        rows={3}
+                        placeholder="Any notes about this customer..."
+                        value={form.notes}
+                        onChange={(e) => handleChange('notes', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Body - Medical tab */}
+                {activeTab === 'medical' && (
+                  <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
+                    {/* Medical Alerts (if any are active) */}
+                    {((form.allergies && form.allergies.length > 0) || (form.medicalConditions && form.medicalConditions.length > 0)) && (
+                      <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3.5 flex gap-3 items-start">
+                        <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/25 flex items-center justify-center text-rose-400 shrink-0 mt-0.5 animate-pulse">
+                          <Stethoscope size={16} />
+                        </div>
+                        <div className="space-y-1">
+                          <h5 className="text-[12px] font-bold text-rose-400 uppercase tracking-wider">Clinical Alerts / Contraindications</h5>
+                          <p className="text-[11px] text-white/70 leading-relaxed">
+                            {form.allergies && form.allergies.length > 0 && (
+                              <span className="block"><strong>⚠️ ALLERGIES:</strong> {form.allergies.join(', ')}</span>
+                            )}
+                            {form.medicalConditions && form.medicalConditions.length > 0 && (
+                              <span className="block mt-0.5"><strong>⚠️ CONDITIONS:</strong> {form.medicalConditions.join(', ')}</span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Allergies & Conditions Checklists */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Allergies Checklist */}
+                      <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
+                        <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Allergies</h4>
+                        <div className="grid grid-cols-1 gap-2.5">
+                          {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
+                            const hasAllergy = (form.allergies || []).includes(allergy);
+                            return (
+                              <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-white/75 hover:text-white transition-colors">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const current = form.allergies || [];
+                                    const next = current.includes(allergy)
+                                      ? current.filter((a) => a !== allergy)
+                                      : [...current, allergy];
+                                    handleChange('allergies', next);
+                                  }}
+                                  className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                                    hasAllergy
+                                      ? 'bg-rose-500/25 border-rose-500/50 text-rose-400'
+                                      : 'bg-white/[0.03] border-white/[0.1] text-transparent hover:bg-white/[0.07]'
+                                  }`}
+                                >
+                                  {hasAllergy && <span className="text-[9px] leading-none">✓</span>}
+                                </button>
+                                <span className="truncate">{allergy}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Medical Conditions Checklist */}
+                      <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
+                        <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Chronic Conditions</h4>
+                        <div className="grid grid-cols-1 gap-2.5">
+                          {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
+                            const hasCond = (form.medicalConditions || []).includes(cond);
+                            return (
+                              <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-white/75 hover:text-white transition-colors">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const current = form.medicalConditions || [];
+                                    const next = current.includes(cond)
+                                      ? current.filter((c) => c !== cond)
+                                      : [...current, cond];
+                                    handleChange('medicalConditions', next);
+                                  }}
+                                  className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                                    hasCond
+                                      ? 'bg-rose-500/25 border-rose-500/50 text-rose-400'
+                                      : 'bg-white/[0.03] border-white/[0.1] text-transparent hover:bg-white/[0.07]'
+                                  }`}
+                                >
+                                  {hasCond && <span className="text-[9px] leading-none">✓</span>}
+                                </button>
+                                <span className="truncate">{cond}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Vitals Logger */}
+                    <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
+                      <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Patient Vitals</h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
+                          <input
+                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-white outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50"
+                            style={{
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                            }}
+                            placeholder="e.g. 120/80 mmHg"
+                            value={form.vitals?.bp || ''}
+                            onChange={(e) => {
+                              handleChange('vitals', { ...form.vitals, bp: e.target.value });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
+                          <input
+                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-white outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50"
+                            style={{
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                            }}
+                            placeholder="e.g. 72 bpm"
+                            value={form.vitals?.pulse || ''}
+                            onChange={(e) => {
+                              handleChange('vitals', { ...form.vitals, pulse: e.target.value });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
+                          <input
+                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-white outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50"
+                            style={{
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                            }}
+                            placeholder="e.g. 98.6 °F"
+                            value={form.vitals?.temp || ''}
+                            onChange={(e) => {
+                              handleChange('vitals', { ...form.vitals, temp: e.target.value });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Tooth Chart Section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Interactive Dental Chart</h4>
+                          <p className="text-[10px] text-white/40 mt-0.5">Click teeth to toggle decay, crowns, or extraction problem areas (FDI numbering)</p>
+                        </div>
+                        {form.problemTeeth && form.problemTeeth.length > 0 && (
+                          <button
+                            onClick={() => handleChange('problemTeeth', [])}
+                            className="text-[10px] font-bold text-rose-400 hover:text-rose-300 transition-colors uppercase tracking-wider flex items-center gap-1"
+                          >
+                            <RotateCcw size={10} /> Clear All
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Tooth Chart Layout Grid */}
+                      <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
+                        {/* Midline guides */}
+                        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/[0.04] pointer-events-none" />
+                        <div className="absolute left-0 right-0 top-1/2 h-px bg-white/[0.04] pointer-events-none" />
+
+                        {/* UPPER ARCH */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
+                          {/* Upper Right Quadrant (UR: 18 -> 11) */}
+                          <div className="flex items-center gap-1 sm:gap-1.5 justify-end flex-1">
+                            {quad1.map((num) => {
+                              const isProblem = (form.problemTeeth || []).includes(num);
+                              return (
+                                <Tooltip key={num}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToothToggle(num)}
+                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                        isProblem
+                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
+                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                      }`}
+                                    >
+                                      {num}
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+
+                          {/* midline divider */}
+                          <div className="w-[1px] h-8 bg-indigo-500/20" />
+
+                          {/* Upper Left Quadrant (UL: 21 -> 28) */}
+                          <div className="flex items-center gap-1 sm:gap-1.5 justify-start flex-1">
+                            {quad2.map((num) => {
+                              const isProblem = (form.problemTeeth || []).includes(num);
+                              return (
+                                <Tooltip key={num}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToothToggle(num)}
+                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                        isProblem
+                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
+                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                      }`}
+                                    >
+                                      {num}
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* LOWER ARCH */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
+                          {/* Lower Right Quadrant (LR: 48 -> 41) */}
+                          <div className="flex items-center gap-1 sm:gap-1.5 justify-end flex-1">
+                            {quad4.map((num) => {
+                              const isProblem = (form.problemTeeth || []).includes(num);
+                              return (
+                                <Tooltip key={num}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToothToggle(num)}
+                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                        isProblem
+                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
+                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                      }`}
+                                    >
+                                      {num}
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+
+                          {/* midline divider */}
+                          <div className="w-[1px] h-8 bg-indigo-500/20" />
+
+                          {/* Lower Left Quadrant (LL: 31 -> 38) */}
+                          <div className="flex items-center gap-1 sm:gap-1.5 justify-start flex-1">
+                            {quad3.map((num) => {
+                              const isProblem = (form.problemTeeth || []).includes(num);
+                              return (
+                                <Tooltip key={num}>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToothToggle(num)}
+                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                        isProblem
+                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
+                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                      }`}
+                                    >
+                                      {num}
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Selected teeth details */}
+                      {form.problemTeeth && form.problemTeeth.length > 0 ? (
+                        <div className="space-y-3 bg-rose-500/[0.02] border border-rose-500/10 rounded-xl p-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10.5px] font-bold uppercase tracking-widest text-rose-400">Tooth-Specific Chart Details</span>
+                            <span className="text-[9.5px] text-white/30 font-medium">({form.problemTeeth.length} flagged teeth)</span>
+                          </div>
+                          
+                          <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                            {form.problemTeeth.map((t) => {
+                              const condition = form.toothConditions?.[t] || 'Decayed / Cavity';
+                              const note = form.toothNotes?.[t] || '';
+                              
+                              return (
+                                <div key={t} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2.5">
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[12px] font-bold text-rose-300 bg-rose-500/15 border border-rose-500/20 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                        🦷 Tooth {t}
+                                      </span>
+                                      <span className="text-[11px] text-white/50 truncate max-w-[200px]" title={getToothName(t)}>
+                                        {getToothName(t).split(' (Tooth ')[0]}
+                                      </span>
+                                    </div>
+                                    
+                                    {/* Condition Select */}
+                                    <select
+                                      value={condition}
+                                      onChange={(e) => {
+                                        const conditions = { ...form.toothConditions, [t]: e.target.value };
+                                        handleChange('toothConditions', conditions);
+                                      }}
+                                      className="text-[11px] font-medium text-white/80 bg-[#121828] border border-white/[0.08] hover:border-white/15 px-2 py-1 rounded-md outline-none cursor-pointer"
+                                    >
+                                      <option value="Decayed / Cavity">Decayed / Cavity</option>
+                                      <option value="Root Canal Needed">Root Canal Needed</option>
+                                      <option value="Crown / Bridge">Crown / Bridge</option>
+                                      <option value="Missing Tooth">Missing Tooth</option>
+                                      <option value="Dental Implant">Dental Implant</option>
+                                      <option value="Healthy / Treated">Healthy / Treated</option>
+                                    </select>
+                                  </div>
+                                  
+                                  {/* Note text input */}
+                                  <input
+                                    type="text"
+                                    placeholder="Enter pathology or treatment notes..."
+                                    value={note}
+                                    onChange={(e) => {
+                                      const notes = { ...form.toothNotes, [t]: e.target.value };
+                                      handleChange('toothNotes', notes);
+                                    }}
+                                    className="w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-white placeholder:text-white/20 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/40"
+                                    style={{
+                                      background: 'rgba(255,255,255,0.02)',
+                                      border: '1px solid rgba(255,255,255,0.06)',
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-white/[0.01] border border-dashed border-white/[0.06] rounded-xl py-3.5 text-center text-white/20 text-[11px]">
+                          No teeth selected. Click teeth in the chart above to mark problems.
+                        </div>
+                      )}
+                    </div>
+
+                    {/* X-Ray Section */}
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Patient X-Rays / Radiographs</h4>
+                        <p className="text-[10px] text-white/40 mt-0.5">Attach medical panoramic scans or individual tooth radiographs to this record</p>
+                      </div>
+
+                      {/* Uploader dropzone */}
+                      <label className="border border-dashed border-white/[0.12] hover:border-indigo-500/30 bg-white/[0.02] hover:bg-indigo-500/[0.01] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
+                        <Upload size={18} className="text-white/40 group-hover:text-indigo-400 transition-colors" />
+                        <span className="text-[12px] font-semibold text-white/60 group-hover:text-white/80 transition-colors">Upload X-Ray Image</span>
+                        <span className="text-[10px] text-white/25">Supports PNG, JPG (Max 5MB)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleXrayUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* X-Ray preview gallery */}
+                      {form.xrays && form.xrays.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-3">
+                          {form.xrays.map((xray, idx) => (
+                            <div key={idx} className="relative aspect-[16/11] rounded-xl overflow-hidden border border-white/[0.08] bg-neutral-900 group">
+                              <img src={xray} alt="Patient X-Ray Scan" className="w-full h-full object-cover" />
+                              {/* Hover overlay with zoom and delete options */}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxImg(xray)}
+                                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveXray(idx)}
+                                  className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bg-white/[0.01] border border-dashed border-white/[0.06] rounded-xl py-4 text-center text-white/20 text-[11px]">
+                          No radiographs attached. Use the uploader above to add scans.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Body - Care Programs Tab */}
+                {activeTab === 'programs' && (
+                  <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
+                    {form.activeProgramId ? (() => {
+                      const program = CARE_PROGRAMS.find((p) => p.id === form.activeProgramId);
+                      if (!program) return null;
+                      const enrollmentDate = form.programEnrollmentDate || new Date().toISOString().split('T')[0];
+                      const currentStep = form.programCurrentStep || 1;
+                      const status = form.programStatus || 'Active';
+
+                      return (
+                        <div className="space-y-6">
+                          {/* Active Program Card */}
+                          <div
+                            className="rounded-2xl border border-indigo-500/20 p-5 relative overflow-hidden"
+                            style={{
+                              background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 100%)',
+                              boxShadow: '0 0 30px rgba(99,102,241,0.05), inset 0 1px 0 rgba(255,255,255,0.05)',
+                            }}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-bold text-indigo-300 uppercase tracking-widest">
+                                  Active Care Program
+                                </span>
+                                <h3 className="text-base font-bold text-white mt-1.5">{program.name}</h3>
+                                <p className="text-white/40 text-[12px] mt-0.5">{program.description}</p>
+                              </div>
+
+                              <div className="flex flex-col items-end gap-1.5">
+                                {/* Status selector */}
+                                <select
+                                  value={status}
+                                  onChange={(e) => {
+                                    handleChange('programStatus', e.target.value);
+                                  }}
+                                  className="text-[11px] font-bold uppercase tracking-wider text-white bg-[#121828] border border-white/[0.08] hover:border-white/15 px-2.5 py-1 rounded-lg outline-none cursor-pointer"
+                                >
+                                  <option value="Active">Active</option>
+                                  <option value="Paused">Paused</option>
+                                  <option value="Completed">Completed</option>
+                                </select>
+                                <span className="text-[10px] text-white/30">Enrolled: {formatDate(enrollmentDate)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Progress Steps Timeline */}
+                          <div className="space-y-4">
+                            <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">WhatsApp Follow-Up Timeline</h4>
+                            <div className="relative pl-6 space-y-5 border-l border-white/[0.07] ml-3">
+                              {program.steps.map((step, idx) => {
+                                const stepNum = idx + 1;
+                                const isSent = stepNum < currentStep;
+                                const isCurrent = stepNum === currentStep;
+                                const isPending = stepNum > currentStep;
+                                const formattedMsg = step.message.replace('{name}', form.name);
+
+                                return (
+                                  <div key={idx} className="relative group">
+                                    {/* Timeline bullet indicator */}
+                                    <div
+                                      className={`absolute -left-[31px] top-1 w-5 h-5 rounded-full flex items-center justify-center border text-[9px] font-bold transition-all duration-200 ${
+                                        isSent
+                                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                                          : isCurrent
+                                          ? 'bg-indigo-500 border-indigo-500/60 text-white shadow-md shadow-indigo-500/30 scale-110'
+                                          : 'bg-white/[0.03] border-white/[0.08] text-white/20'
+                                      }`}
+                                    >
+                                      {isSent ? '✓' : stepNum}
+                                    </div>
+
+                                    {/* Step card */}
+                                    <div
+                                      className={`rounded-xl border p-4 transition-all ${
+                                        isCurrent
+                                          ? 'bg-white/[0.04] border-indigo-500/30'
+                                          : 'bg-white/[0.01] border-white/[0.05] opacity-60'
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between gap-3 mb-2">
+                                        <div className="flex items-center gap-2">
+                                          <span className={`text-[11px] font-bold ${isCurrent ? 'text-indigo-400' : 'text-white/40'}`}>
+                                            Day {step.day}
+                                          </span>
+                                          <span className="text-white/20">•</span>
+                                          <span className="text-[11px] text-white/60 font-medium">{step.subLabel}</span>
+                                        </div>
+
+                                        <span
+                                          className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${
+                                            isSent
+                                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                              : isCurrent
+                                              ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 animate-pulse'
+                                              : 'bg-white/[0.03] text-white/25 border border-white/[0.05]'
+                                          }`}
+                                        >
+                                          {isSent ? 'Sent' : isCurrent ? 'Next Up' : 'Scheduled'}
+                                        </span>
+                                      </div>
+
+                                      <p className="text-[12px] text-white/75 leading-relaxed bg-black/20 p-2.5 rounded-lg border border-white/[0.03] font-mono whitespace-pre-wrap select-all">
+                                        {formattedMsg}
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Actions panel */}
+                          <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleChange('activeProgramId', undefined);
+                                handleChange('programEnrollmentDate', undefined);
+                                handleChange('programCurrentStep', undefined);
+                                handleChange('programStatus', undefined);
+                              }}
+                              className="text-[11px] font-bold text-rose-500/70 hover:text-rose-400 hover:bg-rose-500/[0.06] border border-rose-500/15 px-3 py-2 rounded-lg transition-all"
+                            >
+                              Disenroll Patient
+                            </button>
+
+                            {currentStep <= program.steps.length && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleChange('programCurrentStep', currentStep + 1);
+                                  if (currentStep === program.steps.length) {
+                                    handleChange('programStatus', 'Completed');
+                                  }
+                                }}
+                                className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white rounded-lg text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20"
+                              >
+                                <Send size={12} />
+                                Simulate WhatsApp Nudge
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })() : (
+                      /* Disenrolled / No Active Program State */
+                      <div className="py-8 text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full bg-white/[0.02] border border-dashed border-white/[0.1] flex items-center justify-center mx-auto text-white/30">
+                          <Zap size={20} />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-white">No Active Care Program</h4>
+                          <p className="text-[12px] text-white/40 mt-1 max-w-sm mx-auto">
+                            Enroll patient in an automated check-up flow to track symptoms and request feedback post-op.
+                          </p>
+                        </div>
+
+                        {/* Select program list */}
+                        <div className="max-w-xs mx-auto pt-4 space-y-3">
+                          <select
+                            id="programSelect"
+                            className="w-full bg-[#121828] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white outline-none cursor-pointer"
+                            defaultValue=""
+                            onChange={(e) => {
+                              const progId = e.target.value;
+                              if (!progId) return;
+                              handleChange('activeProgramId', progId);
+                              handleChange('programEnrollmentDate', new Date().toISOString().split('T')[0]);
+                              handleChange('programCurrentStep', 1);
+                              handleChange('programStatus', 'Active');
+                            }}
+                          >
+                            <option value="" disabled>-- Choose Care Program --</option>
+                            {CARE_PROGRAMS.map((p) => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div
+                  className="px-6 py-4 flex items-center justify-end gap-3"
+                  style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+                >
+                  <button
+                    onClick={onClose}
+                    className="px-4 py-2 text-[13px] text-white/50 hover:text-white/80 rounded-lg transition-colors duration-150"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={!form.name || !form.phone}
+                    className="px-5 py-2 text-[13px] font-semibold text-white rounded-lg transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={{
+                      background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                      boxShadow: '0 0 20px rgba(99,102,241,0.3)',
+                    }}
+                  >
+                    {isEdit ? 'Save Changes' : 'Add Patient'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lightbox Dialog */}
+      {lightboxImg && (
+        <Dialog open={!!lightboxImg} onOpenChange={() => setLightboxImg(null)}>
+          <DialogContent
+            className="max-w-4xl p-1 border-0 overflow-hidden"
+            style={{ background: '#090D16', border: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            <div className="relative w-full h-[70vh] flex items-center justify-center p-4">
+              <img src={lightboxImg} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Patient X-Ray Radiograph scan Zoom" />
+              <button
+                onClick={() => setLightboxImg(null)}
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 border border-white/10 text-white flex items-center justify-center hover:bg-black/85 transition-colors"
               >
-                <button
-                  onClick={onClose}
-                  className="px-4 py-2 text-[13px] text-white/50 hover:text-white/80 rounded-lg transition-colors duration-150"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={!form.name || !form.phone}
-                  className="px-5 py-2 text-[13px] font-semibold text-white rounded-lg transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{
-                    background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-                    boxShadow: '0 0 20px rgba(99,102,241,0.3)',
-                  }}
-                >
-                  {isEdit ? 'Save Changes' : 'Add Customer'}
-                </button>
-              </DialogFooter>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </DialogContent>
-    </Dialog>
+                <X size={16} />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 };
 
@@ -1158,9 +2026,25 @@ const ReactivationCustomers: React.FC = () => {
                           <td className="px-3 py-3.5">
                             <div className="flex items-center gap-2.5">
                               <Avatar name={customer.name} color={customer.avatarColor} />
-                              <span className="text-[13px] font-semibold text-white leading-tight">
-                                {customer.name}
-                              </span>
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[13px] font-semibold text-white leading-tight">
+                                    {customer.name}
+                                  </span>
+                                  {((customer.allergies && customer.allergies.length > 0) || (customer.medicalConditions && customer.medicalConditions.length > 0)) && (
+                                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" title="Clinical Alert: Review medical history before treatment" />
+                                  )}
+                                </div>
+                                {((customer.allergies && customer.allergies.length > 0) || (customer.medicalConditions && customer.medicalConditions.length > 0)) && (
+                                  <div className="flex flex-wrap gap-1 mt-0.5 max-w-[200px]">
+                                    {[...(customer.allergies || []), ...(customer.medicalConditions || [])].map((alert) => (
+                                      <span key={alert} className="px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded text-[8.5px] font-extrabold uppercase tracking-widest text-rose-400">
+                                        {alert}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </td>
 
@@ -1185,7 +2069,28 @@ const ReactivationCustomers: React.FC = () => {
 
                           {/* Service */}
                           <td className="px-3 py-3.5">
-                            <span className="text-[12px] text-white/60">{customer.service}</span>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[12px] text-white/60">{customer.service}</span>
+                              {customer.problemTeeth && customer.problemTeeth.length > 0 && (
+                                <span className="text-[10px] text-rose-400 font-semibold tracking-wide flex items-center gap-1 mt-0.5">
+                                  🦷 Teeth: {customer.problemTeeth.join(', ')}
+                                </span>
+                              )}
+                              {customer.xrays && customer.xrays.length > 0 && (
+                                <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-wider mt-0.5">
+                                  📸 X-Ray Attached
+                                </span>
+                              )}
+                              {customer.vitals && (customer.vitals.bp || customer.vitals.pulse || customer.vitals.temp) && (
+                                <span className="text-[9.5px] text-indigo-400 font-medium tracking-wide flex items-center gap-1 mt-0.5" title="Latest clinical vitals (BP, Heart Rate, Temperature)">
+                                  🩺 {[
+                                    customer.vitals.bp && `BP ${customer.vitals.bp}`,
+                                    customer.vitals.pulse && `HR ${customer.vitals.pulse}`,
+                                    customer.vitals.temp && `${customer.vitals.temp}`
+                                  ].filter(Boolean).join(' | ')}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           {/* Total Spend */}
