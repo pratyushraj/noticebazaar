@@ -80,3 +80,39 @@ The Instagram carousels have been successfully created, previewed, and exported 
 ### Image Specifications
 - **Dimensions**: Exactly `1080px` x `1350px` (standard Instagram 4:5 aspect ratio).
 - **Quality**: Crystal-clear rendering of Lora and Nunito Sans Google fonts.
+
+---
+
+## Google Reviews Auto-Reply & Live Integration
+
+### 1. Backend OAuth Router Refresh
+- **File**: [googleReviews.ts](file:///Users/pratyushraj/Desktop/creatorarmour/server/src/routes/googleReviews.ts)
+- **Features**:
+  - Restored backend server with `GOOGLE_CLIENT_SECRET` successfully loaded from `.env`.
+  - Added user profile retrieval via `https://www.googleapis.com/oauth2/v3/userinfo` with scopes including `email`.
+  - Integrated live fetching from the Google Business Profile Information API (`accounts -> locations -> reviews`).
+  - Added a smart simulated fallback feed if no verified GBP locations are present in the authenticated Google Account.
+
+### 2. Frontend User Profile Badge & Live Review Feed
+- **File**: [ReactivationReviews.tsx](file:///Users/pratyushraj/Desktop/creatorarmour/src/pages/reactivation/ReactivationReviews.tsx)
+- **Features**:
+  - Automatically fetches the connected Google Profile details (Name, Email, Picture) and displays a premium badge at the top of the reviews page.
+  - Dynamically fetches reviews from the backend `/list` API instead of purely hardcoded mocks.
+  - Renders a warning/notice badge indicating whether the feed is a live synced GBP feed or a simulated preview specifically generated for their connected Google account.
+
+
+## Mock Data Cleanup & Dental Focus Realignment
+
+We reviewed and removed all remaining non-dental mock datasets across the reactivation hub files to maintain strict professional alignment with our clinic users (Shree Ram Dental Care & Your Dentist):
+
+1. **Smart Segments page ([ReactivationSegments.tsx](file:///Users/pratyushraj/Desktop/creatorarmour/src/pages/reactivation/ReactivationSegments.tsx))**:
+   - Removed Salon, Gym, Skin Clinic, and Restaurant segment objects.
+   - Kept only the **Dental Clinic** segments, and expanded them to include **Orthodontics Follow-Up** and **Pediatric Dental Recall** to present a comprehensive dental clinical view.
+   - Removed the industry tabs select menu and selector tabs since the platform is now fully focused on Dental CRM.
+2. **Campaign Creator ([ReactivationCampaigns.tsx](file:///Users/pratyushraj/Desktop/creatorarmour/src/pages/reactivation/ReactivationCampaigns.tsx))**:
+   - Cleaned the industry options to only contain `Dental Clinic`.
+3. **Analytics Dashboard ([ReactivationAnalytics.tsx](file:///Users/pratyushraj/Desktop/creatorarmour/src/pages/reactivation/ReactivationAnalytics.tsx))**:
+   - Replaced all Salon, Gym, and Spa campaigns (e.g. "Hair Treatment Revival", "Gym Membership Renewal") with dental campaigns ("Root Canal Recall", "Clear Aligner Consultations", "Smile Makeover Campaign").
+4. **Automations Builder ([ReactivationAutomations.tsx](file:///Users/pratyushraj/Desktop/creatorarmour/src/pages/reactivation/ReactivationAutomations.tsx))**:
+   - Swapped out the gym-specific "Trial Expiry Warning" trigger/action card with a custom dental-specific **"Aligner Compliance Check"** card, matching the clinical schema.
+

@@ -99,7 +99,7 @@ const CAMPAIGNS: Campaign[] = [
   },
   {
     id: 'c3',
-    name: 'Hair Treatment Revival',
+    name: 'Root Canal Recall',
     type: 'Reactivation',
     launched: '28 May 2025',
     sent: 320,
@@ -113,7 +113,7 @@ const CAMPAIGNS: Campaign[] = [
   },
   {
     id: 'c4',
-    name: 'Gym Membership Renewal',
+    name: 'Clear Aligner Consultations',
     type: 'Reactivation',
     launched: '15 May 2025',
     sent: 180,
@@ -127,7 +127,7 @@ const CAMPAIGNS: Campaign[] = [
   },
   {
     id: 'c5',
-    name: 'Bridal Season Alert',
+    name: 'Smile Makeover Campaign',
     type: 'New Service',
     launched: '1 May 2025',
     sent: 240,
@@ -173,9 +173,9 @@ const generateChartData = () => {
     appointments: appts[i],
     campaign:
       i === 2 ? 'Teeth Cleaning Offer'
-      : i === 8 ? 'Hair Treatment Revival'
+      : i === 8 ? 'Root Canal Recall'
       : i === 18 ? 'Diwali Smile Special'
-      : i === 25 ? 'Gym Membership Renewal'
+      : i === 25 ? 'Clear Aligner Consultations'
       : 'Daily Revenue',
   }));
 };

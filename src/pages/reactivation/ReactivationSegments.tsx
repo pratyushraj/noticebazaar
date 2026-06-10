@@ -27,7 +27,7 @@ import {
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type RiskLevel = 'HIGH' | 'MEDIUM' | 'LOW';
-type IndustryKey = 'dental' | 'salon' | 'gym' | 'skinclinic' | 'restaurant';
+type IndustryKey = 'dental';
 
 interface SegmentStat {
   label: string;
@@ -134,236 +134,32 @@ const INDUSTRIES: Industry[] = [
           { label: 'Rescue window', value: '7 days ideal' },
         ],
       },
-    ],
-  },
-  {
-    key: 'salon',
-    label: 'Salon',
-    icon: <Scissors className="w-4 h-4" />,
-    summaryRisk: 162,
-    summaryRevenue: '₹11.2L',
-    segments: [
       {
-        id: 'salon-1',
-        name: 'No Visit 90 Days',
-        customerCount: 67,
-        risk: 'HIGH',
-        suggestedCampaign: 'Come Back — 20% Off Any Service',
-        potentialRevenue: '₹4.7L',
-        icon: <Clock className="w-5 h-5" />,
-        stats: [
-          { label: 'Avg days inactive', value: '112 days' },
-          { label: 'Avg spend/visit', value: '₹2,200' },
-          { label: 'Potential revenue', value: '₹4.7L' },
-        ],
-      },
-      {
-        id: 'salon-2',
-        name: 'Hair Treatment Clients',
-        customerCount: 45,
+        id: 'dental-6',
+        name: 'Orthodontics Follow-Up',
+        customerCount: 31,
         risk: 'MEDIUM',
-        suggestedCampaign: 'Keratin Refresh Offer',
-        potentialRevenue: '₹3.2L',
-        icon: <Waves className="w-5 h-5" />,
-        stats: [
-          { label: 'Last treatment', value: '3+ months ago' },
-          { label: 'Avg spend', value: '₹7,100' },
-          { label: 'Potential revenue', value: '₹3.2L' },
-        ],
-      },
-      {
-        id: 'salon-3',
-        name: 'Bridal Season Leads',
-        customerCount: 12,
-        risk: 'HIGH',
-        suggestedCampaign: 'Your Wedding Look — Book Now',
-        potentialRevenue: '₹1.8L',
-        icon: <Star className="w-5 h-5" />,
-        stats: [
-          { label: 'Event window', value: 'Next 60-90 days' },
-          { label: 'Avg bridal pkg', value: '₹15,000' },
-          { label: 'Potential revenue', value: '₹1.8L' },
-        ],
-      },
-      {
-        id: 'salon-4',
-        name: 'Coloring Regulars',
-        customerCount: 38,
-        risk: 'LOW',
-        suggestedCampaign: 'Root Touch-Up Reminder',
+        suggestedCampaign: 'Orthodontic Compliance Review',
         potentialRevenue: '₹1.5L',
-        icon: <Activity className="w-5 h-5" />,
+        icon: <Target className="w-5 h-5" />,
         stats: [
-          { label: 'Last color service', value: '6+ weeks ago' },
-          { label: 'Avg spend', value: '₹3,800' },
+          { label: 'On aligner treatment', value: '31 patients' },
+          { label: 'Avg monthly fee', value: '₹4,500' },
           { label: 'Potential revenue', value: '₹1.5L' },
         ],
       },
-    ],
-  },
-  {
-    key: 'gym',
-    label: 'Gym',
-    icon: <Dumbbell className="w-4 h-4" />,
-    summaryRisk: 140,
-    summaryRevenue: '₹8.9L',
-    segments: [
       {
-        id: 'gym-1',
-        name: 'Membership Expired',
-        customerCount: 52,
-        risk: 'HIGH',
-        suggestedCampaign: 'Renew Now — ₹500 Off First Month',
-        potentialRevenue: '₹3.1L',
-        icon: <AlertTriangle className="w-5 h-5" />,
-        stats: [
-          { label: 'Avg lapse', value: '23 days ago' },
-          { label: 'Avg membership', value: '₹1,800/month' },
-          { label: 'Potential revenue', value: '₹3.1L' },
-        ],
-      },
-      {
-        id: 'gym-2',
-        name: 'Trial Members',
-        customerCount: 29,
-        risk: 'HIGH',
-        suggestedCampaign: 'Your 7-Day Trial Ends Soon!',
-        potentialRevenue: '₹1.7L',
-        icon: <Zap className="w-5 h-5" />,
-        stats: [
-          { label: 'Trial status', value: 'Day 3–7 of trial' },
-          { label: 'Convert rate avg', value: '38% industry' },
-          { label: 'Potential revenue', value: '₹1.7L' },
-        ],
-      },
-      {
-        id: 'gym-3',
-        name: 'Inactive Members',
-        customerCount: 41,
-        risk: 'MEDIUM',
-        suggestedCampaign: 'We See You Slipping — Free PT Session',
-        potentialRevenue: '₹2.5L',
-        icon: <Activity className="w-5 h-5" />,
-        stats: [
-          { label: 'Visits/week', value: 'Less than 2x / 30 days' },
-          { label: 'Avg tenure', value: '7 months' },
-          { label: 'Potential revenue', value: '₹2.5L' },
-        ],
-      },
-      {
-        id: 'gym-4',
-        name: 'Lapsed Premium Members',
-        customerCount: 18,
-        risk: 'MEDIUM',
-        suggestedCampaign: 'Welcome Back — Premium Perks Extended',
-        potentialRevenue: '₹1.6L',
-        icon: <Star className="w-5 h-5" />,
-        stats: [
-          { label: 'Tier', value: 'Premium / Annual' },
-          { label: 'Avg plan value', value: '₹9,000/yr' },
-          { label: 'Potential revenue', value: '₹1.6L' },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'skinclinic',
-    label: 'Skin Clinic',
-    icon: <ShieldAlert className="w-4 h-4" />,
-    summaryRisk: 75,
-    summaryRevenue: '₹9.4L',
-    segments: [
-      {
-        id: 'skin-1',
-        name: 'No Visit 3 Months',
-        customerCount: 38,
-        risk: 'HIGH',
-        suggestedCampaign: 'Your Skin Needs Attention — Book Now',
-        potentialRevenue: '₹4.2L',
-        icon: <Clock className="w-5 h-5" />,
-        stats: [
-          { label: 'Avg inactive period', value: '94 days' },
-          { label: 'Avg spend/session', value: '₹4,500' },
-          { label: 'Potential revenue', value: '₹4.2L' },
-        ],
-      },
-      {
-        id: 'skin-2',
-        name: 'Laser Session Patients',
+        id: 'dental-7',
+        name: 'Pediatric Dental Recall',
         customerCount: 22,
-        risk: 'MEDIUM',
-        suggestedCampaign: 'Next Laser Session Reminder',
-        potentialRevenue: '₹3.3L',
-        icon: <Zap className="w-5 h-5" />,
-        stats: [
-          { label: 'Sessions completed', value: '3 of 6 avg' },
-          { label: 'Avg session cost', value: '₹7,500' },
-          { label: 'Potential revenue', value: '₹3.3L' },
-        ],
-      },
-      {
-        id: 'skin-3',
-        name: 'Chemical Peel Clients',
-        customerCount: 15,
         risk: 'LOW',
-        suggestedCampaign: 'Seasonal Peel Package Offer',
-        potentialRevenue: '₹1.9L',
+        suggestedCampaign: 'Kids Friendly Dental Checkup',
+        potentialRevenue: '₹44K',
         icon: <Sparkles className="w-5 h-5" />,
         stats: [
-          { label: 'Last peel', value: '5+ weeks ago' },
-          { label: 'Avg spend', value: '₹5,800' },
-          { label: 'Potential revenue', value: '₹1.9L' },
-        ],
-      },
-    ],
-  },
-  {
-    key: 'restaurant',
-    label: 'Restaurant',
-    icon: <Utensils className="w-4 h-4" />,
-    summaryRisk: 165,
-    summaryRevenue: '₹6.2L',
-    segments: [
-      {
-        id: 'rest-1',
-        name: 'No Order 30 Days',
-        customerCount: 124,
-        risk: 'HIGH',
-        suggestedCampaign: 'We Miss You — 15% Off Your Next Order',
-        potentialRevenue: '₹3.7L',
-        icon: <Clock className="w-5 h-5" />,
-        stats: [
-          { label: 'Avg order gap', value: '43 days' },
-          { label: 'Avg order value', value: '₹680' },
-          { label: 'Potential revenue', value: '₹3.7L' },
-        ],
-      },
-      {
-        id: 'rest-2',
-        name: 'Birthday Month Guests',
-        customerCount: 8,
-        risk: 'LOW',
-        suggestedCampaign: 'Happy Birthday! Free Dessert on Us',
-        potentialRevenue: '₹32K',
-        icon: <Star className="w-5 h-5" />,
-        stats: [
-          { label: 'Birthday window', value: 'This month' },
-          { label: 'Avg spend on bday', value: '₹1,800' },
-          { label: 'Potential revenue', value: '₹32,000' },
-        ],
-      },
-      {
-        id: 'rest-3',
-        name: 'High Spenders',
-        customerCount: 33,
-        risk: 'MEDIUM',
-        suggestedCampaign: 'VIP Table — Exclusive Tasting Menu',
-        potentialRevenue: '₹2.5L',
-        icon: <TrendingUp className="w-5 h-5" />,
-        stats: [
-          { label: 'Avg spend/visit', value: '₹520+' },
-          { label: 'Last visit', value: '45+ days ago' },
-          { label: 'Potential revenue', value: '₹2.5L' },
+          { label: 'Overdue checkup', value: '22 children' },
+          { label: 'Avg visit cost', value: '₹2,000' },
+          { label: 'Potential revenue', value: '₹44,000' },
         ],
       },
     ],
@@ -524,19 +320,10 @@ const ReactivationSegments: React.FC = () => {
   };
 
   // AI banner copy based on active industry
-  const aiBannerText =
-    activeIndustry === 'dental'
-      ? {
-          stat: '143 high-risk patients with no visit in 6+ months',
-          revenue: '₹5.8L',
-        }
-      : activeIndustry === 'salon'
-      ? { stat: '67 clients with no visit in 90+ days', revenue: '₹4.7L' }
-      : activeIndustry === 'gym'
-      ? { stat: '52 expired memberships going cold fast', revenue: '₹3.1L' }
-      : activeIndustry === 'skinclinic'
-      ? { stat: '38 patients overdue for their next session', revenue: '₹4.2L' }
-      : { stat: '124 customers with no order in 30+ days', revenue: '₹3.7L' };
+  const aiBannerText = {
+    stat: '143 high-risk patients with no visit in 6+ months',
+    revenue: '₹5.8L',
+  };
 
   return (
     <div className="min-h-screen bg-[#080C14] text-white pb-24 relative overflow-hidden">
@@ -576,30 +363,8 @@ const ReactivationSegments: React.FC = () => {
             </p>
           </div>
 
-          {/* Controls: Industry dropdown + Refresh */}
+          {/* Controls: Refresh */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Industry selector */}
-            <div className="relative">
-              <select
-                value={activeIndustry}
-                onChange={(e) => handleTabChange(e.target.value as IndustryKey)}
-                className="
-                  appearance-none pl-4 pr-9 py-2.5 rounded-xl
-                  bg-white/5 border border-white/10
-                  text-sm font-semibold text-white
-                  focus:outline-none focus:border-indigo-500/60
-                  hover:bg-white/8 transition-colors cursor-pointer
-                "
-              >
-                <option value="dental">Dental Clinic</option>
-                <option value="salon">Salon</option>
-                <option value="gym">Gym</option>
-                <option value="skinclinic">Skin Clinic</option>
-                <option value="restaurant">Restaurant</option>
-              </select>
-              <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 w-3.5 h-3.5 text-white/40 pointer-events-none" />
-            </div>
-
             {/* Refresh */}
             <button
               onClick={handleRefresh}
@@ -673,33 +438,6 @@ const ReactivationSegments: React.FC = () => {
           ))}
         </motion.div>
 
-        {/* ── Industry Tabs ─────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 mb-7 overflow-x-auto pb-1 scrollbar-hide">
-          {INDUSTRIES.map((ind) => (
-            <button
-              key={ind.key}
-              onClick={() => handleTabChange(ind.key)}
-              className={`
-                flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-200
-                ${
-                  activeIndustry === ind.key
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                    : 'bg-white/[0.04] text-white/50 border border-white/8 hover:bg-white/8 hover:text-white/80'
-                }
-              `}
-            >
-              {ind.icon}
-              {ind.label}
-              <span className={`text-[10px] font-black rounded-full px-1.5 py-0.5 ${
-                activeIndustry === ind.key
-                  ? 'bg-white/20 text-white'
-                  : 'bg-white/8 text-white/40'
-              }`}>
-                {ind.segments.length}
-              </span>
-            </button>
-          ))}
-        </div>
 
         {/* ── AI Insight Banner ─────────────────────────────────────────────── */}
         <AnimatePresence mode="wait">

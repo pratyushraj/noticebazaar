@@ -184,15 +184,6 @@ const SEGMENTS: AudienceSegment[] = [
 
 const INDUSTRIES = [
   'Dental Clinic',
-  'Salon & Spa',
-  'Gym & Fitness',
-  'Physiotherapy',
-  'Dermatology',
-  'Eye Care',
-  'Pharmacy',
-  'Restaurant',
-  'Retail Store',
-  'Other',
 ];
 
 const MOCK_CUSTOMERS: Customer[] = [
@@ -748,14 +739,29 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
 
 const ReactivationCampaigns: React.FC = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState<CampaignForm>({
-    name: '',
-    type: '',
-    businessName: 'Smile Dental Clinic',
-    location: 'Patna',
-    industry: 'Dental Clinic',
-    offerDescription: '20% off teeth whitening this month',
-    segment: '',
+  const [form, setForm] = useState<CampaignForm>(() => {
+    const defaultName = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna';
+    return {
+      name: '',
+      type: '',
+      businessName: defaultName,
+      location: 'Patna',
+      industry: 'Dental Clinic',
+      offerDescription: '20% off teeth whitening this month',
+      segment: '',
+    };
+  });
+
+  // Dynamically map messages to use the current business name and location
+  const generatedMessages = GENERATED_MESSAGES.map(msg => {
+    let content = msg.content
+      .replace(/Smile Dental Clinic/g, form.businessName)
+      .replace(/Smile Dental Team/g, `${form.businessName} Team`)
+      .replace(/98765 43210/g, '93041 23456');
+    return {
+      ...msg,
+      content
+    };
   });
 
   // Step 2 — message generation state
@@ -1384,7 +1390,7 @@ const ReactivationCampaigns: React.FC = () => {
 
               {/* Messages */}
               <div className="flex flex-col gap-4 mb-6">
-                {GENERATED_MESSAGES.map((msg, idx) => {
+                {generatedMessages.map((msg, idx) => {
                   const shouldShow = generatingStep > idx;
                   return shouldShow ? (
                     <MessageCard
@@ -1416,7 +1422,7 @@ const ReactivationCampaigns: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-[12px] font-medium text-white/25">
-                            {GENERATED_MESSAGES[idx]?.label}
+                            {generatedMessages[idx]?.label}
                           </p>
                           <p className="text-[10px] text-white/15 mt-0.5">Generating...</p>
                         </div>
