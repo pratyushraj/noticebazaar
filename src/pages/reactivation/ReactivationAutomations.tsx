@@ -331,7 +331,7 @@ const AutomationCard: React.FC<AutomationCardProps> = ({
             <div className="flex items-center gap-2.5 mb-1 flex-wrap">
               <h3 className="text-[14px] font-semibold text-slate-800 leading-tight">{automation.name}</h3>
               <StatusPill status={automation.status} />
-              <span className="text-[9px] font-bold tracking-widest text-slate-400 px-1.5 py-0.5 rounded bg-slate-50 border border-white/[0.06]">
+              <span className="text-[9px] font-bold tracking-widest text-slate-400 px-1.5 py-0.5 rounded bg-slate-50 border border-slate-200">
                 {automation.category.toUpperCase()}
               </span>
             </div>
@@ -451,11 +451,11 @@ const FlowDiagram: React.FC<{ selectedAutomation: Automation | null }> = ({ sele
       transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
       className="rounded-2xl border border-slate-200 overflow-hidden"
       style={{
-        background: 'linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(10,15,28,0.9) 60%)',
+        background: 'linear-gradient(135deg, rgba(99,102,241,0.02) 0%, rgba(255,255,255,1) 100%)',
         backdropFilter: 'blur(16px)',
       }}
     >
-      <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-2.5">
+      <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2.5">
         <BrainCircuit size={16} className="text-indigo-600" />
         <span className="text-[13px] font-semibold text-slate-700">Automation Flow</span>
         {selectedAutomation && (
@@ -848,7 +848,7 @@ const CreateAutomationModal: React.FC<{
                               >
                                 <div
                                   className={`w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                                    selected ? 'bg-indigo-500 border-indigo-500' : 'border-white/25'
+                                    selected ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300'
                                   }`}
                                 >
                                   {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -924,7 +924,7 @@ const CreateAutomationModal: React.FC<{
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
                 <button
                   onClick={handleBack}
                   disabled={step === 1}
@@ -1001,13 +1001,12 @@ const PerformanceSummary: React.FC = () => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.4, delay: 0.2 }}
-    className="rounded-2xl border border-slate-200 overflow-hidden"
-    style={{ background: 'rgba(10,15,28,0.7)' }}
+    className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm"
   >
-    <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-2.5">
+    <div className="px-6 py-4 border-b border-slate-200 flex items-center gap-2.5">
       <Sparkles size={15} className="text-indigo-600" />
       <span className="text-[13px] font-semibold text-slate-700">Performance Summary</span>
-      <span className="ml-1 text-[10px] text-slate-400 px-2 py-0.5 rounded-full bg-slate-50 border border-white/[0.06]">Last 30 days</span>
+      <span className="ml-1 text-[10px] text-slate-400 px-2 py-0.5 rounded-full bg-slate-50 border border-slate-200">Last 30 days</span>
     </div>
     <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-slate-100">
       {PERF_STATS.map((s, i) => {

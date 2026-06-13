@@ -1151,7 +1151,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {activeTab === 'medical' && (
                   <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
                     {/* AI Dental Scribe (Voice to Chart) */}
-                    <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4.5 space-y-3 relative overflow-hidden">
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4.5 space-y-3 relative overflow-hidden">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center">
@@ -1263,7 +1263,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Allergies & Conditions Checklists */}
                     <div className="grid grid-cols-2 gap-4">
                       {/* Allergies Checklist */}
-                      <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
+                      <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
                         <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
                         <div className="grid grid-cols-1 gap-2.5">
                           {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
@@ -1295,7 +1295,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
 
                       {/* Medical Conditions Checklist */}
-                      <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
+                      <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
                         <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Chronic Conditions</h4>
                         <div className="grid grid-cols-1 gap-2.5">
                           {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
@@ -1328,7 +1328,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Vitals Logger */}
-                    <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
+                    <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
                       <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Patient Vitals</h4>
                       <div className="grid grid-cols-3 gap-3">
                         <div>
@@ -1606,7 +1606,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       {form.xrays && form.xrays.length > 0 ? (
                         <div className="grid grid-cols-3 gap-3">
                           {form.xrays.map((xray, idx) => (
-                            <div key={idx} className="relative aspect-[16/11] rounded-xl overflow-hidden border border-white/[0.08] bg-neutral-900 group">
+                            <div key={idx} className="relative aspect-[16/11] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
                               <img src={xray} alt="Patient X-Ray Scan" className="w-full h-full object-cover" />
                               {/* Hover overlay with zoom and delete options */}
                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
@@ -1646,7 +1646,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           </div>
                           
                           {/* Interactive Slider Container */}
-                          <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-white/[0.08] bg-neutral-900 select-none">
+                          <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 select-none">
                             {/* Before Image (underneath) */}
                             <img src={form.xrays[0]} alt="Before treatment RVG" className="absolute inset-0 w-full h-full object-cover" />
                             

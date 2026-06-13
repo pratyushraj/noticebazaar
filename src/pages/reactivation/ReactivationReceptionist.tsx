@@ -512,14 +512,14 @@ export default function ReactivationReceptionist() {
                   <div>
                     <SectionLabel>Phone Number</SectionLabel>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                       <GlassInput className="pl-9" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 ..." />
                     </div>
                   </div>
                   <div>
                     <SectionLabel>Working Hours</SectionLabel>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                       <GlassInput className="pl-9" value={workingHours} onChange={e => setWorkingHours(e.target.value)} />
                     </div>
                   </div>
@@ -533,8 +533,8 @@ export default function ReactivationReceptionist() {
               {/* ── Tab 2: Staff ── */}
               <TabsContent value="staff" className="mt-4 space-y-4">
                 {/* Add Staff Form */}
-                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add Staff Member</p>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add Staff Member</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <SectionLabel>Name</SectionLabel>
@@ -552,14 +552,14 @@ export default function ReactivationReceptionist() {
                         <button
                           key={day}
                           onClick={() => toggleStaffDay(day)}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${newStaffDays.includes(day) ? 'bg-indigo-600/30 border-indigo-500/50 text-indigo-300' : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'}`}
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-all ${newStaffDays.includes(day) ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-700'}`}
                         >
                           {day}
                         </button>
                       ))}
                     </div>
                   </div>
-                  <button onClick={addStaff} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                  <button onClick={addStaff} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-semibold hover:bg-indigo-100/80 transition-all">
                     <Plus className="w-3.5 h-3.5" /> Add Staff Member
                   </button>
                 </div>
@@ -572,15 +572,15 @@ export default function ReactivationReceptionist() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
-                      className="flex items-center justify-between bg-white/3 border border-white/8 rounded-xl p-3.5 group"
+                      className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3.5 group"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center">
-                          <Stethoscope className="w-3.5 h-3.5 text-indigo-400" />
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                          <Stethoscope className="w-3.5 h-3.5 text-indigo-500" />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-white">{member.name}</p>
-                          <p className="text-xs text-white/40">{member.role} • {member.days.join(', ') || 'All days'}</p>
+                          <p className="text-sm font-semibold text-slate-800">{member.name}</p>
+                          <p className="text-xs text-slate-400">{member.role} • {member.days.join(', ') || 'All days'}</p>
                         </div>
                       </div>
                       <button
@@ -597,8 +597,8 @@ export default function ReactivationReceptionist() {
               {/* ── Tab 3: Services & Pricing ── */}
               <TabsContent value="services" className="mt-4 space-y-4">
                 {/* Add Service Form */}
-                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add Service</p>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add Service</p>
                   <div className="grid grid-cols-3 gap-2">
                     <div className="col-span-3">
                       <SectionLabel>Service Name</SectionLabel>
@@ -617,19 +617,19 @@ export default function ReactivationReceptionist() {
                       <GlassInput value={newService.description} onChange={e => setNewService(p => ({ ...p, description: e.target.value }))} placeholder="Brief note" />
                     </div>
                   </div>
-                  <button onClick={addService} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                  <button onClick={addService} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-semibold hover:bg-indigo-100/80 transition-all">
                     <Plus className="w-3.5 h-3.5" /> Add Service
                   </button>
                 </div>
 
                 {/* Services Table */}
-                <div className="bg-white/3 border border-white/8 rounded-xl overflow-hidden">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-white/8">
-                        <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-2.5">Service</th>
-                        <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-2.5">Duration</th>
-                        <th className="text-left text-[10px] font-semibold text-white/40 uppercase tracking-wider px-4 py-2.5">Price</th>
+                      <tr className="border-b border-slate-200/85 bg-slate-100/50">
+                        <th className="text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-2.5">Service</th>
+                        <th className="text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-2.5">Duration</th>
+                        <th className="text-left text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-4 py-2.5">Price</th>
                         <th className="px-2 py-2.5" />
                       </tr>
                     </thead>
@@ -640,20 +640,20 @@ export default function ReactivationReceptionist() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           transition={{ delay: i * 0.04 }}
-                          className="border-b border-white/5 last:border-0 hover:bg-white/2 group"
+                          className="border-b border-slate-100 last:border-0 hover:bg-slate-50/50 group"
                         >
                           <td className="px-4 py-3">
-                            <p className="text-sm font-medium text-white">{svc.name}</p>
-                            <p className="text-[11px] text-white/30">{svc.description}</p>
+                            <p className="text-sm font-medium text-slate-800">{svc.name}</p>
+                            <p className="text-[11px] text-slate-400">{svc.description}</p>
                           </td>
-                          <td className="px-4 py-3 text-sm text-white/60">{svc.duration} min</td>
+                          <td className="px-4 py-3 text-sm text-slate-600">{svc.duration} min</td>
                           <td className="px-4 py-3">
-                            <span className="text-sm font-semibold text-emerald-400">₹{svc.price.toLocaleString('en-IN')}</span>
+                            <span className="text-sm font-semibold text-emerald-600">₹{svc.price.toLocaleString('en-IN')}</span>
                           </td>
                           <td className="px-2 py-3">
                             <button
-                              onClick={() => setServices(prev => prev.filter(s => s.id !== svc.id))}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
+                               onClick={() => setServices(prev => prev.filter(s => s.id !== svc.id))}
+                               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
                             >
                               <Trash2 className="w-3 h-3" />
                             </button>
@@ -668,8 +668,8 @@ export default function ReactivationReceptionist() {
               {/* ── Tab 4: FAQs ── */}
               <TabsContent value="faqs" className="mt-4 space-y-4">
                 {/* Add FAQ Form */}
-                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add FAQ</p>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add FAQ</p>
                   <div>
                     <SectionLabel>Question</SectionLabel>
                     <GlassInput value={newFaq.question} onChange={e => setNewFaq(p => ({ ...p, question: e.target.value }))} placeholder="e.g. Do you offer home visits?" />
@@ -678,7 +678,7 @@ export default function ReactivationReceptionist() {
                     <SectionLabel>Answer</SectionLabel>
                     <GlassTextarea rows={3} value={newFaq.answer} onChange={e => setNewFaq(p => ({ ...p, answer: e.target.value }))} placeholder="Detailed answer..." />
                   </div>
-                  <button onClick={addFaq} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                  <button onClick={addFaq} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-semibold hover:bg-indigo-100/80 transition-all">
                     <Plus className="w-3.5 h-3.5" /> Add FAQ
                   </button>
                 </div>
@@ -688,12 +688,12 @@ export default function ReactivationReceptionist() {
                     const isOpen = expandedFaq === faq.id;
                     return (
                       <motion.div key={faq.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                        <div className="bg-white/3 border border-white/8 rounded-xl overflow-hidden">
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
                           <button
                             onClick={() => setExpandedFaq(isOpen ? undefined : faq.id)}
-                            className="w-full flex items-center justify-between px-4 py-3 text-left group hover:bg-white/3 transition-all"
+                            className="w-full flex items-center justify-between px-4 py-3 text-left group hover:bg-slate-100/30 transition-all"
                           >
-                            <span className="text-sm font-medium text-white">{faq.question}</span>
+                            <span className="text-sm font-medium text-slate-800">{faq.question}</span>
                             <div className="flex items-center gap-2">
                               <span
                                 onClick={(e) => {
@@ -704,7 +704,7 @@ export default function ReactivationReceptionist() {
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </span>
-                              <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                             </div>
                           </button>
                           <AnimatePresence initial={false}>
@@ -716,7 +716,7 @@ export default function ReactivationReceptionist() {
                                 transition={{ duration: 0.2 }}
                                 className="overflow-hidden"
                               >
-                                <div className="px-4 pb-3 text-sm text-white/50 leading-relaxed">
+                                <div className="px-4 pb-3 text-sm text-slate-500 leading-relaxed">
                                   {faq.answer}
                                 </div>
                               </motion.div>
@@ -732,8 +732,8 @@ export default function ReactivationReceptionist() {
               {/* ── Tab 5: Active Offers ── */}
               <TabsContent value="offers" className="mt-4 space-y-4">
                 {/* Add Offer Form */}
-                <div className="bg-white/3 border border-white/8 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Add Offer</p>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add Offer</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <SectionLabel>Title</SectionLabel>
@@ -748,7 +748,7 @@ export default function ReactivationReceptionist() {
                     <SectionLabel>Description</SectionLabel>
                     <GlassTextarea rows={2} value={newOffer.description} onChange={e => setNewOffer(p => ({ ...p, description: e.target.value }))} placeholder="Offer details..." />
                   </div>
-                  <button onClick={addOffer} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-xs font-semibold hover:bg-indigo-600/30 transition-all">
+                  <button onClick={addOffer} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-semibold hover:bg-indigo-100/80 transition-all">
                     <Plus className="w-3.5 h-3.5" /> Add Offer
                   </button>
                 </div>
@@ -763,18 +763,18 @@ export default function ReactivationReceptionist() {
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.07 }}
-                        className="bg-white/3 border border-white/8 rounded-xl p-4 relative overflow-hidden group"
+                        className="bg-slate-50 border border-slate-200 rounded-xl p-4 relative overflow-hidden group"
                       >
                         {/* Glow strip */}
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-semibold text-white">{offer.title}</span>
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Active</span>
+                              <span className="text-sm font-semibold text-slate-800">{offer.title}</span>
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Active</span>
                             </div>
-                            <p className="text-xs text-white/50">{offer.description}</p>
-                            <p className="text-[11px] text-amber-400 mt-1.5">
+                            <p className="text-xs text-slate-500">{offer.description}</p>
+                            <p className="text-[11px] text-amber-600 mt-1.5">
                               ⏳ {days > 0 ? `${days} days remaining` : 'Expired'} · Valid till {offer.validUntil}
                             </p>
                           </div>
@@ -796,8 +796,8 @@ export default function ReactivationReceptionist() {
           {/* ── AI Responsibility Toggles ── */}
           <div className="px-6 py-5">
             <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white">AI Responsibilities</h3>
+              <Zap className="w-4 h-4 text-indigo-500" />
+              <h3 className="text-sm font-bold text-slate-800">AI Responsibilities</h3>
             </div>
             <div className="grid grid-cols-2 gap-2">
               {aiToggles.map((toggle) => (
@@ -808,16 +808,16 @@ export default function ReactivationReceptionist() {
                   className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
                     toggle.enabled
                       ? toggle.color === 'red'
-                        ? 'bg-red-500/10 border-red-500/25 shadow-sm shadow-red-500/10'
-                        : 'bg-indigo-600/10 border-indigo-500/25 shadow-sm shadow-indigo-500/10'
-                      : 'bg-white/3 border-white/8'
+                        ? 'bg-red-50 border-red-200 shadow-sm'
+                        : 'bg-indigo-50 border-indigo-250 shadow-sm'
+                      : 'bg-slate-50 border-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className={toggle.enabled ? (toggle.color === 'red' ? 'text-red-400' : 'text-indigo-400') : 'text-white/30'}>
+                    <span className={toggle.enabled ? (toggle.color === 'red' ? 'text-red-500' : 'text-indigo-500') : 'text-slate-400'}>
                       {toggle.icon}
                     </span>
-                    <span className={`text-xs font-medium ${toggle.enabled ? 'text-white' : 'text-white/40'}`}>
+                    <span className={`text-xs font-medium ${toggle.enabled ? 'text-slate-800' : 'text-slate-400'}`}>
                       {toggle.label}
                     </span>
                   </div>
@@ -825,7 +825,7 @@ export default function ReactivationReceptionist() {
                     className={`w-8 h-4 rounded-full transition-all relative flex-shrink-0 ${
                       toggle.enabled
                         ? toggle.color === 'red' ? 'bg-red-500' : 'bg-indigo-500'
-                        : 'bg-white/15'
+                        : 'bg-slate-200'
                     }`}
                   >
                     <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-all ${toggle.enabled ? 'left-4.5 translate-x-0.5' : 'left-0.5'}`} style={{ left: toggle.enabled ? '18px' : '2px' }} />
@@ -838,21 +838,21 @@ export default function ReactivationReceptionist() {
           {/* ── Booking Integration ── */}
           <div className="px-6 py-2 pb-4">
             <div className="flex items-center gap-2 mb-3">
-              <CalendarDays className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-bold text-white">Booking Integration</h3>
+              <CalendarDays className="w-4 h-4 text-indigo-500" />
+              <h3 className="text-sm font-bold text-slate-800">Booking Integration</h3>
             </div>
             <div className="space-y-2">
               {integrations.map((intg) => (
-                <div key={intg.id} className="flex items-center justify-between bg-white/3 border border-white/8 rounded-xl p-3">
+                <div key={intg.id} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center">
-                      <intg.icon className="w-4 h-4 text-white/60" />
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-250 flex items-center justify-center">
+                      <intg.icon className="w-4 h-4 text-slate-500" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{intg.name}</p>
+                      <p className="text-sm font-medium text-slate-800">{intg.name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${intg.connected ? 'bg-emerald-400' : 'bg-white/20'}`} />
-                        <span className={`text-[11px] ${intg.connected ? 'text-emerald-400' : 'text-white/30'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${intg.connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                        <span className={`text-[11px] ${intg.connected ? 'text-emerald-600' : 'text-slate-400'}`}>
                           {intg.connected ? 'Connected' : 'Not Connected'}
                         </span>
                       </div>
@@ -862,8 +862,8 @@ export default function ReactivationReceptionist() {
                     onClick={() => toggleIntegration(intg.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                       intg.connected
-                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 hover:bg-red-500/10 hover:border-red-500/25 hover:text-red-400'
-                        : 'bg-indigo-600/15 border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/25'
+                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-600 hover:bg-red-500/10 hover:border-red-500/25 hover:text-red-600'
+                        : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100/50'
                     }`}
                   >
                     {intg.connected ? 'Disconnect' : 'Connect'}
@@ -876,37 +876,37 @@ export default function ReactivationReceptionist() {
           {/* ── Human Handoff Triggers ── */}
           <div className="px-6 pb-4">
             <Collapsible.Root open={handoffOpen} onOpenChange={setHandoffOpen}>
-              <Collapsible.Trigger className="w-full flex items-center justify-between bg-white/3 border border-white/8 rounded-xl px-4 py-3 hover:bg-white/5 transition-all group">
+              <Collapsible.Trigger className="w-full flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 hover:bg-slate-100/50 transition-all group">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-amber-400" />
-                  <span className="text-sm font-bold text-white">Human Handoff Triggers</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400">
+                  <Shield className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-bold text-slate-800">Human Handoff Triggers</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-700">
                     {enabledTriggers.length} active
                   </span>
                 </div>
-                <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-200 ${handoffOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${handoffOpen ? 'rotate-180' : ''}`} />
               </Collapsible.Trigger>
               <Collapsible.Content className="mt-2 space-y-2">
-                <div className="bg-white/2 border border-white/6 rounded-xl p-4 space-y-3">
+                <div className="bg-slate-50/50 border border-slate-200 rounded-xl p-4 space-y-3">
                   {HANDOFF_TRIGGERS.map(trigger => (
                     <div key={trigger.id} className="flex items-center gap-3">
                       <button
                         onClick={() => setEnabledTriggers(prev => prev.includes(trigger.id) ? prev.filter(t => t !== trigger.id) : [...prev, trigger.id])}
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-all flex-shrink-0 ${enabledTriggers.includes(trigger.id) ? 'bg-indigo-600 border-indigo-500' : 'bg-white/5 border-white/15'}`}
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-all flex-shrink-0 ${enabledTriggers.includes(trigger.id) ? 'bg-indigo-600 border-indigo-500' : 'bg-white border-slate-200'}`}
                       >
                         {enabledTriggers.includes(trigger.id) && <Check className="w-2.5 h-2.5 text-white" />}
                       </button>
-                      <span className="text-xs text-white/70">{trigger.label}</span>
+                      <span className="text-xs text-slate-700">{trigger.label}</span>
                     </div>
                   ))}
-                  <div className="pt-2 border-t border-white/8">
+                  <div className="pt-2 border-t border-slate-200">
                     <SectionLabel>Notify Team Via</SectionLabel>
                     <div className="flex gap-2">
                       {NOTIFY_OPTIONS.map(opt => (
                         <button
                           key={opt}
                           onClick={() => setNotifyVia(opt)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${notifyVia === opt ? 'bg-indigo-600/20 border-indigo-500/40 text-indigo-300' : 'bg-white/5 border-white/10 text-white/40 hover:text-white/60'}`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${notifyVia === opt ? 'bg-indigo-50 border-indigo-200 text-indigo-600' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
                         >
                           {opt}
                         </button>
