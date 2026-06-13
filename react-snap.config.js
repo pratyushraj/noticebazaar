@@ -35,12 +35,25 @@ const staticRoutes = [
   '/patna-influencers',
   '/careers',
   '/blog',
+  '/contract-analyzer',
+  '/rate-calculator',
+  '/salon-proposal',
+  '/dental-trends',
+  '/dentist-website',
+  '/dentist-proposal',
+  '/privacy-policy',
+  '/terms-of-service',
+  '/refund-policy'
 ];
+
+const localCities = ['patna', 'delhi', 'mumbai', 'bangalore', 'pune', 'lucknow', 'dehradun', 'noida'];
+const localCityPages = localCities.map(city => `/local-creators/${city}`);
 
 module.exports = {
   source: 'dist',
   destination: 'dist',
-  include: [...staticRoutes, ...blogPages, ...calculatorPages],
+  port: 45789,
+  include: [...staticRoutes, ...blogPages, ...calculatorPages, ...localCityPages],
   minifyHtml: {
     collapseWhitespace: false,
     removeComments: false,

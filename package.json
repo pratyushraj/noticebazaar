@@ -20,9 +20,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsx scripts/generate-sitemap.ts && vite build && rm -rf build && cp -R dist build && tsx scripts/run-react-snap.ts",
-    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && rm -rf build && cp -R dist build && tsx scripts/run-react-snap.ts",
-    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && rm -rf build && cp -R dist build && tsx scripts/run-react-snap.ts",
+    "build": "tsx scripts/generate-sitemap.ts && vite build && tsx scripts/run-react-snap.ts",
+    "build:staging": "tsx scripts/generate-sitemap.ts && vite build --mode staging && tsx scripts/run-react-snap.ts",
+    "build:production": "tsx scripts/generate-sitemap.ts && vite build --mode production && tsx scripts/run-react-snap.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -145,26 +145,9 @@
     "react-dom": "^18.3.1"
   },
   "reactSnap": {
-    "source": "build",
-    "destination": "build",
+    "source": "dist",
+    "destination": "dist",
     "port": 45789,
-    "include": [
-      "/",
-      "/about",
-      "/brands",
-      "/brand-directory",
-      "/pricing-comparison",
-      "/free-legal-check",
-      "/free-influencer-contract",
-      "/collaboration-agreement-generator",
-      "/barter-collab",
-      "/patna-influencers",
-      "/careers",
-      "/blog",
-      "/dentist-proposal",
-      "/dentist-website",
-      "/dental-trends"
-    ],
     "minifyHtml": {
       "collapseWhitespace": false,
       "removeComments": false
@@ -183,6 +166,7 @@
     "removeDataAttributes": false,
     "inlineCss": false
   },
+
   "browserslist": [
     "defaults",
     "not IE 11"

@@ -1,21 +1,71 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { spawnSync, execSync } from 'node:child_process';
 import path from 'node:path';
 import { blogPosts } from '../src/data/blogPosts';
 
-const browserPath = process.env.REACT_SNAP_CHROME_PATH || '/Users/pratyushraj/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+const getBrowserPath = () => {
+  if (process.env.REACT_SNAP_CHROME_PATH) {
+    return process.env.REACT_SNAP_CHROME_PATH;
+  }
+  
+  // Try to find a Chromium folder in Playwright's Mac cache directory
+  const cacheBase = '/Users/pratyushraj/Library/Caches/ms-playwright';
+  if (existsSync(cacheBase)) {
+    try {
+      const dirs = readdirSync(cacheBase);
+      // Find directories starting with chromium-
+      const chromiumDirs = dirs.filter(d => d.startsWith('chromium-')).sort();
+      // Use the latest one (highest number)
+      if (chromiumDirs.length > 0) {
+        const latestChromium = chromiumDirs[chromiumDirs.length - 1];
+        const fullPath = path.join(
+          cacheBase,
+          latestChromium,
+          'chrome-mac-arm64',
+          'Google Chrome for Testing.app',
+          'Contents',
+          'MacOS',
+          'Google Chrome for Testing'
+        );
+        if (existsSync(fullPath)) {
+          return fullPath;
+        }
+      }
+    } catch (err) {
+      console.warn('[react-snap] Error searching playwright cache:', err);
+    }
+  }
+  
+  // Fallback path
+  return '/Users/pratyushraj/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing';
+};
+
+const browserPath = getBrowserPath();
 
 if (!existsSync(browserPath)) {
   console.log(`[react-snap] Skipping prerender; browser not found at ${browserPath}`);
   process.exit(0);
 }
 
-// 1. Load the original package.json
+// 1. Ensure port 45789 is free to prevent EADDRINUSE conflicts
+try {
+  console.log('[react-snap] Checking port 45789...');
+  if (process.platform === 'win32') {
+    execSync('netstat -ano | findstr :45789 && (for /f "tokens=5" %a in (\'netstat -ano ^| findstr :45789\') do taskkill /F /PID %a) || exit 0', { stdio: 'ignore' });
+  } else {
+    execSync('lsof -t -i :45789 | xargs kill -9 2>/dev/null || true', { stdio: 'ignore' });
+  }
+  console.log('[react-snap] Port 45789 is free.');
+} catch (err) {
+  // Ignore errors if port is not in use or cannot be killed
+}
+
+// 2. Load the original package.json
 const packageJsonPath = path.resolve(process.cwd(), 'package.json');
 const originalPackageJsonRaw = readFileSync(packageJsonPath, 'utf8');
 const packageJson = JSON.parse(originalPackageJsonRaw);
 
-// 2. Define the static public routes
+// 3. Define the static public routes
 const baseStaticRoutes = [
   '/',
   '/about',
@@ -40,7 +90,7 @@ const baseStaticRoutes = [
   '/refund-policy'
 ];
 
-// 3. Generate the dynamic routes
+// 4. Generate the dynamic routes
 // Blog posts
 const blogRoutes = blogPosts.map(post => `/blog/${post.slug}`);
 
@@ -60,7 +110,7 @@ const allRoutes = [...baseStaticRoutes, ...blogRoutes, ...calculatorRoutes, ...c
 
 console.log(`[react-snap] Injecting ${allRoutes.length} routes into package.json...`);
 
-// 4. Update package.json include array
+// 5. Update package.json include array
 packageJson.reactSnap = packageJson.reactSnap || {};
 packageJson.reactSnap.include = allRoutes;
 
@@ -68,7 +118,7 @@ packageJson.reactSnap.include = allRoutes;
 writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf8');
 
 try {
-  // 5. Run react-snap
+  // 6. Run react-snap
   console.log('[react-snap] Starting prerender process...');
   const result = spawnSync('react-snap', {
     stdio: 'inherit',
@@ -86,8 +136,11 @@ try {
   }
   
   console.log('[react-snap] Prerender completed successfully!');
+} catch (error) {
+  console.error('[react-snap] Failed to execute react-snap:', error);
+  process.exit(1);
 } finally {
-  // 6. Restore original package.json
+  // 7. Restore original package.json
   console.log('[react-snap] Restoring original package.json...');
   writeFileSync(packageJsonPath, originalPackageJsonRaw, 'utf8');
 }

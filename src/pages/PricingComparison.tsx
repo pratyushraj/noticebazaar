@@ -70,47 +70,9 @@ const PricingComparison = () => {
         <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
           Find the perfect legal and CA support for your business. All plans include secure portal access and the AI Assistant, Lexi.
         </p>
-        
-        {/* FAQ Section */}
-        <FAQSection 
-          title="Pricing & Value"
-          description="Common questions about our plans and how they pay for themselves."
-          containerClassName="bg-white/5 backdrop-blur-xl border-y border-white/10 my-24"
-          items={[
-            {
-              question: "Is there a free version of Creator Armour?",
-              answer: "Yes! Our Free plan allows you to create a professional collaboration link, list your services, and receive brand inquiries. It's perfect for creators just starting to professionalize their workflow."
-            },
-            {
-              question: "Can I upgrade or downgrade my plan later?",
-              answer: "Absolutely. You can upgrade to a higher tier at any time to unlock more features, or downgrade to the free tier if your volume of deals changes."
-            },
-            {
-              question: "How does the legal support work in the Pro and Business plans?",
-              answer: "Pro members get access to pre-vetted legal templates and basic email support. Business members get priority legal consultations and assistance with complex contract negotiations from our partner legal advisors."
-            },
-            {
-              question: "What are 'Programmatic Profile Pages'?",
-              answer: "These are SEO-optimized pages that help brands find you on Google. We use structured data to ensure your profile ranks for relevant keywords like '[Your Name] influencer rates' or '[Your Category] creator in India'."
-            },
-            {
-              question: "What payment methods do you support?",
-              answer: "We support UPI, Net Banking, and Credit/Debit cards for platform subscriptions. For your brand deals, we provide tracking tools for various payment methods to ensure you always have an audit trail."
-            }
-          ]}
-        />
-
-        {/* Final CTA */}
-        <div className="mt-24 text-center">
-          <Button asChild className="bg-green-600 hover:bg-green-700 text-foreground font-semibold text-lg px-6 py-3 shadow-md">
-            <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2" /> Need help choosing a plan?
-            </a>
-          </Button>
-        </div>
       </header>
 
-      <div className="bg-card p-6 rounded-xl shadow-lg border border-border overflow-x-auto">
+      <div className="bg-card p-6 rounded-xl shadow-lg border border-border overflow-x-auto mb-16">
         <Table className="min-w-[700px]">
           <TableHeader className="bg-secondary">
             <TableRow className="border-border">
@@ -157,6 +119,44 @@ const PricingComparison = () => {
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+
+      {/* FAQ Section */}
+      <FAQSection 
+        title="Pricing & Value"
+        description="Common questions about our plans and how they pay for themselves."
+        containerClassName="bg-white/5 backdrop-blur-xl border-y border-white/10 my-16 rounded-2xl"
+        items={[
+          {
+            question: "Is there a free version of Creator Armour?",
+            answer: "Yes! Our Free plan allows you to create a professional collaboration link, list your services, and receive brand inquiries. It's perfect for creators just starting to professionalize their workflow."
+          },
+          {
+            question: "Can I upgrade or downgrade my plan later?",
+            answer: "Absolutely. You can upgrade to a higher tier at any time to unlock more features, or downgrade to the free tier if your volume of deals changes."
+          },
+          {
+            question: "How does the legal support work in the Pro and Business plans?",
+            answer: "Pro members get access to pre-vetted legal templates and basic email support. Business members get priority legal consultations and assistance with complex contract negotiations from our partner legal advisors."
+          },
+          {
+            question: "What are 'Programmatic Profile Pages'?",
+            answer: "These are SEO-optimized pages that help brands find you on Google. We use structured data to ensure your profile ranks for relevant keywords like '[Your Name] influencer rates' or '[Your Category] creator in India'."
+          },
+          {
+            question: "What payment methods do you support?",
+            answer: "We support UPI, Net Banking, and Credit/Debit cards for platform subscriptions. For your brand deals, we provide tracking tools for various payment methods to ensure you always have an audit trail."
+          }
+        ]}
+      />
+
+      {/* Final CTA */}
+      <div className="mt-12 mb-20 text-center">
+        <Button asChild className="bg-green-600 hover:bg-green-700 text-foreground font-semibold text-lg px-6 py-3 shadow-md">
+          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="flex items-center">
+            <MessageSquare className="h-5 w-5 mr-2" /> Need help choosing a plan?
+          </a>
+        </Button>
       </div>
     </div>
   );

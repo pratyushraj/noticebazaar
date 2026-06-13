@@ -27,8 +27,9 @@ const App = () => {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
-    // ONLY register service worker in production to avoid dev preamble/cache conflicts
-    if (import.meta.env.PROD) {
+    // ONLY register service worker in production and NOT during prerendering to avoid caching/route conflicts
+    const isPrerender = typeof window !== 'undefined' && (window as any).__PRERENDER__;
+    if (import.meta.env.PROD && !isPrerender) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           const previousVersion = window.localStorage.getItem('app_shell_version');
@@ -41,11 +42,11 @@ const App = () => {
           console.error('[App] Service worker registration failed:', error);
         });
     } else {
-      // In development, ensure any active service worker is removed to prevent cache interference
+      // In development or prerender mode, ensure any active service worker is removed to prevent cache interference
       navigator.serviceWorker.getRegistrations().then(registrations => {
         for (const registration of registrations) {
           registration.unregister();
-          console.log('[App] Unregistered active Service Worker in development mode to prevent preamble errors.');
+          console.log('[App] Unregistered active Service Worker in development/prerender mode to prevent interference.');
         }
       });
     }
