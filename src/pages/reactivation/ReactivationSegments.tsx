@@ -181,17 +181,17 @@ const RISK_CONFIG: Record<
   },
   MEDIUM: {
     label: 'MEDIUM RISK',
-    badgeCls: 'bg-amber-500/15 text-amber-400 border border-amber-500/30',
+    badgeCls: 'bg-amber-500/15 text-amber-700 border border-amber-200',
     glowCls: 'shadow-amber-500/20',
-    iconCls: 'text-amber-400 bg-amber-500/10',
-    borderCls: 'border-amber-500/20 hover:border-indigo-500/60',
+    iconCls: 'text-amber-700 bg-amber-50',
+    borderCls: 'border-amber-200 hover:border-indigo-500/60',
   },
   LOW: {
     label: 'LOW RISK',
-    badgeCls: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+    badgeCls: 'bg-emerald-500/15 text-emerald-700 border border-emerald-200',
     glowCls: 'shadow-emerald-500/20',
-    iconCls: 'text-emerald-400 bg-emerald-500/10',
-    borderCls: 'border-emerald-500/20 hover:border-indigo-500/60',
+    iconCls: 'text-emerald-700 bg-emerald-50',
+    borderCls: 'border-emerald-200 hover:border-indigo-500/60',
   },
 };
 
@@ -213,7 +213,7 @@ const SegmentCard: React.FC<SegmentCardProps> = ({ segment, index }) => {
       transition={{ duration: 0.38, delay: index * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={`
         group relative flex flex-col
-        bg-white/[0.03] backdrop-blur-xl
+        bg-slate-50 backdrop-blur-xl
         border ${risk.borderCls}
         rounded-2xl p-5 gap-4
         transition-all duration-300 ease-out
@@ -238,7 +238,7 @@ const SegmentCard: React.FC<SegmentCardProps> = ({ segment, index }) => {
           <span className={`flex-shrink-0 p-2.5 rounded-xl ${risk.iconCls}`}>
             {segment.icon}
           </span>
-          <h3 className="text-sm font-bold text-white leading-snug">{segment.name}</h3>
+          <h3 className="text-sm font-bold text-slate-800 leading-snug">{segment.name}</h3>
         </div>
         <span className={`flex-shrink-0 text-[10px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${risk.badgeCls}`}>
           {risk.label}
@@ -247,11 +247,11 @@ const SegmentCard: React.FC<SegmentCardProps> = ({ segment, index }) => {
 
       {/* Big Number */}
       <div className="flex items-end gap-2">
-        <span className="text-5xl font-black text-white leading-none tabular-nums">
+        <span className="text-5xl font-black text-slate-800 leading-none tabular-nums">
           <CountUp end={segment.customerCount} duration={1.4} delay={index * 0.07} />
         </span>
         <div className="pb-1.5">
-          <div className="flex items-center gap-1 text-white/40">
+          <div className="flex items-center gap-1 text-slate-500">
             <Users className="w-3.5 h-3.5" />
             <span className="text-xs font-semibold">customers</span>
           </div>
@@ -262,21 +262,21 @@ const SegmentCard: React.FC<SegmentCardProps> = ({ segment, index }) => {
       <div className="grid grid-cols-1 gap-1.5">
         {segment.stats.map((stat) => (
           <div key={stat.label} className="flex items-center justify-between">
-            <span className="text-[11px] text-white/40 font-medium">{stat.label}</span>
-            <span className="text-[11px] text-white/80 font-bold">{stat.value}</span>
+            <span className="text-[11px] text-slate-500 font-medium">{stat.label}</span>
+            <span className="text-[11px] text-slate-700 font-bold">{stat.value}</span>
           </div>
         ))}
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-white/5" />
+      <div className="h-px bg-slate-50" />
 
       {/* Campaign suggestion */}
       <div className="flex items-start gap-2">
-        <Brain className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
-        <p className="text-[11px] text-white/50 leading-relaxed">
-          <span className="text-white/30">Suggested: </span>
-          <span className="text-indigo-300 font-semibold italic">"{segment.suggestedCampaign}"</span>
+        <Brain className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0 mt-0.5" />
+        <p className="text-[11px] text-slate-500 leading-relaxed">
+          <span className="text-slate-400">Suggested: </span>
+          <span className="text-indigo-600 font-semibold italic">"{segment.suggestedCampaign}"</span>
         </p>
       </div>
 
@@ -284,7 +284,7 @@ const SegmentCard: React.FC<SegmentCardProps> = ({ segment, index }) => {
       <button className="
         w-full mt-auto py-2.5 px-4 rounded-xl
         bg-indigo-600 hover:bg-indigo-500
-        text-white text-xs font-bold tracking-wide
+        text-slate-800 text-xs font-bold tracking-wide
         flex items-center justify-center gap-2
         transition-all duration-200
         group-hover:shadow-lg group-hover:shadow-indigo-500/25
@@ -326,7 +326,7 @@ const ReactivationSegments: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080C14] text-white pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-800 pb-24 relative overflow-hidden">
       {/* Ambient orbs */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-[120px]" />
@@ -349,16 +349,16 @@ const ReactivationSegments: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 mb-8">
           <div>
             {/* Pill label */}
-            <div className="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-              <Brain className="w-3.5 h-3.5 text-indigo-400" />
-              <span className="text-[10px] font-black tracking-widest uppercase text-indigo-300">
+            <div className="inline-flex items-center gap-2 mb-3 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-200">
+              <Brain className="w-3.5 h-3.5 text-indigo-600" />
+              <span className="text-[10px] font-black tracking-widest uppercase text-indigo-600">
                 AI Segmentation Engine
               </span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white leading-none">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-800 leading-none">
               Smart Segments
             </h1>
-            <p className="mt-1.5 text-sm text-white/40 font-medium">
+            <p className="mt-1.5 text-sm text-slate-500 font-medium">
               AI-powered customer groups ready to target
             </p>
           </div>
@@ -373,7 +373,7 @@ const ReactivationSegments: React.FC = () => {
                 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl
                 bg-indigo-600 hover:bg-indigo-500
                 disabled:opacity-60 disabled:cursor-not-allowed
-                text-white text-sm font-bold tracking-wide
+                text-slate-800 text-sm font-bold tracking-wide
                 transition-all duration-200
                 shadow-lg shadow-indigo-500/20
               "
@@ -393,21 +393,21 @@ const ReactivationSegments: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="
             grid grid-cols-3 divide-x divide-white/8
-            bg-white/[0.03] border border-white/8 rounded-2xl
+            bg-slate-50 border border-slate-200 rounded-2xl
             backdrop-blur-xl mb-7 overflow-hidden
           "
         >
           {[
             {
-              icon: <Activity className="w-4 h-4 text-indigo-400" />,
+              icon: <Activity className="w-4 h-4 text-indigo-600" />,
               label: 'Total Segments',
               value: totalSegments,
               suffix: '',
               prefix: '',
-              color: 'text-indigo-300',
+              color: 'text-indigo-600',
             },
             {
-              icon: <AlertTriangle className="w-4 h-4 text-amber-400" />,
+              icon: <AlertTriangle className="w-4 h-4 text-amber-700" />,
               label: 'Customers at Risk',
               value: totalAtRisk + currentIndustry.segments.length,
               suffix: '',
@@ -415,7 +415,7 @@ const ReactivationSegments: React.FC = () => {
               color: 'text-amber-300',
             },
             {
-              icon: <IndianRupee className="w-4 h-4 text-emerald-400" />,
+              icon: <IndianRupee className="w-4 h-4 text-emerald-700" />,
               label: 'Potential Revenue',
               value: null,
               rawValue: '₹24.6L',
@@ -423,7 +423,7 @@ const ReactivationSegments: React.FC = () => {
             },
           ].map((item, i) => (
             <div key={i} className="flex flex-col items-center justify-center py-4 px-3 gap-1">
-              <div className="flex items-center gap-1.5 text-white/40">
+              <div className="flex items-center gap-1.5 text-slate-500">
                 {item.icon}
                 <span className="text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
               </div>
@@ -451,7 +451,7 @@ const ReactivationSegments: React.FC = () => {
               relative flex flex-col sm:flex-row sm:items-center justify-between gap-4
               mb-8 p-5 rounded-2xl overflow-hidden
               bg-gradient-to-r from-indigo-600/15 via-violet-600/10 to-indigo-600/8
-              border border-indigo-500/25
+              border border-indigo-200
               backdrop-blur-xl
             "
           >
@@ -461,13 +461,13 @@ const ReactivationSegments: React.FC = () => {
             <div className="flex items-start gap-3 pl-2">
               <div className="flex-shrink-0 text-2xl leading-none">🤖</div>
               <div>
-                <p className="text-sm font-bold text-white leading-snug mb-0.5">
+                <p className="text-sm font-bold text-slate-800 leading-snug mb-0.5">
                   AI Detected:{' '}
-                  <span className="text-indigo-300">{aiBannerText.stat}.</span>
+                  <span className="text-indigo-600">{aiBannerText.stat}.</span>
                 </p>
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-slate-500">
                   Running a reactivation campaign now could recover up to{' '}
-                  <span className="text-emerald-400 font-bold">{aiBannerText.revenue}</span>{' '}
+                  <span className="text-emerald-700 font-bold">{aiBannerText.revenue}</span>{' '}
                   in revenue.
                 </p>
               </div>
@@ -476,7 +476,7 @@ const ReactivationSegments: React.FC = () => {
             <button className="
               flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
               bg-indigo-600 hover:bg-indigo-500
-              text-white text-xs font-black tracking-wide uppercase
+              text-slate-800 text-xs font-black tracking-wide uppercase
               transition-all duration-200 shadow-lg shadow-indigo-500/30
               hover:shadow-indigo-500/50
             ">
@@ -509,29 +509,29 @@ const ReactivationSegments: React.FC = () => {
               className="
                 md:col-span-2
                 flex flex-col sm:flex-row items-center justify-between gap-4
-                bg-white/[0.02] border border-white/6 rounded-2xl p-5
+                bg-slate-50 border border-slate-100 rounded-2xl p-5
               "
             >
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/10">
-                  <TrendingUp className="w-5 h-5 text-indigo-400" />
+                <div className="p-2.5 rounded-xl bg-indigo-50">
+                  <TrendingUp className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white">
+                  <p className="text-sm font-bold text-slate-800">
                     {currentIndustry.segments.length} segments · {currentIndustry.summaryRisk} customers at risk
                   </p>
-                  <p className="text-xs text-white/40 mt-0.5">
-                    Potential recovery: <span className="text-emerald-400 font-bold">{currentIndustry.summaryRevenue}</span> across all {currentIndustry.label} segments
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Potential recovery: <span className="text-emerald-700 font-bold">{currentIndustry.summaryRevenue}</span> across all {currentIndustry.label} segments
                   </p>
                 </div>
               </div>
               <button className="
                 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
-                bg-white/5 hover:bg-white/10 border border-white/10
-                text-white/70 hover:text-white text-xs font-bold tracking-wide
+                bg-slate-50 hover:bg-slate-100 border border-slate-200
+                text-slate-700 hover:text-slate-800 text-xs font-bold tracking-wide
                 transition-all duration-200
               ">
-                <Zap className="w-3.5 h-3.5 text-indigo-400" />
+                <Zap className="w-3.5 h-3.5 text-indigo-600" />
                 Run All Campaigns
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>

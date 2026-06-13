@@ -188,18 +188,18 @@ type DateRange = (typeof DATE_RANGES)[number];
 const TYPE_COLORS: Record<Campaign['type'], { bg: string; text: string; border: string }> = {
   Reactivation: {
     bg: 'bg-indigo-500/15',
-    text: 'text-indigo-300',
-    border: 'border-indigo-500/30',
+    text: 'text-indigo-600',
+    border: 'border-indigo-200',
   },
   Festival: {
     bg: 'bg-amber-500/15',
     text: 'text-amber-300',
-    border: 'border-amber-500/30',
+    border: 'border-amber-200',
   },
   Referral: {
     bg: 'bg-purple-500/15',
     text: 'text-purple-300',
-    border: 'border-purple-500/30',
+    border: 'border-purple-200',
   },
   'New Service': {
     bg: 'bg-teal-500/15',
@@ -242,19 +242,19 @@ const CustomTooltip: React.FC<{
         minWidth: 180,
       }}
     >
-      <p className="text-white/40 text-[11px] font-medium tracking-wide mb-2">{label}</p>
+      <p className="text-slate-500 text-[11px] font-medium tracking-wide mb-2">{label}</p>
       {rev && (
-        <p className="text-emerald-400 font-bold text-base">
+        <p className="text-emerald-700 font-bold text-base">
           {fmtRupee(rev.value)}
         </p>
       )}
       {appt && (
-        <p className="text-indigo-300 text-[12px] mt-0.5">
+        <p className="text-indigo-600 text-[12px] mt-0.5">
           {appt.value} appointments
         </p>
       )}
       {campaign && campaign !== 'Daily Revenue' && (
-        <p className="text-white/30 text-[10px] mt-1.5 italic">{campaign}</p>
+        <p className="text-slate-400 text-[10px] mt-1.5 italic">{campaign}</p>
       )}
     </div>
   );
@@ -326,7 +326,7 @@ const FunnelChart: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
                 transition={{ delay: i * 0.08 + 0.4 }}
                 className="flex items-center gap-2 mb-1 ml-2"
               >
-                <div className="w-px h-3 bg-white/10 ml-4" />
+                <div className="w-px h-3 bg-slate-100 ml-4" />
                 <span className="text-[10px] text-red-400/70 font-medium">
                   ↓ {dropoff}% drop-off
                 </span>
@@ -360,17 +360,17 @@ const FunnelChart: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
                   }}
                 />
 
-                <span className="text-[12px] font-bold text-white/90 relative z-10">
+                <span className="text-[12px] font-bold text-slate-800 relative z-10">
                   {stage.label}
                 </span>
                 <div className="flex items-center gap-2 relative z-10">
-                  <span className="text-[13px] font-bold text-white">
+                  <span className="text-[13px] font-bold text-slate-800">
                     {typeof stage.count === 'number'
                       ? stage.count.toLocaleString('en-IN')
                       : stage.count}
                   </span>
                   {stage.pct !== null && (
-                    <span className="text-[10px] text-white/70 font-medium">
+                    <span className="text-[10px] text-slate-700 font-medium">
                       ({stage.pct}%)
                     </span>
                   )}
@@ -387,14 +387,14 @@ const FunnelChart: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
 // ─── Detail Drawer ────────────────────────────────────────────────────────────
 
 const DRAWER_EVENTS: DrawerEvent[] = [
-  { time: '09:00 AM', label: 'Campaign launched — 500 messages queued', color: 'text-indigo-400' },
-  { time: '09:01 AM', label: '487 messages delivered (WhatsApp ✓✓)', color: 'text-emerald-400' },
-  { time: '09:15 AM', label: '94 reads in first 15 min (19% open rate)', color: 'text-blue-400' },
-  { time: '10:30 AM', label: '312 total reads reached', color: 'text-indigo-300' },
+  { time: '09:00 AM', label: 'Campaign launched — 500 messages queued', color: 'text-indigo-600' },
+  { time: '09:01 AM', label: '487 messages delivered (WhatsApp ✓✓)', color: 'text-emerald-700' },
+  { time: '09:15 AM', label: '94 reads in first 15 min (19% open rate)', color: 'text-blue-700' },
+  { time: '10:30 AM', label: '312 total reads reached', color: 'text-indigo-600' },
   { time: '11:00 AM', label: 'First appointment booked — Rohit Sharma', color: 'text-emerald-300' },
   { time: '02:00 PM', label: '73 replies received', color: 'text-violet-400' },
-  { time: '04:45 PM', label: '18 appointments confirmed', color: 'text-emerald-400' },
-  { time: '06:00 PM', label: 'Campaign concluded — ₹42,000 attributed', color: 'text-amber-400' },
+  { time: '04:45 PM', label: '18 appointments confirmed', color: 'text-emerald-700' },
+  { time: '06:00 PM', label: 'Campaign concluded — ₹42,000 attributed', color: 'text-amber-700' },
 ];
 
 const CampaignDrawer: React.FC<{
@@ -418,17 +418,17 @@ const CampaignDrawer: React.FC<{
       {/* Drawer Header */}
       <div
         className="flex-shrink-0 flex items-center justify-between px-6 py-5"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderBottom: '1px solid #e2e8f0' }}
       >
         <div>
-          <h3 className="text-[15px] font-bold text-white leading-tight">
+          <h3 className="text-[15px] font-bold text-slate-800 leading-tight">
             {campaign.name}
           </h3>
-          <p className="text-[11px] text-white/40 mt-0.5">Launched {campaign.launched}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Launched {campaign.launched}</p>
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-white/10 text-white/40 hover:text-white"
+          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-slate-100 text-slate-500 hover:text-slate-800"
         >
           <X size={16} />
         </button>
@@ -437,36 +437,36 @@ const CampaignDrawer: React.FC<{
       {/* Revenue Summary */}
       <div className="flex-shrink-0 px-6 py-4 grid grid-cols-3 gap-3">
         {[
-          { label: 'Revenue', value: fmtRupee(campaign.revenue), color: 'text-emerald-400' },
-          { label: 'Appointments', value: campaign.appointments, color: 'text-white' },
-          { label: `ROI`, value: `${campaign.roi}×`, color: 'text-amber-400' },
+          { label: 'Revenue', value: fmtRupee(campaign.revenue), color: 'text-emerald-700' },
+          { label: 'Appointments', value: campaign.appointments, color: 'text-slate-800' },
+          { label: `ROI`, value: `${campaign.roi}×`, color: 'text-amber-700' },
         ].map((stat) => (
           <div
             key={stat.label}
             className="rounded-xl px-3 py-3 text-center"
             style={{
-              background: 'rgba(255,255,255,0.04)',
+              background: '#ffffff',
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
             <p className={`text-[18px] font-bold ${stat.color}`}>{stat.value}</p>
-            <p className="text-[10px] text-white/35 mt-0.5">{stat.label}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Divider */}
-      <div className="mx-6 h-px bg-white/[0.05]" />
+      <div className="mx-6 h-px bg-slate-50" />
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
         {/* Message Preview */}
         <div>
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-3">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3">
             Message Sent
           </p>
           <div
-            className="rounded-xl p-4 text-[13px] text-white/80 leading-relaxed"
+            className="rounded-xl p-4 text-[13px] text-slate-700 leading-relaxed"
             style={{
               background: 'rgba(99,102,241,0.08)',
               border: '1px solid rgba(99,102,241,0.18)',
@@ -474,7 +474,7 @@ const CampaignDrawer: React.FC<{
           >
             <p>
               Hi [Name] 👋 We miss you at{' '}
-              <span className="text-indigo-300 font-semibold">SmileCare Dental</span>!
+              <span className="text-indigo-600 font-semibold">SmileCare Dental</span>!
             </p>
             <p className="mt-2">
               It's been a while since your last visit. We have a special{' '}
@@ -483,17 +483,17 @@ const CampaignDrawer: React.FC<{
             </p>
             <p className="mt-2">
               Book your slot today 👇{' '}
-              <span className="text-indigo-400 underline underline-offset-2">
+              <span className="text-indigo-600 underline underline-offset-2">
                 smilecare.in/book
               </span>
             </p>
-            <p className="mt-2 text-white/40 text-[11px]">Reply STOP to opt out.</p>
+            <p className="mt-2 text-slate-500 text-[11px]">Reply STOP to opt out.</p>
           </div>
         </div>
 
         {/* Revenue Breakdown */}
         <div>
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-3">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3">
             Revenue Breakdown
           </p>
           <div className="space-y-2">
@@ -514,12 +514,12 @@ const CampaignDrawer: React.FC<{
               <div
                 key={row.label}
                 className="flex items-center justify-between py-2 px-3 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.025)' }}
+                style={{ background: '#f8fafc' }}
               >
-                <span className="text-[12px] text-white/50">{row.label}</span>
+                <span className="text-[12px] text-slate-500">{row.label}</span>
                 <span
                   className={`text-[13px] font-semibold ${
-                    row.highlight ? 'text-emerald-400' : 'text-white/70'
+                    row.highlight ? 'text-emerald-700' : 'text-slate-700'
                   }`}
                 >
                   {row.value}
@@ -531,7 +531,7 @@ const CampaignDrawer: React.FC<{
 
         {/* Timeline */}
         <div>
-          <p className="text-[11px] font-semibold text-white/40 uppercase tracking-widest mb-3">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-3">
             Delivery Timeline
           </p>
           <div className="relative space-y-0">
@@ -551,14 +551,14 @@ const CampaignDrawer: React.FC<{
                   />
                 )}
                 {/* Dot */}
-                <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-white/[0.06] border border-white/[0.08] relative z-10">
+                <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center rounded-full bg-white/[0.06] border border-slate-200 relative z-10">
                   <div className={`w-2 h-2 rounded-full ${ev.color.replace('text-', 'bg-')}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-[12px] font-medium ${ev.color} leading-snug`}>
                     {ev.label}
                   </p>
-                  <p className="text-[10px] text-white/25 mt-0.5">{ev.time}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{ev.time}</p>
                 </div>
               </motion.div>
             ))}
@@ -569,11 +569,11 @@ const CampaignDrawer: React.FC<{
       {/* Footer actions */}
       <div
         className="flex-shrink-0 px-6 py-4 flex gap-3"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderTop: '1px solid #e2e8f0' }}
       >
         <button
           onClick={onShare}
-          className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+          className="flex-1 flex items-center justify-center gap-2 h-10 rounded-xl text-[13px] font-semibold text-slate-800 transition-all hover:opacity-90 active:scale-[0.98]"
           style={{
             background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
             boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
@@ -584,8 +584,8 @@ const CampaignDrawer: React.FC<{
         </button>
         <button
           onClick={onClose}
-          className="h-10 px-4 rounded-xl text-[13px] font-semibold text-white/60 hover:text-white transition-colors"
-          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+          className="h-10 px-4 rounded-xl text-[13px] font-semibold text-slate-600 hover:text-slate-800 transition-colors"
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid #e2e8f0' }}
         >
           Close
         </button>
@@ -604,7 +604,7 @@ const Toast: React.FC<{ message: string; visible: boolean }> = ({ message, visib
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[13px] font-semibold text-white"
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[13px] font-semibold text-slate-800"
         style={{
           background: 'linear-gradient(135deg, #10B981, #059669)',
           boxShadow: '0 8px 32px rgba(16,185,129,0.4)',
@@ -696,34 +696,34 @@ const ReactivationAnalytics: React.FC = () => {
     emerald: {
       bg: 'rgba(16,185,129,0.08)',
       border: 'rgba(16,185,129,0.2)',
-      icon: 'text-emerald-400',
+      icon: 'text-emerald-700',
       iconBg: 'bg-emerald-500/15',
-      value: 'text-emerald-400',
-      badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25',
+      value: 'text-emerald-700',
+      badge: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/25',
     },
     amber: {
       bg: 'rgba(245,158,11,0.08)',
       border: 'rgba(245,158,11,0.2)',
-      icon: 'text-amber-400',
+      icon: 'text-amber-700',
       iconBg: 'bg-amber-500/15',
-      value: 'text-amber-400',
-      badge: 'bg-amber-500/15 text-amber-300 border-amber-500/25',
+      value: 'text-amber-700',
+      badge: 'bg-amber-500/15 text-amber-700 border-amber-500/25',
     },
     blue: {
       bg: 'rgba(59,130,246,0.08)',
       border: 'rgba(59,130,246,0.2)',
-      icon: 'text-blue-400',
+      icon: 'text-blue-700',
       iconBg: 'bg-blue-500/15',
-      value: 'text-blue-400',
-      badge: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
+      value: 'text-blue-700',
+      badge: 'bg-blue-500/15 text-blue-700 border-blue-500/25',
     },
     purple: {
       bg: 'rgba(168,85,247,0.08)',
       border: 'rgba(168,85,247,0.2)',
-      icon: 'text-purple-400',
+      icon: 'text-purple-700',
       iconBg: 'bg-purple-500/15',
-      value: 'text-purple-400',
-      badge: 'bg-purple-500/15 text-purple-300 border-purple-500/25',
+      value: 'text-purple-700',
+      badge: 'bg-purple-500/15 text-purple-700 border-purple-500/25',
     },
   } as const;
 
@@ -775,10 +775,10 @@ const ReactivationAnalytics: React.FC = () => {
           className="flex items-start justify-between gap-4 flex-wrap"
         >
           <div>
-            <h1 className="text-[22px] font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-[22px] font-bold text-slate-800 tracking-tight leading-tight">
               Campaign Analytics
             </h1>
-            <p className="text-[13px] text-white/40 mt-1">
+            <p className="text-[13px] text-slate-500 mt-1">
               Track revenue recovered and campaign performance
             </p>
           </div>
@@ -788,13 +788,13 @@ const ReactivationAnalytics: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setDateRangeOpen((v) => !v)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-medium text-white/70 hover:text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-medium text-slate-700 hover:text-slate-800 transition-colors"
                 style={{
                   background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  border: '1px solid #e2e8f0',
                 }}
               >
-                <Calendar size={14} className="text-indigo-400" />
+                <Calendar size={14} className="text-indigo-600" />
                 {dateRange}
                 <ChevronDown size={13} className={`transition-transform ${dateRangeOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -822,8 +822,8 @@ const ReactivationAnalytics: React.FC = () => {
                         }}
                         className={`w-full text-left px-4 py-2.5 text-[13px] transition-colors ${
                           r === dateRange
-                            ? 'text-indigo-400 bg-indigo-500/10 font-medium'
-                            : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                            ? 'text-indigo-600 bg-indigo-50 font-medium'
+                            : 'text-slate-600 hover:text-slate-800 hover:bg-slate-50'
                         }`}
                       >
                         {r}
@@ -837,7 +837,7 @@ const ReactivationAnalytics: React.FC = () => {
             {/* Export button */}
             <button
               onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold text-white transition-all hover:opacity-90 active:scale-[0.97]"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold text-slate-800 transition-all hover:opacity-90 active:scale-[0.97]"
               style={{
                 background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
                 boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
@@ -870,11 +870,11 @@ const ReactivationAnalytics: React.FC = () => {
                 style={{
                   background: card.hero
                     ? `linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(5,150,105,0.06) 100%)`
-                    : `linear-gradient(135deg, ${colors.bg} 0%, rgba(10,15,28,0.6) 100%)`,
+                    : `linear-gradient(135deg, ${colors.bg} 0%, rgba(255,255,255,0.9) 100%)`,
                   border: `1px solid ${colors.border}`,
                   boxShadow: card.hero
-                    ? '0 0 40px rgba(16,185,129,0.08), 0 4px 24px rgba(0,0,0,0.3)'
-                    : '0 4px 24px rgba(0,0,0,0.2)',
+                    ? '0 0 40px rgba(16,185,129,0.08), 0 4px 24px rgba(99,102,241,0.05)'
+                    : '0 4px 20px rgba(0,0,0,0.03)',
                 }}
               >
                 {/* Background glow for hero */}
@@ -927,8 +927,8 @@ const ReactivationAnalytics: React.FC = () => {
                   </div>
 
                   {/* Label */}
-                  <p className="text-[12px] text-white/50 leading-snug">{card.label}</p>
-                  <p className="text-[11px] text-white/25 mt-1">{card.subLabel}</p>
+                  <p className="text-[12px] text-slate-500 leading-snug">{card.label}</p>
+                  <p className="text-[11px] text-slate-400 mt-1">{card.subLabel}</p>
                 </div>
               </motion.div>
             );
@@ -942,24 +942,24 @@ const ReactivationAnalytics: React.FC = () => {
           transition={{ duration: 0.4, delay: 0.25 }}
           className="rounded-2xl p-6"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
             boxShadow: '0 4px 32px rgba(0,0,0,0.25)',
           }}
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-[16px] font-bold text-white">Revenue Over Time</h2>
-              <p className="text-[12px] text-white/35 mt-0.5">Daily revenue recovered + appointments booked</p>
+              <h2 className="text-[16px] font-bold text-slate-800">Revenue Over Time</h2>
+              <p className="text-[12px] text-slate-400 mt-0.5">Daily revenue recovered + appointments booked</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-sm bg-indigo-500" />
-                <span className="text-[11px] text-white/40">Daily Revenue Recovered</span>
+                <span className="text-[11px] text-slate-500">Daily Revenue Recovered</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-1.5 rounded-full bg-emerald-400" />
-                <span className="text-[11px] text-white/40">Appointments Booked</span>
+                <span className="text-[11px] text-slate-500">Appointments Booked</span>
               </div>
             </div>
           </div>
@@ -1028,23 +1028,23 @@ const ReactivationAnalytics: React.FC = () => {
           transition={{ duration: 0.4, delay: 0.3 }}
           className="rounded-2xl overflow-hidden"
           style={{
-            background: 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
           }}
         >
           {/* Table header */}
           <div
             className="px-6 py-4 flex items-center justify-between"
-            style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ borderBottom: '1px solid #e2e8f0' }}
           >
             <div>
-              <h2 className="text-[16px] font-bold text-white">Campaign Breakdown</h2>
-              <p className="text-[12px] text-white/35 mt-0.5">
+              <h2 className="text-[16px] font-bold text-slate-800">Campaign Breakdown</h2>
+              <p className="text-[12px] text-slate-400 mt-0.5">
                 {CAMPAIGNS.length} campaigns · Click a row to select funnel view
               </p>
             </div>
             <div
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-emerald-400"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-emerald-700"
               style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}
             >
               <TrendingUp size={12} />
@@ -1073,7 +1073,7 @@ const ReactivationAnalytics: React.FC = () => {
                   ].map((col) => (
                     <th
                       key={col}
-                      className="px-4 py-3 text-left text-[11px] font-semibold text-white/30 tracking-wider uppercase whitespace-nowrap"
+                      className="px-4 py-3 text-left text-[11px] font-semibold text-slate-400 tracking-wider uppercase whitespace-nowrap"
                     >
                       {col}
                     </th>
@@ -1095,7 +1095,7 @@ const ReactivationAnalytics: React.FC = () => {
                       className={`cursor-pointer transition-all duration-150 group ${
                         isActive
                           ? 'bg-indigo-500/[0.08]'
-                          : 'hover:bg-white/[0.03]'
+                          : 'hover:bg-slate-50'
                       }`}
                       style={{
                         borderBottom: '1px solid rgba(255,255,255,0.04)',
@@ -1107,10 +1107,10 @@ const ReactivationAnalytics: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <div
                             className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              isActive ? 'bg-indigo-400' : 'bg-white/20'
+                              isActive ? 'bg-indigo-400' : 'bg-slate-500'
                             }`}
                           />
-                          <span className="text-[13px] font-semibold text-white whitespace-nowrap">
+                          <span className="text-[13px] font-semibold text-slate-800 whitespace-nowrap">
                             {c.name}
                           </span>
                         </div>
@@ -1127,47 +1127,47 @@ const ReactivationAnalytics: React.FC = () => {
 
                       {/* Launched */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[12px] text-white/40 whitespace-nowrap">{c.launched}</span>
+                        <span className="text-[12px] text-slate-500 whitespace-nowrap">{c.launched}</span>
                       </td>
 
                       {/* Sent */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[13px] text-white/60">{c.sent.toLocaleString('en-IN')}</span>
+                        <span className="text-[13px] text-slate-600">{c.sent.toLocaleString('en-IN')}</span>
                       </td>
 
                       {/* Delivered */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[13px] text-white/60">{c.delivered.toLocaleString('en-IN')}</span>
+                        <span className="text-[13px] text-slate-600">{c.delivered.toLocaleString('en-IN')}</span>
                       </td>
 
                       {/* Read */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[13px] text-white/60">{c.read.toLocaleString('en-IN')}</span>
+                        <span className="text-[13px] text-slate-600">{c.read.toLocaleString('en-IN')}</span>
                       </td>
 
                       {/* Replied */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[13px] text-white/60">{c.replied.toLocaleString('en-IN')}</span>
+                        <span className="text-[13px] text-slate-600">{c.replied.toLocaleString('en-IN')}</span>
                       </td>
 
                       {/* Appointments */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5">
-                          <Calendar size={12} className="text-indigo-400 flex-shrink-0" />
-                          <span className="text-[13px] text-white font-medium">{c.appointments}</span>
+                          <Calendar size={12} className="text-indigo-600 flex-shrink-0" />
+                          <span className="text-[13px] text-slate-800 font-medium">{c.appointments}</span>
                         </div>
                       </td>
 
                       {/* Revenue — hero column */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[13px] font-bold text-emerald-400 whitespace-nowrap">
+                        <span className="text-[13px] font-bold text-emerald-700 whitespace-nowrap">
                           {fmtRupee(c.revenue)}
                         </span>
                       </td>
 
                       {/* Cost per Appt */}
                       <td className="px-4 py-3.5">
-                        <span className="text-[12px] text-white/40">₹{c.costPerAppt}</span>
+                        <span className="text-[12px] text-slate-500">₹{c.costPerAppt}</span>
                       </td>
 
                       {/* ROI badge */}
@@ -1175,8 +1175,8 @@ const ReactivationAnalytics: React.FC = () => {
                         <span
                           className={`inline-flex items-center gap-0.5 text-[12px] font-bold px-2 py-1 rounded-lg border whitespace-nowrap ${
                             c.roi >= 20
-                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                              : 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-200'
+                              : 'bg-amber-500/15 text-amber-300 border-amber-200'
                           }`}
                         >
                           {c.roi}×
@@ -1190,7 +1190,7 @@ const ReactivationAnalytics: React.FC = () => {
                             e.stopPropagation();
                             setDrawerCampaign(c);
                           }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-indigo-300 hover:text-white transition-all hover:bg-indigo-500/20 opacity-0 group-hover:opacity-100"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-indigo-600 hover:text-slate-800 transition-all hover:bg-indigo-50 opacity-0 group-hover:opacity-100"
                           style={{ border: '1px solid rgba(99,102,241,0.3)' }}
                         >
                           <Eye size={12} />
@@ -1212,19 +1212,19 @@ const ReactivationAnalytics: React.FC = () => {
           transition={{ duration: 0.4, delay: 0.35 }}
           className="rounded-2xl p-6"
           style={{
-            background: 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             boxShadow: '0 4px 32px rgba(0,0,0,0.2)',
           }}
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-[16px] font-bold text-white">
+              <h2 className="text-[16px] font-bold text-slate-800">
                 Conversion Funnel
-                <span className="text-white/40 font-normal"> — </span>
-                <span className="text-indigo-300">{activeCampaign.name}</span>
+                <span className="text-slate-500 font-normal"> — </span>
+                <span className="text-indigo-600">{activeCampaign.name}</span>
               </h2>
-              <p className="text-[12px] text-white/35 mt-0.5">
+              <p className="text-[12px] text-slate-400 mt-0.5">
                 Click any campaign row above to update this funnel
               </p>
             </div>
@@ -1237,8 +1237,8 @@ const ReactivationAnalytics: React.FC = () => {
                   onClick={() => setActiveCampaign(c)}
                   className={`text-[11px] font-medium px-3 py-1.5 rounded-full transition-all whitespace-nowrap ${
                     activeCampaign.id === c.id
-                      ? 'text-indigo-200 border-indigo-500/50'
-                      : 'text-white/35 hover:text-white/70 border-white/10 hover:border-white/20'
+                      ? 'text-indigo-600 border-indigo-500/50'
+                      : 'text-slate-400 hover:text-slate-700 border-slate-200 hover:border-slate-200'
                   }`}
                   style={{
                     background:
@@ -1272,12 +1272,12 @@ const ReactivationAnalytics: React.FC = () => {
           </AnimatePresence>
 
           {/* Stats footer */}
-          <div className="mt-6 pt-5 grid grid-cols-2 sm:grid-cols-4 gap-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="mt-6 pt-5 grid grid-cols-2 sm:grid-cols-4 gap-4" style={{ borderTop: '1px solid #e2e8f0' }}>
             {[
               {
                 label: 'Delivery Rate',
                 value: `${Math.round((activeCampaign.delivered / activeCampaign.sent) * 100)}%`,
-                color: 'text-indigo-400',
+                color: 'text-indigo-600',
               },
               {
                 label: 'Read Rate',
@@ -1292,12 +1292,12 @@ const ReactivationAnalytics: React.FC = () => {
               {
                 label: 'Booking Rate',
                 value: `${Math.round((activeCampaign.appointments / activeCampaign.sent) * 100)}%`,
-                color: 'text-emerald-400',
+                color: 'text-emerald-700',
               },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <p className={`text-[20px] font-bold ${stat.color}`}>{stat.value}</p>
-                <p className="text-[11px] text-white/30 mt-0.5">{stat.label}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">{stat.label}</p>
               </div>
             ))}
           </div>

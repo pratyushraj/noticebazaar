@@ -92,7 +92,7 @@ const CAMPAIGN_TYPES: CampaignType[] = [
     label: 'Reactivation Offer',
     emoji: '🔄',
     icon: Repeat2,
-    color: 'from-indigo-500/20 to-purple-500/10 border-indigo-500/30',
+    color: 'from-indigo-500/20 to-purple-500/10 border-indigo-200',
     description: 'Win back lost customers',
   },
   {
@@ -100,7 +100,7 @@ const CAMPAIGN_TYPES: CampaignType[] = [
     label: 'Festival Offer',
     emoji: '🎉',
     icon: Gift,
-    color: 'from-amber-500/20 to-orange-500/10 border-amber-500/30',
+    color: 'from-amber-500/20 to-orange-500/10 border-amber-200',
     description: 'Season & festive deals',
   },
   {
@@ -108,7 +108,7 @@ const CAMPAIGN_TYPES: CampaignType[] = [
     label: 'New Service Launch',
     emoji: '✨',
     icon: Sparkles,
-    color: 'from-emerald-500/20 to-teal-500/10 border-emerald-500/30',
+    color: 'from-emerald-500/20 to-teal-500/10 border-emerald-200',
     description: 'Announce new offerings',
   },
   {
@@ -116,7 +116,7 @@ const CAMPAIGN_TYPES: CampaignType[] = [
     label: 'Referral Campaign',
     emoji: '🤝',
     icon: Handshake,
-    color: 'from-blue-500/20 to-cyan-500/10 border-blue-500/30',
+    color: 'from-blue-500/20 to-cyan-500/10 border-blue-200',
     description: 'Get word-of-mouth leads',
   },
   {
@@ -259,7 +259,7 @@ const GENERATED_MESSAGES: GeneratedMessage[] = [
     label: 'WhatsApp Message',
     day: 'Day 1 — Primary',
     cta: 'BOOK',
-    ctaColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+    ctaColor: 'bg-emerald-50 text-emerald-300 border-emerald-200',
     content: `Hi {{Name}}! 👋
 
 We miss you at Smile Dental Clinic!
@@ -280,7 +280,7 @@ Smile Dental Team ✨`,
     label: 'Follow-Up',
     day: 'Day 3 — Follow-Up',
     cta: 'YES',
-    ctaColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    ctaColor: 'bg-blue-50 text-blue-300 border-blue-200',
     content: `Hi {{Name}}, did you see our offer? 😊
 
 We still have slots available this week for your Teeth Cleaning with 20% off.
@@ -294,7 +294,7 @@ Reply 'YES' and we'll confirm your appointment ⚡`,
     label: 'Final Reminder',
     day: 'Day 6 — Last Chance',
     cta: 'CONFIRM',
-    ctaColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+    ctaColor: 'bg-amber-50 text-amber-300 border-amber-200',
     content: `Last reminder {{Name}} ⏰
 
 Your exclusive offer expires tomorrow!
@@ -396,22 +396,22 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
       transition={{ delay: startDelay / 1000, duration: 0.4, ease: 'easeOut' }}
       className="relative rounded-2xl overflow-hidden"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
       }}
     >
       {/* Header */}
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+        style={{ borderBottom: '1px solid #e2e8f0' }}
       >
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
-            <MessageCircle size={13} className="text-indigo-400" />
+          <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center flex-shrink-0">
+            <MessageCircle size={13} className="text-indigo-600" />
           </div>
           <div>
-            <p className="text-[12px] font-semibold text-white leading-none">{message.label}</p>
-            <p className="text-[10px] text-white/40 mt-0.5">{message.day}</p>
+            <p className="text-[12px] font-semibold text-slate-800 leading-none">{message.label}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{message.day}</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -422,9 +422,9 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
             Reply: '{message.cta}'
           </span>
           {/* Open rate */}
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-            <TrendingUp size={10} className="text-emerald-400" />
-            <span className="text-[10px] font-bold text-emerald-400">67% open</span>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200">
+            <TrendingUp size={10} className="text-emerald-700" />
+            <span className="text-[10px] font-bold text-emerald-700">67% open</span>
           </div>
         </div>
       </div>
@@ -435,11 +435,11 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            className="w-full text-[13px] text-white/85 leading-relaxed font-mono resize-none outline-none rounded-lg p-3 min-h-[160px]"
+            className="w-full text-[13px] text-slate-800 leading-relaxed font-mono resize-none outline-none rounded-lg p-3 min-h-[160px]"
             style={{
-              background: 'rgba(255,255,255,0.04)',
+              background: '#ffffff',
               border: '1px solid rgba(99,102,241,0.4)',
-              color: 'rgba(255,255,255,0.85)',
+              color: '#1e293b',
             }}
             autoFocus
           />
@@ -451,7 +451,7 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
               style={{
                 background: 'rgba(16, 185, 129, 0.06)',
                 border: '1px solid rgba(16,185,129,0.12)',
-                color: 'rgba(255,255,255,0.82)',
+                color: '#1e293b',
                 whiteSpace: 'pre-wrap',
                 minHeight: '140px',
               }}
@@ -474,8 +474,8 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
             <span
               className="text-[10px] px-2 py-0.5 rounded-md font-mono"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                color: 'rgba(255,255,255,0.35)',
+                background: '#f1f5f9',
+                color: '#64748b',
               }}
             >
               {charCount} chars
@@ -487,9 +487,9 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
               onClick={handleRegenerate}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.5)',
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                color: '#64748b',
               }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)';
@@ -523,9 +523,9 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
                 onClick={() => setEditing(true)}
                 className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: 'rgba(255,255,255,0.5)',
+                  background: '#ffffff',
+                  border: '1px solid #e2e8f0',
+                  color: '#64748b',
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.07)';
@@ -546,9 +546,9 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, index, startDelay })
               onClick={handleCopy}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
               style={{
-                background: copied ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.04)',
-                border: copied ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(255,255,255,0.08)',
-                color: copied ? '#6ee7b7' : 'rgba(255,255,255,0.5)',
+                background: copied ? '#ecfdf5' : '#ffffff',
+                border: copied ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+                color: copied ? '#047857' : '#64748b',
               }}
             >
               {copied ? <Check size={11} /> : <Copy size={11} />}
@@ -593,11 +593,11 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => (
               className="w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0"
             >
               {isCompleted ? (
-                <Check size={13} className="text-white" />
+                <Check size={13} className="text-slate-800" />
               ) : (
                 <span
                   className={`text-[11px] font-bold ${
-                    isActive ? 'text-indigo-400' : 'text-white/30'
+                    isActive ? 'text-indigo-600' : 'text-slate-400'
                   }`}
                 >
                   {stepNum}
@@ -607,7 +607,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => (
             {/* Label */}
             <span
               className={`text-[12px] font-medium whitespace-nowrap transition-colors duration-200 ${
-                isActive ? 'text-white' : isCompleted ? 'text-indigo-400' : 'text-white/30'
+                isActive ? 'text-slate-800' : isCompleted ? 'text-indigo-600' : 'text-slate-400'
               }`}
             >
               {label}
@@ -617,7 +617,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => (
           {!isLast && (
             <motion.div
               animate={{
-                background: isCompleted ? '#6366f1' : 'rgba(255,255,255,0.08)',
+                background: isCompleted ? '#6366f1' : '#f1f5f9',
               }}
               className="h-px mx-3 flex-1"
               style={{ minWidth: 24 }}
@@ -645,13 +645,13 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
   <div
     className="rounded-2xl p-5 h-full flex flex-col gap-4"
     style={{
-      background: 'rgba(255,255,255,0.02)',
-      border: '1px solid rgba(255,255,255,0.07)',
+      background: '#f8fafc',
+      border: '1px solid #e2e8f0',
     }}
   >
     <div className="flex items-center gap-2 mb-1">
-      <Sparkles size={13} className="text-indigo-400" />
-      <span className="text-[11px] font-bold text-white/40 tracking-widest uppercase">
+      <Sparkles size={13} className="text-indigo-600" />
+      <span className="text-[11px] font-bold text-slate-500 tracking-widest uppercase">
         Campaign Preview
       </span>
     </div>
@@ -662,18 +662,18 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border self-start bg-gradient-to-r ${selectedType.color}`}
       >
         <span className="text-base leading-none">{selectedType.emoji}</span>
-        <span className="text-[11px] font-semibold text-white/80">{selectedType.label}</span>
+        <span className="text-[11px] font-semibold text-slate-700">{selectedType.label}</span>
       </div>
     )}
 
     {/* Campaign name */}
     <div>
-      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mb-1">
+      <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">
         Campaign Name
       </p>
-      <p className="text-[15px] font-semibold text-white">
+      <p className="text-[15px] font-semibold text-slate-800">
         {form.name || (
-          <span className="text-white/20 italic font-normal">Untitled Campaign</span>
+          <span className="text-slate-400 italic font-normal">Untitled Campaign</span>
         )}
       </p>
     </div>
@@ -681,10 +681,10 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
     {/* Business */}
     {form.businessName && (
       <div>
-        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mb-1">
+        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">
           Business
         </p>
-        <p className="text-[13px] text-white/70">
+        <p className="text-[13px] text-slate-700">
           {form.businessName}
           {form.location && `, ${form.location}`}
         </p>
@@ -700,10 +700,10 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
           border: '1px solid rgba(99,102,241,0.18)',
         }}
       >
-        <p className="text-[10px] text-indigo-400/70 uppercase tracking-widest font-bold mb-1">
+        <p className="text-[10px] text-indigo-600/70 uppercase tracking-widest font-bold mb-1">
           Offer
         </p>
-        <p className="text-[12px] text-white/75 leading-relaxed">{form.offerDescription}</p>
+        <p className="text-[12px] text-slate-800/75 leading-relaxed">{form.offerDescription}</p>
       </div>
     )}
 
@@ -711,24 +711,24 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
     {selectedSegment && (
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mb-1">
+          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">
             Audience
           </p>
-          <p className="text-[12px] text-white/70">{selectedSegment.label}</p>
+          <p className="text-[12px] text-slate-700">{selectedSegment.label}</p>
         </div>
         <div className="text-right">
-          <p className="text-[22px] font-black text-indigo-400 leading-none">
+          <p className="text-[22px] font-black text-indigo-600 leading-none">
             {selectedSegment.count}
           </p>
-          <p className="text-[10px] text-white/30 mt-0.5">customers</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">customers</p>
         </div>
       </div>
     )}
 
     {/* Divider */}
-    <div className="h-px bg-white/[0.05]" />
+    <div className="h-px bg-slate-50" />
 
-    <div className="flex items-center gap-2 text-white/20">
+    <div className="flex items-center gap-2 text-slate-400">
       <MessageCircle size={13} />
       <span className="text-[11px]">3 messages will be sent</span>
     </div>
@@ -905,10 +905,10 @@ const ReactivationCampaigns: React.FC = () => {
 
   // ─── Status chip color
   const statusColor: Record<string, string> = {
-    Active: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    Lapsed: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-    VIP: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-    New: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    Active: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+    Lapsed: 'text-amber-700 bg-amber-50 border-amber-200',
+    VIP: 'text-purple-700 bg-purple-50 border-purple-200',
+    New: 'text-blue-700 bg-blue-50 border-blue-200',
   };
 
   // ─── Broadcast sending counter display
@@ -933,16 +933,16 @@ const ReactivationCampaigns: React.FC = () => {
                 className="w-7 h-7 rounded-lg flex items-center justify-center"
                 style={{ background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.3)' }}
               >
-                <Zap size={14} className="text-indigo-400" />
+                <Zap size={14} className="text-indigo-600" />
               </div>
-              <span className="text-[11px] font-bold tracking-widest uppercase text-white/30">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-slate-400">
                 AI Campaign Builder
               </span>
             </div>
-            <h1 className="text-[22px] font-bold text-white tracking-tight leading-snug">
+            <h1 className="text-[22px] font-bold text-slate-800 tracking-tight leading-snug">
               WhatsApp Reactivation Campaign
             </h1>
-            <p className="text-[13px] text-white/40 mt-0.5">
+            <p className="text-[13px] text-slate-500 mt-0.5">
               Build → Generate → Broadcast in 3 steps
             </p>
           </div>
@@ -952,8 +952,8 @@ const ReactivationCampaigns: React.FC = () => {
         <div
           className="mt-5 px-5 py-4 rounded-2xl"
           style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
           }}
         >
           <StepIndicator currentStep={step} />
@@ -980,11 +980,11 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <label className="block text-[11px] font-bold tracking-widest uppercase text-white/40 mb-2">
+                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-2">
                     Campaign Name
                   </label>
                   <input
@@ -992,10 +992,10 @@ const ReactivationCampaigns: React.FC = () => {
                     placeholder="e.g. June Reactivation — Dental Patients"
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full text-[14px] text-white placeholder-white/20 outline-none rounded-xl px-4 py-3 transition-all duration-150"
+                    className="w-full text-[14px] text-slate-800 placeholder-white/20 outline-none rounded-xl px-4 py-3 transition-all duration-150"
                     style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.09)',
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
                     }}
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)';
@@ -1012,11 +1012,11 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <label className="block text-[11px] font-bold tracking-widest uppercase text-white/40 mb-3">
+                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
                     Campaign Type
                   </label>
                   <div className="grid grid-cols-3 gap-2.5">
@@ -1031,11 +1031,11 @@ const ReactivationCampaigns: React.FC = () => {
                           className={`relative flex flex-col gap-2 p-3.5 rounded-xl text-left transition-all duration-150 ${
                             isSelected
                               ? `bg-gradient-to-br ${ct.color}`
-                              : 'border border-white/[0.07] hover:border-white/20'
+                              : 'border border-slate-200 hover:border-slate-200'
                           }`}
                           style={
                             !isSelected
-                              ? { background: 'rgba(255,255,255,0.025)' }
+                              ? { background: '#f8fafc' }
                               : undefined
                           }
                         >
@@ -1048,14 +1048,14 @@ const ReactivationCampaigns: React.FC = () => {
                           )}
                           <span className="text-[18px] leading-none">{ct.emoji}</span>
                           <div>
-                            <p className="text-[12px] font-semibold text-white leading-tight">
+                            <p className="text-[12px] font-semibold text-slate-800 leading-tight">
                               {ct.label}
                             </p>
-                            <p className="text-[10px] text-white/35 mt-0.5">{ct.description}</p>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{ct.description}</p>
                           </div>
                           {isSelected && (
                             <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center">
-                              <Check size={10} className="text-white" />
+                              <Check size={10} className="text-slate-800" />
                             </div>
                           )}
                         </motion.button>
@@ -1068,17 +1068,17 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <label className="block text-[11px] font-bold tracking-widest uppercase text-white/40 mb-3">
+                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
                     Business Details
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     {/* Business Name */}
                     <div>
-                      <label className="text-[10px] text-white/30 font-medium mb-1 block">
+                      <label className="text-[10px] text-slate-400 font-medium mb-1 block">
                         Business Name
                       </label>
                       <input
@@ -1088,10 +1088,10 @@ const ReactivationCampaigns: React.FC = () => {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, businessName: e.target.value }))
                         }
-                        className="w-full text-[13px] text-white placeholder-white/15 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150"
+                        className="w-full text-[13px] text-slate-800 placeholder-white/15 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150"
                         style={{
-                          background: 'rgba(255,255,255,0.04)',
-                          border: '1px solid rgba(255,255,255,0.09)',
+                          background: '#ffffff',
+                          border: '1px solid #e2e8f0',
                         }}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
@@ -1103,7 +1103,7 @@ const ReactivationCampaigns: React.FC = () => {
                     </div>
                     {/* City */}
                     <div>
-                      <label className="text-[10px] text-white/30 font-medium mb-1 block">
+                      <label className="text-[10px] text-slate-400 font-medium mb-1 block">
                         City
                       </label>
                       <input
@@ -1111,10 +1111,10 @@ const ReactivationCampaigns: React.FC = () => {
                         placeholder="e.g. Patna, Mumbai"
                         value={form.location}
                         onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                        className="w-full text-[13px] text-white placeholder-white/15 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150"
+                        className="w-full text-[13px] text-slate-800 placeholder-white/15 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150"
                         style={{
-                          background: 'rgba(255,255,255,0.04)',
-                          border: '1px solid rgba(255,255,255,0.09)',
+                          background: '#ffffff',
+                          border: '1px solid #e2e8f0',
                         }}
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
@@ -1126,16 +1126,16 @@ const ReactivationCampaigns: React.FC = () => {
                     </div>
                     {/* Industry */}
                     <div className="col-span-2">
-                      <label className="text-[10px] text-white/30 font-medium mb-1 block">
+                      <label className="text-[10px] text-slate-400 font-medium mb-1 block">
                         Industry
                       </label>
                       <select
                         value={form.industry}
                         onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-                        className="w-full text-[13px] text-white outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150 cursor-pointer"
+                        className="w-full text-[13px] text-slate-800 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150 cursor-pointer"
                         style={{
-                          background: 'rgba(255,255,255,0.04)',
-                          border: '1px solid rgba(255,255,255,0.09)',
+                          background: '#ffffff',
+                          border: '1px solid #e2e8f0',
                           color: form.industry ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.2)',
                         }}
                       >
@@ -1156,11 +1156,11 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <label className="block text-[11px] font-bold tracking-widest uppercase text-white/40 mb-2">
+                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-2">
                     Offer Description
                   </label>
                   <textarea
@@ -1170,10 +1170,10 @@ const ReactivationCampaigns: React.FC = () => {
                       setForm((f) => ({ ...f, offerDescription: e.target.value }))
                     }
                     rows={3}
-                    className="w-full text-[13px] text-white placeholder-white/15 outline-none rounded-xl px-4 py-3 resize-none transition-all duration-150"
+                    className="w-full text-[13px] text-slate-800 placeholder-white/15 outline-none rounded-xl px-4 py-3 resize-none transition-all duration-150"
                     style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.09)',
+                      background: '#ffffff',
+                      border: '1px solid #e2e8f0',
                     }}
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
@@ -1188,11 +1188,11 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <label className="block text-[11px] font-bold tracking-widest uppercase text-white/40 mb-3">
+                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
                     Target Audience Segment
                   </label>
                   <div className="flex flex-col gap-2">
@@ -1228,23 +1228,23 @@ const ReactivationCampaigns: React.FC = () => {
                             <div>
                               <p
                                 className={`text-[13px] font-medium leading-none ${
-                                  isSelected ? 'text-white' : 'text-white/65'
+                                  isSelected ? 'text-slate-800' : 'text-slate-800/65'
                                 }`}
                               >
                                 {seg.label}
                               </p>
-                              <p className="text-[10px] text-white/30 mt-0.5">{seg.description}</p>
+                              <p className="text-[10px] text-slate-400 mt-0.5">{seg.description}</p>
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0 ml-4">
                             <span
                               className={`text-[15px] font-black ${
-                                isSelected ? 'text-indigo-400' : 'text-white/30'
+                                isSelected ? 'text-indigo-600' : 'text-slate-400'
                               }`}
                             >
                               {seg.count}
                             </span>
-                            <p className="text-[9px] text-white/25">customers</p>
+                            <p className="text-[9px] text-slate-400">customers</p>
                           </div>
                         </motion.button>
                       );
@@ -1267,7 +1267,7 @@ const ReactivationCampaigns: React.FC = () => {
                             border: '1px solid rgba(16,185,129,0.18)',
                           }}
                         >
-                          <Users size={14} className="text-emerald-400 flex-shrink-0" />
+                          <Users size={14} className="text-emerald-700 flex-shrink-0" />
                           <span className="text-[13px] text-emerald-300 font-medium">
                             <strong>{selectedSegment.count} customers</strong> will receive this
                             campaign
@@ -1349,18 +1349,18 @@ const ReactivationCampaigns: React.FC = () => {
                     }}
                   >
                     {generatingDone ? (
-                      <Check size={16} className="text-emerald-400" />
+                      <Check size={16} className="text-emerald-700" />
                     ) : (
-                      <Sparkles size={16} className="text-indigo-400" />
+                      <Sparkles size={16} className="text-indigo-600" />
                     )}
                   </motion.div>
                   <div>
-                    <p className="text-[14px] font-semibold text-white">
+                    <p className="text-[14px] font-semibold text-slate-800">
                       {generatingDone
                         ? '✅ All 3 messages generated!'
                         : 'AI is generating your campaign messages...'}
                     </p>
-                    <p className="text-[11px] text-white/40 mt-0.5">
+                    <p className="text-[11px] text-slate-500 mt-0.5">
                       {generatingDone
                         ? 'Review, edit, and approve before broadcast'
                         : `Crafting personalized WhatsApp messages for ${totalCustomers} customers`}
@@ -1372,18 +1372,18 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="flex-shrink-0 px-4 py-3 rounded-2xl"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest mb-1">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-1">
                     Campaign
                   </p>
-                  <p className="text-[13px] font-semibold text-white">
+                  <p className="text-[13px] font-semibold text-slate-800">
                     {form.name || 'My Campaign'}
                   </p>
                   {selectedType && (
-                    <span className="text-[11px] text-indigo-400">{selectedType.emoji} {selectedType.label}</span>
+                    <span className="text-[11px] text-indigo-600">{selectedType.emoji} {selectedType.label}</span>
                   )}
                 </div>
               </div>
@@ -1414,17 +1414,17 @@ const ReactivationCampaigns: React.FC = () => {
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center"
                           style={{
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.07)',
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
                           }}
                         >
-                          <Clock size={13} className="text-white/20" />
+                          <Clock size={13} className="text-slate-400" />
                         </div>
                         <div>
-                          <p className="text-[12px] font-medium text-white/25">
+                          <p className="text-[12px] font-medium text-slate-400">
                             {generatedMessages[idx]?.label}
                           </p>
-                          <p className="text-[10px] text-white/15 mt-0.5">Generating...</p>
+                          <p className="text-[10px] text-slate-800/15 mt-0.5">Generating...</p>
                         </div>
                         {/* Shimmer indicator */}
                         <div className="ml-auto flex gap-1">
@@ -1453,8 +1453,8 @@ const ReactivationCampaigns: React.FC = () => {
                   onClick={goBack}
                   className="flex items-center gap-2 px-5 py-3.5 rounded-xl font-medium text-[13px] transition-all duration-150"
                   style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.09)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     color: 'rgba(255,255,255,0.55)',
                   }}
                 >
@@ -1502,41 +1502,41 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl overflow-hidden"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
                   {/* Table Header */}
                   <div
                     className="flex items-center justify-between px-5 py-3.5"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                    style={{ borderBottom: '1px solid #e2e8f0' }}
                   >
                     <div className="flex items-center gap-3">
                       <button
                         onClick={toggleAll}
-                        className="flex items-center gap-2 text-[11px] font-medium text-white/50 hover:text-white/80 transition-colors"
+                        className="flex items-center gap-2 text-[11px] font-medium text-slate-500 hover:text-slate-700 transition-colors"
                       >
                         {selectedCustomers.size === MOCK_CUSTOMERS.length ? (
-                          <CheckSquare size={15} className="text-indigo-400" />
+                          <CheckSquare size={15} className="text-indigo-600" />
                         ) : (
-                          <Square size={15} className="text-white/30" />
+                          <Square size={15} className="text-slate-400" />
                         )}
                         {selectedCustomers.size === MOCK_CUSTOMERS.length
                           ? 'Deselect All'
                           : 'Select All'}
                       </button>
-                      <div className="h-3 w-px bg-white/10" />
+                      <div className="h-3 w-px bg-slate-100" />
                       <div className="flex items-center gap-1.5">
-                        <Users size={12} className="text-indigo-400" />
-                        <span className="text-[12px] font-semibold text-white">
+                        <Users size={12} className="text-indigo-600" />
+                        <span className="text-[12px] font-semibold text-slate-800">
                           {selectedCustomers.size}{' '}
-                          <span className="text-white/40 font-normal">
+                          <span className="text-slate-500 font-normal">
                             of {MOCK_CUSTOMERS.length} selected
                           </span>
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] text-white/25 uppercase tracking-widest font-bold">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
                       {selectedSegment?.label ?? 'All Customers'}
                     </span>
                   </div>
@@ -1567,7 +1567,7 @@ const ReactivationCampaigns: React.FC = () => {
                               background: isSelected ? '#6366f1' : 'transparent',
                             }}
                           >
-                            {isSelected && <Check size={10} className="text-white" />}
+                            {isSelected && <Check size={10} className="text-slate-800" />}
                           </div>
 
                           {/* Avatar */}
@@ -1588,16 +1588,16 @@ const ReactivationCampaigns: React.FC = () => {
 
                           {/* Name + phone */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-medium text-white leading-none">
+                            <p className="text-[13px] font-medium text-slate-800 leading-none">
                               {customer.name}
                             </p>
-                            <p className="text-[11px] text-white/35 mt-0.5 font-mono">
+                            <p className="text-[11px] text-slate-400 mt-0.5 font-mono">
                               {customer.phone}
                             </p>
                           </div>
 
                           {/* City */}
-                          <span className="text-[11px] text-white/30 w-20 text-center">
+                          <span className="text-[11px] text-slate-400 w-20 text-center">
                             {customer.city}
                           </span>
 
@@ -1609,7 +1609,7 @@ const ReactivationCampaigns: React.FC = () => {
                           </span>
 
                           {/* Last visit */}
-                          <span className="text-[11px] text-white/30 w-28 text-right">
+                          <span className="text-[11px] text-slate-400 w-28 text-right">
                             {customer.lastVisit}
                           </span>
                         </motion.div>
@@ -1622,17 +1622,17 @@ const ReactivationCampaigns: React.FC = () => {
                 <div
                   className="rounded-2xl p-5"
                   style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                   }}
                 >
-                  <p className="text-[11px] font-bold tracking-widest uppercase text-white/40 mb-4">
+                  <p className="text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-4">
                     Broadcast Settings
                   </p>
 
                   {/* Schedule */}
                   <div className="mb-4">
-                    <label className="text-[11px] text-white/30 font-medium mb-2 block">
+                    <label className="text-[11px] text-slate-400 font-medium mb-2 block">
                       Schedule
                     </label>
                     <div className="flex gap-2">
@@ -1675,10 +1675,10 @@ const ReactivationCampaigns: React.FC = () => {
                       >
                         <input
                           type="datetime-local"
-                          className="text-[13px] text-white outline-none rounded-xl px-4 py-2.5 transition-all duration-150"
+                          className="text-[13px] text-slate-800 outline-none rounded-xl px-4 py-2.5 transition-all duration-150"
                           style={{
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(255,255,255,0.09)',
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
                             colorScheme: 'dark',
                           }}
                         />
@@ -1688,7 +1688,7 @@ const ReactivationCampaigns: React.FC = () => {
 
                   {/* Template preview */}
                   <div>
-                    <label className="text-[11px] text-white/30 font-medium mb-2 block">
+                    <label className="text-[11px] text-slate-400 font-medium mb-2 block">
                       WhatsApp Template
                     </label>
                     <div
@@ -1698,16 +1698,16 @@ const ReactivationCampaigns: React.FC = () => {
                         border: '1px solid rgba(16,185,129,0.15)',
                       }}
                     >
-                      <MessageCircle size={15} className="text-emerald-400 flex-shrink-0" />
+                      <MessageCircle size={15} className="text-emerald-700 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-semibold text-emerald-300">
                           reactivation_v1_hi_IN
                         </p>
-                        <p className="text-[10px] text-white/30 truncate mt-0.5">
+                        <p className="text-[10px] text-slate-400 truncate mt-0.5">
                           Hi {'{{'} Name {'}}'} 👋 We miss you at Smile Dental...
                         </p>
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 border border-emerald-200 flex-shrink-0">
                         APPROVED
                       </span>
                     </div>
@@ -1758,7 +1758,7 @@ const ReactivationCampaigns: React.FC = () => {
                           <>
                             <Send size={16} />
                             Broadcast to {selectedCustomers.size} Customers
-                            <Zap size={14} className="text-indigo-200" />
+                            <Zap size={14} className="text-indigo-600" />
                           </>
                         )}
                       </span>
@@ -1775,7 +1775,7 @@ const ReactivationCampaigns: React.FC = () => {
                       }}
                     >
                       <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center">
-                        <Check size={16} className="text-white" />
+                        <Check size={16} className="text-slate-800" />
                       </div>
                       <span className="text-[15px] font-bold text-emerald-300">
                         Broadcast Complete! {stats.sent} messages sent ✨
@@ -1789,8 +1789,8 @@ const ReactivationCampaigns: React.FC = () => {
                   onClick={goBack}
                   className="flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-[13px] transition-all duration-150"
                   style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     color: 'rgba(255,255,255,0.4)',
                   }}
                 >
@@ -1817,13 +1817,13 @@ const ReactivationCampaigns: React.FC = () => {
                       transition={{ duration: 0.4, ease: 'easeOut' }}
                       className="rounded-2xl p-5"
                       style={{
-                        background: 'rgba(255,255,255,0.02)',
-                        border: '1px solid rgba(255,255,255,0.07)',
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
                       }}
                     >
                       <div className="flex items-center gap-2 mb-4">
-                        <BarChart3 size={13} className="text-indigo-400" />
-                        <span className="text-[11px] font-bold text-white/40 tracking-widest uppercase">
+                        <BarChart3 size={13} className="text-indigo-600" />
+                        <span className="text-[11px] font-bold text-slate-500 tracking-widest uppercase">
                           Delivery Tracking
                         </span>
                         {/* Live indicator */}
@@ -1832,7 +1832,7 @@ const ReactivationCampaigns: React.FC = () => {
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                             <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-60" />
                           </div>
-                          <span className="text-[9px] text-emerald-400 font-bold tracking-wider">
+                          <span className="text-[9px] text-emerald-700 font-bold tracking-wider">
                             LIVE
                           </span>
                         </div>
@@ -1882,10 +1882,10 @@ const ReactivationCampaigns: React.FC = () => {
                           className="mt-4"
                         >
                           <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[10px] text-white/30 font-medium">
+                            <span className="text-[10px] text-slate-400 font-medium">
                               Open Rate
                             </span>
-                            <span className="text-[11px] font-bold text-emerald-400">
+                            <span className="text-[11px] font-bold text-emerald-700">
                               {Math.round((stats.read / stats.sent) * 100)}%
                             </span>
                           </div>
@@ -1934,25 +1934,25 @@ const colorMap = {
   blue: {
     bg: 'rgba(59,130,246,0.08)',
     border: 'rgba(59,130,246,0.18)',
-    icon: 'text-blue-400',
+    icon: 'text-blue-700',
     value: 'text-blue-300',
   },
   indigo: {
     bg: 'rgba(99,102,241,0.08)',
     border: 'rgba(99,102,241,0.18)',
-    icon: 'text-indigo-400',
-    value: 'text-indigo-300',
+    icon: 'text-indigo-600',
+    value: 'text-indigo-600',
   },
   emerald: {
     bg: 'rgba(16,185,129,0.08)',
     border: 'rgba(16,185,129,0.18)',
-    icon: 'text-emerald-400',
+    icon: 'text-emerald-700',
     value: 'text-emerald-300',
   },
   amber: {
     bg: 'rgba(245,158,11,0.08)',
     border: 'rgba(245,158,11,0.18)',
-    icon: 'text-amber-400',
+    icon: 'text-amber-700',
     value: 'text-amber-300',
   },
 };
@@ -1981,7 +1981,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, color, de
     >
       <div className="flex items-center justify-between">
         <Icon size={12} className={c.icon} />
-        <span className="text-[9px] text-white/25 font-bold uppercase tracking-widest">
+        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
           {label}
         </span>
       </div>
@@ -1989,7 +1989,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, color, de
         {value > 0 ? (
           <CountUp start={0} end={value} duration={1.4} delay={delay + 0.1} />
         ) : (
-          <span className="text-white/15">—</span>
+          <span className="text-slate-800/15">—</span>
         )}
       </div>
     </motion.div>

@@ -229,28 +229,28 @@ const SCENARIO_SCRIPTS: Record<string, ChatMessage[]> = {
 const GlassInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
   <input
     {...props}
-    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/60 focus:bg-white/8 transition-all ${props.className || ''}`}
+    className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all ${props.className || ''}`}
   />
 );
 
 const GlassTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
   <textarea
     {...props}
-    className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-500/60 focus:bg-white/8 transition-all resize-none ${props.className || ''}`}
+    className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all resize-none ${props.className || ''}`}
   />
 );
 
 const GlassSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({ children, ...props }) => (
   <select
     {...props}
-    className={`w-full bg-[#0e1220] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500/60 transition-all appearance-none ${props.className || ''}`}
+    className={`w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition-all appearance-none ${props.className || ''}`}
   >
     {children}
   </select>
 );
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <label className="block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">{children}</label>
+  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">{children}</label>
 );
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -417,59 +417,59 @@ export default function ReactivationReceptionist() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#080C14] text-white font-sans relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans relative overflow-hidden">
       {/* Ambient background glows */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-indigo-600/8 rounded-full blur-[140px]" />
-        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-violet-600/6 rounded-full blur-[120px]" />
-        <div className="absolute -bottom-20 left-1/3 w-[400px] h-[300px] bg-emerald-500/5 rounded-full blur-[100px]" />
+        <div className="absolute -top-32 -left-32 w-[600px] h-[600px] bg-indigo-600/4 rounded-full blur-[140px]" />
+        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-violet-600/3 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-20 left-1/3 w-[400px] h-[300px] bg-emerald-500/3 rounded-full blur-[100px]" />
       </div>
 
       {/* Top header bar */}
-      <div className="relative z-10 border-b border-white/5 bg-[#080C14]/80 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
+      <div className="relative z-10 border-b border-slate-200 bg-white/80 backdrop-blur-xl px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
             <Bot className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white leading-none">AI Receptionist Setup</h1>
-            <p className="text-[11px] text-white/40 mt-0.5">Customer Reactivation Module</p>
+            <h1 className="text-sm font-bold text-slate-800 leading-none">AI Receptionist Setup</h1>
+            <p className="text-[11px] text-slate-500 mt-0.5">Customer Reactivation Module</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[11px] font-semibold text-emerald-400">System Online</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50/50 border border-emerald-200">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-semibold text-emerald-700">System Online</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-            <Activity className="w-3 h-3 text-white/50" />
-            <span className="text-[11px] font-medium text-white/50">Smile Dental Clinic</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200">
+            <Activity className="w-3 h-3 text-slate-500" />
+            <span className="text-[11px] font-medium text-slate-600">Smile Dental Clinic</span>
           </div>
         </div>
       </div>
 
       {/* Main two-column layout */}
-      <div className="relative z-10 flex h-[calc(100vh-65px)]">
+      <div className="relative z-10 flex flex-col lg:flex-row h-auto lg:h-[calc(100vh-65px)]">
 
         {/* ══════════════════════════════════════════════════════
             LEFT PANEL — Knowledge Base Setup
         ══════════════════════════════════════════════════════ */}
-        <div className="w-1/2 flex flex-col h-full overflow-y-auto border-r border-white/5 scrollbar-hide">
+        <div className="w-full lg:w-1/2 flex flex-col h-auto lg:h-full overflow-y-auto border-b lg:border-b-0 lg:border-r border-slate-200 bg-white scrollbar-hide">
           <div className="p-6 pb-2">
             {/* Header */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
               <div className="flex items-center gap-2 mb-1">
-                <Brain className="w-5 h-5 text-indigo-400" />
-                <h2 className="text-lg font-bold text-white">Train Your AI Receptionist</h2>
+                <Brain className="w-5 h-5 text-indigo-500" />
+                <h2 className="text-lg font-bold text-slate-800">Train Your AI Receptionist</h2>
               </div>
-              <p className="text-sm text-white/40">Teach the AI everything about your clinic</p>
+              <p className="text-sm text-slate-500">Teach the AI everything about your clinic</p>
             </motion.div>
           </div>
 
           {/* ── 5-Tab System ── */}
           <div className="px-6 pb-2 flex-shrink-0">
             <Tabs defaultValue="business">
-              <TabsList className="w-full grid grid-cols-5 bg-white/5 border border-white/10 rounded-xl p-1 gap-0.5 h-auto">
+              <TabsList className="w-full grid grid-cols-5 bg-slate-100 border border-slate-200 rounded-xl p-1 gap-0.5 h-auto">
                 {[
                   { value: 'business', icon: Building2, label: 'Business' },
                   { value: 'staff', icon: Users, label: 'Staff' },
@@ -480,7 +480,7 @@ export default function ReactivationReceptionist() {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] font-semibold text-white/40 data-[state=active]:text-white data-[state=active]:bg-indigo-600/30 data-[state=active]:border data-[state=active]:border-indigo-500/40 transition-all"
+                    className="flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-[10px] font-semibold text-slate-500 data-[state=active]:text-indigo-700 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-slate-200 transition-all"
                   >
                     <tab.icon className="w-3.5 h-3.5" />
                     {tab.label}
@@ -965,7 +965,7 @@ export default function ReactivationReceptionist() {
         {/* ══════════════════════════════════════════════════════
             RIGHT PANEL — Live WhatsApp Chat Preview
         ══════════════════════════════════════════════════════ */}
-        <div className="w-1/2 flex flex-col h-full overflow-y-auto bg-[#080C14] scrollbar-hide">
+        <div className="w-full lg:w-1/2 flex flex-col h-auto lg:h-full overflow-y-auto bg-slate-50 border-t lg:border-t-0 border-slate-200 scrollbar-hide">
           <div className="flex flex-col items-center py-6 px-6 h-full">
 
             {/* Panel header */}
@@ -976,15 +976,15 @@ export default function ReactivationReceptionist() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-emerald-400" />
+                  <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <MessageSquare className="w-5 h-5 text-emerald-500" />
                     Live Chat Preview
                   </h2>
-                  <p className="text-sm text-white/40">Test how your AI responds</p>
+                  <p className="text-sm text-slate-500">Test how your AI responds</p>
                 </div>
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                  <Wifi className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] font-bold text-emerald-400">LIVE</span>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200">
+                  <Wifi className="w-3 h-3 text-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-emerald-700">LIVE</span>
                 </div>
               </div>
             </motion.div>
@@ -1081,7 +1081,7 @@ export default function ReactivationReceptionist() {
 
             {/* ── Scenario Buttons ── */}
             <div className="w-full max-w-[380px] mt-4">
-              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider mb-2">Test Scenarios</p>
+              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Test Scenarios</p>
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: 'pricing', label: 'Ask Pricing', icon: IndianRupee },
@@ -1098,8 +1098,8 @@ export default function ReactivationReceptionist() {
                     onClick={() => runScenario(key)}
                     className={`flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border text-xs font-semibold transition-all ${
                       activeScenario === key
-                        ? 'bg-indigo-600/25 border-indigo-500/50 text-indigo-300 shadow-sm shadow-indigo-500/20'
-                        : 'bg-white/3 border-white/8 text-white/50 hover:text-white hover:bg-white/6 hover:border-white/15'
+                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm shadow-indigo-500/10'
+                        : 'bg-white border-slate-200 text-slate-600 hover:text-slate-800 hover:bg-slate-50 hover:border-slate-300'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -1111,13 +1111,13 @@ export default function ReactivationReceptionist() {
 
             {/* ── Recent Conversations ── */}
             <div className="w-full max-w-[380px] mt-5">
-              <p className="text-[11px] font-semibold text-white/30 uppercase tracking-wider mb-2">Recent Conversations</p>
+              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Recent Conversations</p>
               <div className="space-y-2">
                 {RECENT_CONVERSATIONS.map((conv, i) => {
                   const tempConfig = {
-                    hot: { label: 'Hot 🔥', class: 'text-red-400 bg-red-500/10 border-red-500/20' },
-                    warm: { label: 'Warm 🟡', class: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-                    cold: { label: 'Cold 🔵', class: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+                    hot: { label: 'Hot 🔥', class: 'text-red-600 bg-red-50 border-red-200' },
+                    warm: { label: 'Warm 🟡', class: 'text-amber-700 bg-amber-50 border-amber-200' },
+                    cold: { label: 'Cold 🔵', class: 'text-blue-600 bg-blue-50 border-blue-200' },
                   }[conv.temperature];
 
                   return (
@@ -1126,15 +1126,15 @@ export default function ReactivationReceptionist() {
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.07 }}
-                      className="flex items-center justify-between bg-white/3 border border-white/8 rounded-xl px-4 py-3 hover:bg-white/5 transition-all"
+                      className="flex items-center justify-between bg-white border border-slate-200 rounded-xl px-4 py-3 hover:bg-slate-50 transition-all"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-violet-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-300">
+                        <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[11px] font-bold text-indigo-600">
                           {conv.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-white">{conv.name}</p>
-                          <p className="text-[11px] text-white/40">Inquiry: {conv.inquiry} · {conv.lastSeen}</p>
+                          <p className="text-sm font-semibold text-slate-800">{conv.name}</p>
+                          <p className="text-[11px] text-slate-500">Inquiry: {conv.inquiry} · {conv.lastSeen}</p>
                         </div>
                       </div>
                       <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold ${tempConfig.class}`}>
@@ -1148,13 +1148,13 @@ export default function ReactivationReceptionist() {
 
             {/* ── Lead Qualification Mini-Panel ── */}
             <div className="w-full max-w-[380px] mt-4 mb-6">
-              <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-indigo-400" />
-                    <span className="text-sm font-bold text-white">Leads Captured Today</span>
+                    <TrendingUp className="w-4 h-4 text-indigo-500" />
+                    <span className="text-sm font-bold text-slate-800">Leads Captured Today</span>
                   </div>
-                  <span className="text-xl font-black text-white">5</span>
+                  <span className="text-xl font-black text-slate-800">5</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {[
@@ -1165,30 +1165,30 @@ export default function ReactivationReceptionist() {
                     <div
                       key={stat.label}
                       className={`text-center py-2.5 px-2 rounded-xl border ${
-                        stat.color === 'red' ? 'bg-red-500/8 border-red-500/15' :
-                        stat.color === 'amber' ? 'bg-amber-500/8 border-amber-500/15' :
-                        'bg-blue-500/8 border-blue-500/15'
+                        stat.color === 'red' ? 'bg-red-50 border-red-100' :
+                        stat.color === 'amber' ? 'bg-amber-50 border-amber-100' :
+                        'bg-blue-50 border-blue-100'
                       }`}
                     >
                       <span className="text-lg">{stat.emoji}</span>
                       <p className={`text-xl font-black mt-0.5 ${
-                        stat.color === 'red' ? 'text-red-400' :
-                        stat.color === 'amber' ? 'text-amber-400' :
-                        'text-blue-400'
+                        stat.color === 'red' ? 'text-red-600' :
+                        stat.color === 'amber' ? 'text-amber-700' :
+                        'text-blue-600'
                       }`}>
                         {stat.count}
                       </p>
-                      <p className="text-[10px] text-white/40 font-semibold">{stat.label}</p>
+                      <p className="text-[10px] text-slate-500 font-semibold">{stat.label}</p>
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 pt-3 border-t border-white/6 flex items-center justify-between">
-                  <span className="text-[11px] text-white/40">Conversion rate</span>
+                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-500">Conversion rate</span>
                   <div className="flex items-center gap-2">
-                    <div className="w-20 h-1.5 rounded-full bg-white/8 overflow-hidden">
+                    <div className="w-20 h-1.5 rounded-full bg-slate-100 overflow-hidden">
                       <div className="h-full w-[40%] bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full" />
                     </div>
-                    <span className="text-[11px] font-bold text-indigo-400">40%</span>
+                    <span className="text-[11px] font-bold text-indigo-600">40%</span>
                   </div>
                 </div>
               </div>

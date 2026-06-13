@@ -968,7 +968,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                   className="px-6 pt-5 pb-3"
                   style={{ borderBottom: '1px solid #E2E8F0' }}
                 >
-                  <DialogHeader className="flex flex-row items-center justify-between">
+                  <DialogHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
                     <div>
                       <DialogTitle className="text-slate-800 text-[16px] font-semibold tracking-tight">
                         {isEdit ? 'Patient Profile' : 'Add New Patient'}
@@ -981,11 +981,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Tab Selector */}
-                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-6 gap-0.5">
+                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-0 sm:mr-6 gap-0.5 overflow-x-auto scrollbar-none flex-nowrap shrink-0">
                       <button
                         type="button"
                         onClick={() => setActiveTab('general')}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 shrink-0 ${
                           activeTab === 'general'
                             ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
                             : 'text-slate-500 hover:text-slate-700'
@@ -996,7 +996,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       <button
                         type="button"
                         onClick={() => setActiveTab('medical')}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
                           activeTab === 'medical'
                             ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
                             : 'text-slate-500 hover:text-slate-700'
@@ -1010,10 +1010,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <button
                             type="button"
                             onClick={() => setActiveTab('estimates')}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
                               activeTab === 'estimates'
-                                ? 'bg-indigo-500 text-white shadow-md'
-                                : 'text-white/40 hover:text-white/70'
+                                ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                                : 'text-slate-500 hover:text-slate-700'
                             }`}
                           >
                             <StickyNote size={10} />
@@ -1022,10 +1022,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <button
                             type="button"
                             onClick={() => setActiveTab('programs')}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
                               activeTab === 'programs'
-                                ? 'bg-indigo-500 text-white shadow-md'
-                                : 'text-white/40 hover:text-white/70'
+                                ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                                : 'text-slate-500 hover:text-slate-700'
                             }`}
                           >
                             <Zap size={10} />
@@ -1152,10 +1152,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                   <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
                     {/* AI Dental Scribe (Voice to Chart) */}
                     <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4.5 space-y-3 relative overflow-hidden">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded bg-indigo-500/20 flex items-center justify-center">
-                            <Mic size={12} className="text-indigo-400" />
+                          <div className="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center">
+                            <Mic size={12} className="text-indigo-600" />
                           </div>
                           <div>
                             <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">AI Dental Scribe</h4>
@@ -1167,7 +1167,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <button
                             type="button"
                             onClick={stopScribeSpeech}
-                            className="px-2.5 py-1 bg-rose-500 hover:bg-rose-600 rounded text-[11px] font-bold text-white flex items-center gap-1.5 animate-pulse"
+                            className="w-full sm:w-auto px-2.5 py-1.5 bg-rose-500 hover:bg-rose-600 rounded text-[11px] font-bold text-white flex items-center justify-center gap-1.5 animate-pulse"
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                             Stop Recording
@@ -1177,7 +1177,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             type="button"
                             onClick={startScribeSpeech}
                             disabled={scribeStatus === 'analyzing'}
-                            className="px-2.5 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-[11px] font-bold text-indigo-300 flex items-center gap-1.5 transition-all"
+                            className="w-full sm:w-auto px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[11px] font-bold text-indigo-600 flex items-center justify-center gap-1.5 transition-all"
                           >
                             <Mic size={11} />
                             Start AI Scribe
@@ -1187,7 +1187,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Transcript Window */}
                       {(scribeTranscript || scribeStatus === 'listening') && (
-                        <div className="bg-black/45 border border-white/[0.05] rounded-lg p-3 space-y-3">
+                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-3">
                           <p className="text-[11.5px] font-mono text-slate-700 leading-relaxed whitespace-pre-wrap">
                             {scribeTranscript}
                           </p>
@@ -1269,7 +1269,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
                             const hasAllergy = (form.allergies || []).includes(allergy);
                             return (
-                              <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-white/75 hover:text-white transition-colors">
+                              <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1281,8 +1281,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                   }}
                                   className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                                     hasAllergy
-                                      ? 'bg-rose-500/25 border-rose-500/50 text-rose-400'
-                                      : 'bg-white/[0.03] border-white/[0.1] text-transparent hover:bg-white/[0.07]'
+                                      ? 'bg-rose-50 border-rose-300 text-rose-600'
+                                      : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
                                   }`}
                                 >
                                   {hasAllergy && <span className="text-[9px] leading-none">✓</span>}
@@ -1296,12 +1296,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Medical Conditions Checklist */}
                       <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
-                        <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Chronic Conditions</h4>
+                        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Chronic Conditions</h4>
                         <div className="grid grid-cols-1 gap-2.5">
                           {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
                             const hasCond = (form.medicalConditions || []).includes(cond);
                             return (
-                              <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-white/75 hover:text-white transition-colors">
+                              <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1313,8 +1313,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                   }}
                                   className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
                                     hasCond
-                                      ? 'bg-rose-500/25 border-rose-500/50 text-rose-400'
-                                      : 'bg-white/[0.03] border-white/[0.1] text-transparent hover:bg-white/[0.07]'
+                                      ? 'bg-rose-50 border-rose-300 text-rose-600'
+                                      : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
                                   }`}
                                 >
                                   {hasCond && <span className="text-[9px] leading-none">✓</span>}
@@ -1329,16 +1329,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                     {/* Vitals Logger */}
                     <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
-                      <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Patient Vitals</h4>
+                      <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Patient Vitals</h4>
                       <div className="grid grid-cols-3 gap-3">
                         <div>
-                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
                           <input
-                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-white outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50"
-                            style={{
-                              background: 'rgba(255,255,255,0.03)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                            }}
+                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="e.g. 120/80 mmHg"
                             value={form.vitals?.bp || ''}
                             onChange={(e) => {
@@ -1347,13 +1343,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
                           <input
-                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-white outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50"
-                            style={{
-                              background: 'rgba(255,255,255,0.03)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                            }}
+                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="e.g. 72 bpm"
                             value={form.vitals?.pulse || ''}
                             onChange={(e) => {
@@ -1362,13 +1354,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
                           <input
-                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-white outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50"
-                            style={{
-                              background: 'rgba(255,255,255,0.03)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                            }}
+                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                             placeholder="e.g. 98.6 °F"
                             value={form.vitals?.temp || ''}
                             onChange={(e) => {
@@ -1383,8 +1371,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Interactive Dental Chart</h4>
-                          <p className="text-[10px] text-white/40 mt-0.5">Click teeth to toggle decay, crowns, or extraction problem areas (FDI numbering)</p>
+                          <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Interactive Dental Chart</h4>
+                          <p className="text-[10px] text-slate-500 mt-0.5">Click teeth to toggle decay, crowns, or extraction problem areas (FDI numbering)</p>
                         </div>
                         {form.problemTeeth && form.problemTeeth.length > 0 && (
                           <button
@@ -1397,10 +1385,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
 
                       {/* Tooth Chart Layout Grid */}
-                      <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
                         {/* Midline guides */}
-                        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-white/[0.04] pointer-events-none" />
-                        <div className="absolute left-0 right-0 top-1/2 h-px bg-white/[0.04] pointer-events-none" />
+                        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
+                        <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
 
                         {/* UPPER ARCH */}
                         <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
@@ -1416,8 +1404,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       onClick={() => handleToothToggle(num)}
                                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
-                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
-                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
                                       }`}
                                     >
                                       {num}
@@ -1446,8 +1434,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       onClick={() => handleToothToggle(num)}
                                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
-                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
-                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
                                       }`}
                                     >
                                       {num}
@@ -1476,8 +1464,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       onClick={() => handleToothToggle(num)}
                                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
-                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
-                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
                                       }`}
                                     >
                                       {num}
@@ -1506,8 +1494,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       onClick={() => handleToothToggle(num)}
                                       className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
-                                          ? 'bg-rose-500/25 border-rose-500/60 text-rose-400 shadow-md shadow-rose-500/10'
-                                          : 'bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.07] text-white/50'
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
                                       }`}
                                     >
                                       {num}
@@ -1525,10 +1513,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Selected teeth details */}
                       {form.problemTeeth && form.problemTeeth.length > 0 ? (
-                        <div className="space-y-3 bg-rose-500/[0.02] border border-rose-500/10 rounded-xl p-4">
+                        <div className="space-y-3 bg-rose-50/[0.3] border border-rose-100 rounded-xl p-4">
                           <div className="flex items-center justify-between">
                             <span className="text-[10.5px] font-bold uppercase tracking-widest text-rose-400">Tooth-Specific Chart Details</span>
-                            <span className="text-[9.5px] text-white/30 font-medium">({form.problemTeeth.length} flagged teeth)</span>
+                            <span className="text-[9.5px] text-slate-450 font-medium">({form.problemTeeth.length} flagged teeth)</span>
                           </div>
                           
                           <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
@@ -1537,10 +1525,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               const note = form.toothNotes?.[t] || '';
                               
                               return (
-                                <div key={t} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2.5">
+                                <div key={t} className="bg-white border border-slate-100 rounded-xl p-3 space-y-2.5">
                                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-[12px] font-bold text-rose-300 bg-rose-500/15 border border-rose-500/20 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                      <span className="text-[12px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">
                                         🦷 Tooth {t}
                                       </span>
                                       <span className="text-[11px] text-white/50 truncate max-w-[200px]" title={getToothName(t)}>
@@ -1555,7 +1543,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                         const conditions = { ...form.toothConditions, [t]: e.target.value };
                                         handleChange('toothConditions', conditions);
                                       }}
-                                      className="text-[11px] font-medium text-white/80 bg-[#121828] border border-white/[0.08] hover:border-white/15 px-2 py-1 rounded-md outline-none cursor-pointer"
+                                      className="text-[11px] font-medium text-slate-700 bg-white border border-slate-200 hover:border-slate-300 px-2 py-1 rounded-md outline-none cursor-pointer"
                                     >
                                       <option value="Decayed / Cavity">Decayed / Cavity</option>
                                       <option value="Root Canal Needed">Root Canal Needed</option>
@@ -1575,7 +1563,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       const notes = { ...form.toothNotes, [t]: e.target.value };
                                       handleChange('toothNotes', notes);
                                     }}
-                                    className="w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-white placeholder:text-white/20 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/40"
+                                    className="w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/40 bg-white border border-slate-200 focus:border-indigo-500"
                                     style={{
                                       background: 'rgba(255,255,255,0.02)',
                                       border: '1px solid rgba(255,255,255,0.06)',
@@ -1587,7 +1575,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           </div>
                         </div>
                       ) : (
-                        <div className="bg-white/[0.01] border border-dashed border-white/[0.06] rounded-xl py-3.5 text-center text-white/20 text-[11px]">
+                        <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl py-3.5 text-center text-slate-400 text-[11px]">
                           No teeth selected. Click teeth in the chart above to mark problems.
                         </div>
                       )}
@@ -1596,15 +1584,15 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* X-Ray Section */}
                     <div className="space-y-3">
                       <div>
-                        <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Patient X-Rays / Radiographs</h4>
-                        <p className="text-[10px] text-white/40 mt-0.5">Attach medical panoramic scans or individual tooth radiographs to this record</p>
+                        <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Patient X-Rays / Radiographs</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Attach medical panoramic scans or individual tooth radiographs to this record</p>
                       </div>
 
                       {/* Uploader dropzone */}
-                      <label className="border border-dashed border-white/[0.12] hover:border-indigo-500/30 bg-white/[0.02] hover:bg-indigo-500/[0.01] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
-                        <Upload size={18} className="text-white/40 group-hover:text-indigo-400 transition-colors" />
-                        <span className="text-[12px] font-semibold text-white/60 group-hover:text-white/80 transition-colors">Upload X-Ray Image</span>
-                        <span className="text-[10px] text-white/25">Supports PNG, JPG (Max 5MB)</span>
+                      <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
+                        <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                        <span className="text-[12px] font-semibold text-slate-650 group-hover:text-slate-800 transition-colors">Upload X-Ray Image</span>
+                        <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB)</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1641,20 +1629,20 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           ))}
                         </div>
                       ) : (
-                        <div className="bg-white/[0.01] border border-dashed border-white/[0.06] rounded-xl py-4 text-center text-white/20 text-[11px]">
+                        <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-xl py-4 text-center text-slate-400 text-[11px]">
                           No radiographs attached. Use the uploader above to add scans.
                         </div>
                       )}
 
                       {/* RVG Compare Slider sandbox */}
                       {form.xrays && form.xrays.length >= 2 && (
-                        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 space-y-3 mt-4">
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 mt-4">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                               <Sparkles size={11} className="text-indigo-400" />
                               RVG Compare Sandbox (Before vs After)
                             </span>
-                            <span className="text-[10px] text-white/40">Drag slider to review treatment margins</span>
+                            <span className="text-[10px] text-slate-500">Drag slider to review treatment margins</span>
                           </div>
                           
                           {/* Interactive Slider Container */}
@@ -1714,7 +1702,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             onClick={() => {
                               handleChange('xrays', [DEMO_PRE_OP_RVG, DEMO_POST_OP_RVG]);
                             }}
-                            className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded text-[10px] font-bold text-indigo-300 flex items-center gap-1 transition-all"
+                            className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[10px] font-bold text-indigo-600 flex items-center gap-1 transition-all"
                           >
                             <Sparkles size={10} /> Load Pre/Post-Op Demo Scans
                           </button>
@@ -1728,25 +1716,25 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {activeTab === 'estimates' && (
                   <div className="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
                     {/* Add Item Builder */}
-                    <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 space-y-4">
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded bg-indigo-500/20 flex items-center justify-center">
                           <Plus size={12} className="text-indigo-400" />
                         </div>
                         <div>
-                          <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">Add Treatment Item</h4>
-                          <p className="text-[10px] text-white/40 mt-0.5">Select tooth & procedure with GST categorization</p>
+                          <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Add Treatment Item</h4>
+                          <p className="text-[10px] text-slate-505 mt-0.5">Select tooth & procedure with GST categorization</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         {/* Tooth selector */}
                         <div>
-                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Select Tooth</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Select Tooth</label>
                           <select
                             value={builderTooth}
                             onChange={(e) => setBuilderTooth(e.target.value)}
-                            className="w-full bg-[#121828] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[12px] text-white outline-none cursor-pointer"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-[12px] text-slate-700 outline-none cursor-pointer"
                           >
                             <option value="">General (No Tooth)</option>
                             {(form.problemTeeth || []).map((t) => (
@@ -1757,7 +1745,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                         {/* Procedure selector */}
                         <div className="md:col-span-2">
-                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Select Procedure</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Select Procedure</label>
                           <select
                             value={builderProcedureIdx}
                             onChange={(e) => {
@@ -1765,7 +1753,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               setBuilderProcedureIdx(idx);
                               setBuilderCost(PROCEDURES_CATALOG[Number(idx)].defaultCost);
                             }}
-                            className="w-full bg-[#121828] border border-white/[0.08] rounded-lg px-2.5 py-2 text-[12px] text-white outline-none cursor-pointer"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-[12px] text-slate-700 outline-none cursor-pointer"
                           >
                             {PROCEDURES_CATALOG.map((p, idx) => (
                               <option key={idx} value={idx}>
@@ -1777,16 +1765,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                         {/* Cost */}
                         <div>
-                          <label className="block text-[10px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">Cost (₹)</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Cost (₹)</label>
                           <input
                             type="number"
                             value={builderCost}
                             onChange={(e) => setBuilderCost(Number(e.target.value))}
-                            className="w-full px-2.5 py-1.5 rounded-lg text-[12px] text-white outline-none transition-all"
-                            style={{
-                              background: 'rgba(255,255,255,0.03)',
-                              border: '1px solid rgba(255,255,255,0.08)',
-                            }}
+                            className="w-full bg-white border border-slate-200 px-2.5 py-1.5 rounded-lg text-[12px] text-slate-800 outline-none transition-all focus:border-indigo-500"
                           />
                         </div>
                       </div>
@@ -1815,44 +1799,44 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Estimate Items Table */}
-                    <div className="bg-white/[0.01] border border-white/[0.07] rounded-xl overflow-hidden">
-                      <div className="px-4 py-3 bg-white/[0.02] border-b border-white/[0.07] flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-white uppercase tracking-wider">Current Estimate Details</span>
+                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">Current Estimate Details</span>
                         <select
                           value={estimateStatus}
                           onChange={(e) => setEstimateStatus(e.target.value as any)}
-                          className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-500/10 border border-indigo-500/25 px-2 py-0.5 rounded-md outline-none cursor-pointer"
+                          className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md outline-none cursor-pointer"
                         >
-                          <option value="Draft" style={{ background: '#121828', color: '#fff' }}>Draft</option>
-                          <option value="Sent" style={{ background: '#121828', color: '#fff' }}>Sent to Patient</option>
-                          <option value="Approved" style={{ background: '#121828', color: '#fff' }}>Approved</option>
+                          <option value="Draft" style={{ background: '#fff', color: '#334155' }}>Draft</option>
+                          <option value="Sent" style={{ background: '#fff', color: '#334155' }}>Sent to Patient</option>
+                          <option value="Approved" style={{ background: '#fff', color: '#334155' }}>Approved</option>
                         </select>
                       </div>
 
                       {estimateItems.length > 0 ? (
-                        <div className="divide-y divide-white/[0.05]">
+                        <div className="divide-y divide-slate-100">
                           {estimateItems.map((item, idx) => (
-                            <div key={idx} className="px-4 py-3 flex items-center justify-between text-[12px] hover:bg-white/[0.01] transition-colors">
+                            <div key={idx} className="px-4 py-3 flex items-center justify-between text-[12px] hover:bg-slate-50 transition-colors">
                               <div className="space-y-1">
                                 <div className="flex items-center gap-1.5">
                                   {item.tooth && (
-                                    <span className="text-[9px] font-bold text-rose-300 bg-rose-500/15 border border-rose-500/20 px-1 rounded">
+                                    <span className="text-[9px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-1 rounded">
                                       T{item.tooth}
                                     </span>
                                   )}
-                                  <span className="text-white font-medium">{item.procedure}</span>
+                                  <span className="text-slate-800 font-medium">{item.procedure}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[10px] text-white/40">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
                                   <span>{item.isCosmetic ? 'Cosmetic Dental (18% GST)' : 'Therapeutic Care (Exempt / 0% GST)'}</span>
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-3">
-                                <span className="text-white font-bold font-mono">₹{item.cost.toLocaleString('en-IN')}</span>
+                                <span className="text-slate-800 font-bold font-mono">₹{item.cost.toLocaleString('en-IN')}</span>
                                 <button
                                   type="button"
                                   onClick={() => setEstimateItems((prev) => prev.filter((_, i) => i !== idx))}
-                                  className="text-white/30 hover:text-rose-400 transition-colors p-1"
+                                  className="text-slate-400 hover:text-rose-600 transition-colors p-1"
                                 >
                                   <Trash2 size={13} />
                                 </button>
@@ -1861,20 +1845,20 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           ))}
                         </div>
                       ) : (
-                        <div className="py-8 text-center text-[11px] text-white/25 border-b border-white/[0.07]">
+                        <div className="py-8 text-center text-[11px] text-slate-400 border-b border-slate-200">
                           No estimate items added. Add procedures above to build the billing proposal.
                         </div>
                       )}
 
                       {/* Calculations summary panel */}
-                      <div className="bg-white/[0.02] p-4.5 space-y-2.5">
+                      <div className="bg-slate-50 p-4.5 space-y-2.5">
                         <div className="flex justify-between text-[11px] text-slate-500">
                           <span>Subtotal</span>
                           <span className="font-mono">₹{calculatedSubtotal.toLocaleString('en-IN')}</span>
                         </div>
 
                         {/* Discount row */}
-                        <div className="flex items-center justify-between text-[11px] text-white/50 gap-4">
+                        <div className="flex items-center justify-between text-[11px] text-slate-600 gap-4">
                           <span className="flex items-center gap-1.5 shrink-0">
                             Discretionary Discount
                           </span>
@@ -1887,12 +1871,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               onChange={(e) => setEstimateDiscount(Number(e.target.value))}
                               className="w-full accent-indigo-500"
                             />
-                            <span className="font-mono text-white text-[11.5px] font-bold shrink-0">{estimateDiscount}%</span>
+                            <span className="font-mono text-slate-800 text-[11.5px] font-bold shrink-0">{estimateDiscount}%</span>
                           </div>
                         </div>
 
                         {calculatedDiscountAmount > 0 && (
-                          <div className="flex justify-between text-[11px] text-rose-400">
+                          <div className="flex justify-between text-[11px] text-rose-600">
                             <span>Discount Value</span>
                             <span className="font-mono">-₹{calculatedDiscountAmount.toLocaleString('en-IN')}</span>
                           </div>
@@ -1907,7 +1891,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                         <div className="flex justify-between text-[13px] font-bold text-slate-800">
                           <span className="uppercase tracking-wider">Estimated Total</span>
-                          <span className="font-mono text-indigo-400">₹{calculatedGrandTotal.toLocaleString('en-IN')}</span>
+                          <span className="font-mono text-indigo-600">₹{calculatedGrandTotal.toLocaleString('en-IN')}</span>
                         </div>
                       </div>
                     </div>
@@ -2039,26 +2023,26 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <div
                                       className={`rounded-xl border p-4 transition-all ${
                                         isCurrent
-                                          ? 'bg-white/[0.04] border-indigo-500/30'
-                                          : 'bg-white/[0.01] border-white/[0.05] opacity-60'
+                                          ? 'bg-indigo-50/50 border-indigo-500/30'
+                                          : 'bg-slate-50/50 border-slate-200 opacity-60'
                                       }`}
                                     >
                                       <div className="flex items-center justify-between gap-3 mb-2">
                                         <div className="flex items-center gap-2">
-                                          <span className={`text-[11px] font-bold ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>
+                                          <span className={`text-[11px] font-bold ${isCurrent ? 'text-indigo-600' : 'text-slate-500'}`}>
                                             Day {step.day}
                                           </span>
-                                          <span className="text-slate-300">•</span>
+                                          <span className="text-slate-400">•</span>
                                           <span className="text-[11px] text-slate-500 font-medium">{step.subLabel}</span>
                                         </div>
 
                                         <span
                                           className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${
                                             isSent
-                                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                               : isCurrent
-                                              ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 animate-pulse'
-                                              : 'bg-slate-100 text-slate-400 border border-slate-200'
+                                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 animate-pulse'
+                                              : 'bg-slate-100 text-slate-500 border border-slate-200'
                                           }`}
                                         >
                                           {isSent ? 'Sent' : isCurrent ? 'Next Up' : 'Scheduled'}
@@ -2359,15 +2343,15 @@ const ReactivationCustomers: React.FC = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="flex items-start justify-between gap-4"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
         >
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-[22px] font-bold text-slate-800 tracking-tight">
+              <h1 className="text-[20px] sm:text-[22px] font-bold text-slate-800 tracking-tight">
                 Patient Database
               </h1>
               <span
-                className="px-2.5 py-1 rounded-full text-[11px] font-bold text-indigo-300 tracking-wide"
+                className="px-2.5 py-1 rounded-full text-[11px] font-bold text-indigo-300 tracking-wide shrink-0"
                 style={{
                   background: 'rgba(99,102,241,0.12)',
                   border: '1px solid rgba(99,102,241,0.25)',
@@ -2376,14 +2360,14 @@ const ReactivationCustomers: React.FC = () => {
                 20 patients
               </span>
             </div>
-            <p className="text-slate-500 text-[13px] mt-1">
+            <p className="text-slate-500 text-[12px] sm:text-[13px] mt-1">
               Manage and track your patient relationships
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-stretch sm:justify-start">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-slate-500 transition-all duration-150 hover:text-slate-700 hover:bg-slate-100"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-slate-500 transition-all duration-150 hover:text-slate-700 hover:bg-slate-100"
               style={{ border: '1px solid #E2E8F0' }}
             >
               <Upload size={14} />
@@ -2391,7 +2375,7 @@ const ReactivationCustomers: React.FC = () => {
             </button>
             <button
               onClick={handleOpenAdd}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-150 hover:opacity-90 active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-150 hover:opacity-90 active:scale-95"
               style={{
                 background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
                 boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
@@ -2408,7 +2392,7 @@ const ReactivationCustomers: React.FC = () => {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: 0.06, ease: 'easeOut' }}
-          className="flex items-center gap-2.5 flex-wrap"
+          className="grid grid-cols-2 lg:flex lg:items-center gap-2.5 w-full"
         >
           <StatChip
             label="Total"
