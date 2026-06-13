@@ -166,22 +166,22 @@ const sectionAnim = (delay: number) => ({
 const StatusBadge: React.FC<{ status: CampaignRow['status'] }> = ({ status }) => {
   const config = {
     Active: {
-      bg: 'bg-emerald-500/15',
-      text: 'text-emerald-400',
-      border: 'border-emerald-500/30',
-      dot: 'bg-emerald-400',
+      bg: 'bg-emerald-50',
+      text: 'text-emerald-700',
+      border: 'border-emerald-200',
+      dot: 'bg-emerald-500',
     },
     Completed: {
-      bg: 'bg-slate-500/15',
-      text: 'text-slate-400',
-      border: 'border-slate-500/30',
+      bg: 'bg-slate-50',
+      text: 'text-slate-600',
+      border: 'border-slate-200',
       dot: 'bg-slate-400',
     },
     Draft: {
-      bg: 'bg-amber-500/15',
-      text: 'text-amber-400',
-      border: 'border-amber-500/30',
-      dot: 'bg-amber-400',
+      bg: 'bg-amber-50',
+      text: 'text-amber-700',
+      border: 'border-amber-200',
+      dot: 'bg-amber-500',
     },
   }[status];
 
@@ -200,9 +200,9 @@ const StatusBadge: React.FC<{ status: CampaignRow['status'] }> = ({ status }) =>
 const CustomChartTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[#0D1526] border border-indigo-500/20 rounded-xl px-4 py-3 shadow-2xl">
-        <p className="text-[11px] text-slate-400 mb-1">{label}</p>
-        <p className="text-base font-bold text-indigo-300">
+      <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-lg">
+        <p className="text-[11px] text-slate-500 mb-1">{label}</p>
+        <p className="text-base font-bold text-indigo-600">
           ₹{payload[0].value.toLocaleString('en-IN')}
         </p>
       </div>
@@ -233,9 +233,9 @@ export default function ReactivationDashboard() {
       title: 'Total Patients',
       value: totalPatients,
       icon: Users,
-      colorClass: 'text-indigo-400',
+      colorClass: 'text-indigo-600',
       glowClass: 'shadow-indigo-500/20',
-      borderClass: 'border-indigo-500/20',
+      borderClass: 'border-slate-200/80',
       bgGradient: 'from-indigo-500/10 to-indigo-500/5',
     },
     {
@@ -244,9 +244,9 @@ export default function ReactivationDashboard() {
       value: dueForRecheckup,
       subLabel: 'Needs follow-up',
       icon: UserX,
-      colorClass: 'text-amber-400',
+      colorClass: 'text-amber-600',
       glowClass: 'shadow-amber-500/20',
-      borderClass: 'border-amber-500/20',
+      borderClass: 'border-slate-200/80',
       bgGradient: 'from-amber-500/10 to-amber-500/5',
     },
     {
@@ -254,9 +254,9 @@ export default function ReactivationDashboard() {
       title: 'Active WhatsApp Flows',
       value: activeFlows,
       icon: Megaphone,
-      colorClass: 'text-emerald-400',
+      colorClass: 'text-emerald-600',
       glowClass: 'shadow-emerald-500/20',
-      borderClass: 'border-emerald-500/20',
+      borderClass: 'border-slate-200/80',
       bgGradient: 'from-emerald-500/10 to-emerald-500/5',
     },
     {
@@ -266,9 +266,9 @@ export default function ReactivationDashboard() {
       prefix: '₹',
       subLabel: 'This Month',
       icon: IndianRupee,
-      colorClass: 'text-emerald-300',
+      colorClass: 'text-emerald-700',
       glowClass: 'shadow-emerald-400/30',
-      borderClass: 'border-emerald-400/30',
+      borderClass: 'border-emerald-200',
       bgGradient: 'from-emerald-500/15 to-teal-500/10',
       isHero: true,
     },
@@ -308,17 +308,17 @@ export default function ReactivationDashboard() {
 
   return (
     <div
-      className="min-h-screen text-white"
-      style={{ background: '#080C14' }}
+      className="min-h-screen text-slate-800"
+      style={{ background: '#F8FAFC' }}
     >
       {/* Ambient background glows */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div
-          className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full opacity-[0.04]"
+          className="absolute top-0 left-1/4 w-[600px] h-[400px] rounded-full opacity-[0.06]"
           style={{ background: 'radial-gradient(circle, #6366F1, transparent 70%)' }}
         />
         <div
-          className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.03]"
+          className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full opacity-[0.04]"
           style={{ background: 'radial-gradient(circle, #10B981, transparent 70%)' }}
         />
       </div>
@@ -341,7 +341,7 @@ export default function ReactivationDashboard() {
                 Dental CRM
             </span>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
               WhatsApp Patient Recheckup Hub
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
@@ -378,23 +378,15 @@ export default function ReactivationDashboard() {
               variants={cardVariant}
               className={`relative overflow-hidden rounded-2xl border backdrop-blur-xl p-5 transition-all duration-300 group
                 ${card.isHero
-                  ? 'lg:col-span-1 border-emerald-400/30'
-                  : `${card.borderClass}`
+                  ? 'lg:col-span-1 border-emerald-200 shadow-emerald-50'
+                  : `border-slate-200/80 shadow-slate-100/50`
                 }
               `}
               style={{
                 background: card.isHero
-                  ? 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(20,184,166,0.08) 100%)'
-                  : `linear-gradient(135deg, ${
-                      card.id === 'total_customers'
-                        ? 'rgba(99,102,241,0.1) 0%, rgba(99,102,241,0.05) 100%'
-                        : card.id === 'inactive'
-                        ? 'rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%'
-                        : 'rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.05) 100%'
-                    })`,
-                boxShadow: card.isHero
-                  ? '0 0 40px rgba(16,185,129,0.18), inset 0 1px 0 rgba(255,255,255,0.06)'
-                  : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                  ? 'linear-gradient(135deg, rgba(209,250,229,0.4) 0%, rgba(204,251,241,0.2) 100%)'
+                  : '#FFFFFF',
+                boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05)',
               }}
             >
               {/* Background texture */}
@@ -416,12 +408,12 @@ export default function ReactivationDashboard() {
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.colorClass}`}
                     style={{
                       background: card.isHero
-                        ? 'rgba(16,185,129,0.2)'
+                        ? 'rgba(16,185,129,0.1)'
                         : card.id === 'total_customers'
-                        ? 'rgba(99,102,241,0.15)'
+                        ? 'rgba(99,102,241,0.08)'
                         : card.id === 'inactive'
-                        ? 'rgba(245,158,11,0.15)'
-                        : 'rgba(16,185,129,0.15)',
+                        ? 'rgba(245,158,11,0.08)'
+                        : 'rgba(16,185,129,0.08)',
                     }}
                   >
                     <card.icon className="w-5 h-5" />
@@ -435,12 +427,12 @@ export default function ReactivationDashboard() {
                   )}
                 </div>
 
-                <p className="text-[12px] font-medium text-slate-400 mb-1 tracking-wide">
+                <p className="text-[12px] font-medium text-slate-500 mb-1 tracking-wide">
                   {card.title}
                 </p>
 
                 <div className={`font-bold tracking-tight leading-none ${card.isHero ? 'text-4xl' : 'text-3xl'} ${card.colorClass}`}
-                  style={card.isHero ? { textShadow: '0 0 30px rgba(16,185,129,0.5)' } : {}}
+                  style={{}}
                 >
                   {card.prefix && <span className="text-2xl mr-0.5">{card.prefix}</span>}
                   <CountUp
@@ -453,7 +445,7 @@ export default function ReactivationDashboard() {
                 </div>
 
                 {card.subLabel && (
-                  <p className={`text-[12px] mt-2 font-medium ${card.isHero ? 'text-emerald-400/70' : 'text-slate-500'}`}>
+                  <p className={`text-[12px] mt-2 font-medium ${card.isHero ? 'text-emerald-700' : 'text-slate-500'}`}>
                     {card.subLabel}
                   </p>
                 )}
@@ -475,9 +467,9 @@ export default function ReactivationDashboard() {
                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
                 <span className="absolute w-2.5 h-2.5 rounded-full bg-indigo-400 animate-ping opacity-75" />
               </div>
-              <h2 className="text-base font-bold text-white">🤖 AI Recheckup Recommendations</h2>
+              <h2 className="text-base font-bold text-slate-800">🤖 AI Recheckup Recommendations</h2>
             </div>
-            <span className="text-[11px] text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-2.5 py-0.5 font-semibold">
+            <span className="text-[11px] text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-full px-2.5 py-0.5 font-semibold">
               3 new
             </span>
           </div>
@@ -489,11 +481,8 @@ export default function ReactivationDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: 0.5 + idx * 0.1, ease: [0.22, 1, 0.36, 1] as any }}
-                className="relative flex items-center gap-5 rounded-2xl border border-white/[0.06] p-5 transition-all duration-300 hover:border-indigo-500/30 group overflow-hidden"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-                  backdropFilter: 'blur(12px)',
-                }}
+                className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 rounded-2xl border border-slate-200/80 p-5 transition-all duration-300 hover:border-indigo-300 hover:shadow-md group overflow-hidden bg-white shadow-sm"
+                style={{}}
               >
                 {/* Left accent bar */}
                 <div
@@ -509,33 +498,33 @@ export default function ReactivationDashboard() {
                 />
 
                 {/* Customer count / emoji blob */}
-                <div className="flex-shrink-0 text-center w-20">
+                <div className="flex-shrink-0 text-left sm:text-center w-full sm:w-20">
                   {rec.customerCount > 0 ? (
-                    <>
-                      <div className="text-3xl font-black text-white leading-none">
+                    <div className="flex sm:flex-col items-baseline sm:items-center gap-1.5 sm:gap-0">
+                      <div className="text-3xl font-black text-slate-900 leading-none">
                         {rec.customerCount}
                       </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{rec.customerCount === 1 ? 'patient' : 'patients'}</div>
-                    </>
+                      <div className="text-[10px] text-slate-500 sm:mt-0.5 font-medium">{rec.customerCount === 1 ? 'patient' : 'patients'}</div>
+                    </div>
                   ) : (
-                    <div className="text-4xl">{rec.emoji}</div>
+                    <div className="text-3xl sm:text-4xl">{rec.emoji}</div>
                   )}
                 </div>
 
                 {/* Divider */}
-                <div className="w-px h-12 bg-white/[0.06] flex-shrink-0" />
+                <div className="hidden sm:block w-px h-12 bg-slate-100 flex-shrink-0" />
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-300 leading-snug">
+                  <p className="text-sm text-slate-600 leading-snug">
                     {rec.customerCount > 0 && (
-                      <span className="text-white font-semibold">{rec.customerCount} {rec.customerCount === 1 ? 'patient' : 'patients'}</span>
+                      <span className="text-slate-900 font-semibold">{rec.customerCount} {rec.customerCount === 1 ? 'patient' : 'patients'}</span>
                     )}{' '}
                     {rec.insight.replace(/^patients?\s+/i, '')}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <Target className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-                    <span className="text-[12px] text-indigo-300 font-medium truncate">
+                    <span className="text-[12px] text-indigo-600 font-medium truncate">
                       {rec.suggestedCampaign}
                     </span>
                   </div>
@@ -546,7 +535,7 @@ export default function ReactivationDashboard() {
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => handleGenerateCampaign(rec.id)}
-                  className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all duration-200"
+                  className="w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all duration-200"
                   style={{
                     background:
                       generatingId === rec.id
@@ -598,16 +587,13 @@ export default function ReactivationDashboard() {
         >
           {/* LEFT — Recent Campaigns */}
           <div
-            className="lg:col-span-3 rounded-2xl border border-white/[0.06] overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.015) 100%)',
-              backdropFilter: 'blur(16px)',
-            }}
+            className="lg:col-span-3 rounded-2xl border border-slate-200/80 overflow-hidden bg-white shadow-sm"
+            style={{}}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.05]">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
-                <h3 className="text-sm font-bold text-white">Recent Campaign Activity</h3>
+                <h3 className="text-sm font-bold text-slate-800">Recent Campaign Activity</h3>
                 <p className="text-[11px] text-slate-500 mt-0.5">Last 30 days across all channels</p>
               </div>
               <button className="text-[12px] text-indigo-400 font-medium flex items-center gap-1 hover:text-indigo-300 transition-colors">
@@ -616,23 +602,23 @@ export default function ReactivationDashboard() {
             </div>
 
             {/* Campaign rows */}
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-slate-100">
               {campaignRows.map((campaign, idx) => (
                 <motion.div
                   key={campaign.id}
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8 + idx * 0.07, duration: 0.4 }}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.025] transition-colors group"
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors group"
                 >
                   {/* Campaign icon */}
-                  <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/15 flex items-center justify-center flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
                     <Megaphone className="w-4 h-4 text-indigo-400" />
                   </div>
 
                   {/* Name + time */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{campaign.name}</p>
+                    <p className="text-sm font-semibold text-slate-800 truncate">{campaign.name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <Clock className="w-3 h-3 text-slate-600" />
                       <span className="text-[11px] text-slate-500">{campaign.timeAgo}</span>
@@ -646,7 +632,7 @@ export default function ReactivationDashboard() {
                   <div className="hidden sm:flex items-center gap-4 text-right">
                     <div>
                       <p className="text-[11px] text-slate-500">Sent</p>
-                      <p className="text-sm font-bold text-slate-300">
+                      <p className="text-sm font-bold text-slate-700">
                         {campaign.sent != null ? campaign.sent.toLocaleString('en-IN') : '—'}
                       </p>
                     </div>
@@ -668,21 +654,18 @@ export default function ReactivationDashboard() {
 
           {/* RIGHT — Revenue Sparkline */}
           <div
-            className="lg:col-span-2 rounded-2xl border border-white/[0.06] p-5"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.015) 100%)',
-              backdropFilter: 'blur(16px)',
-            }}
+            className="lg:col-span-2 rounded-2xl border border-slate-200/80 p-5 bg-white shadow-sm"
+            style={{}}
           >
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-white">Revenue Recovered</h3>
+              <h3 className="text-sm font-bold text-slate-800">Revenue Recovered</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">Last 30 Days</p>
             </div>
 
             {/* Summary stat */}
             <div className="mb-5 flex items-end gap-3">
               <div>
-                <div className="text-2xl font-black text-emerald-400" style={{ textShadow: '0 0 20px rgba(16,185,129,0.4)' }}>
+                <div className="text-2xl font-black text-emerald-600" style={{}}>
                   ₹{appointmentsRebooked.toLocaleString('en-IN')}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-0.5">Total this month</div>
@@ -707,7 +690,7 @@ export default function ReactivationDashboard() {
                   <CartesianGrid
                     strokeDasharray="3 3"
                     vertical={false}
-                    stroke="rgba(255,255,255,0.04)"
+                    stroke="rgba(0,0,0,0.05)"
                   />
                   <XAxis
                     dataKey="day"
@@ -749,13 +732,8 @@ export default function ReactivationDashboard() {
         ═══════════════════════════════════════════════════════ */}
         <motion.div
           {...sectionAnim(0.9)}
-          className="relative overflow-hidden rounded-2xl border border-indigo-500/20 p-6"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 50%, rgba(16,185,129,0.05) 100%)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: '0 0 60px rgba(99,102,241,0.1), inset 0 1px 0 rgba(255,255,255,0.06)',
-          }}
+          className="relative overflow-hidden rounded-2xl border border-slate-200/80 p-6 bg-white shadow-sm"
+          style={{}}
         >
           {/* Decorative gradient orb */}
           <div
@@ -765,26 +743,26 @@ export default function ReactivationDashboard() {
 
           <div className="relative z-10">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-3">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, #6366F1, #8B5CF6)', boxShadow: '0 4px 20px rgba(99,102,241,0.4)' }}
                 >
                   <TrendingUp className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-indigo-400 uppercase tracking-[0.14em]">
+                  <p className="text-[11px] font-bold text-indigo-500 uppercase tracking-[0.14em]">
                     Top Campaign This Month
                   </p>
-                  <h3 className="text-lg font-bold text-white">Teeth Cleaning Offer</h3>
+                  <h3 className="text-lg font-bold text-slate-800">Teeth Cleaning Offer</h3>
                 </div>
               </div>
 
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold border border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 transition-colors"
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-semibold border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors w-full sm:w-auto"
               >
                 <Eye className="w-3.5 h-3.5" />
                 View Full Report
@@ -794,17 +772,17 @@ export default function ReactivationDashboard() {
             {/* Funnel stats row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               {[
-                { label: 'Messages Sent', value: 500, icon: MessageSquare, color: 'text-slate-300', iconColor: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-                { label: 'Replied', value: 73, icon: CheckCircle2, color: 'text-slate-300', iconColor: 'text-amber-400', bg: 'bg-amber-500/10' },
-                { label: 'Appointments', value: 18, icon: CalendarCheck, color: 'text-slate-300', iconColor: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                { label: 'Revenue Recovered', value: 42000, prefix: '₹', icon: IndianRupee, color: 'text-emerald-400', iconColor: 'text-emerald-400', bg: 'bg-emerald-500/15' },
+                { label: 'Messages Sent', value: 500, icon: MessageSquare, color: 'text-slate-800', iconColor: 'text-indigo-600', bg: 'bg-indigo-50' },
+                { label: 'Replied', value: 73, icon: CheckCircle2, color: 'text-slate-800', iconColor: 'text-amber-600', bg: 'bg-amber-50' },
+                { label: 'Appointments', value: 18, icon: CalendarCheck, color: 'text-slate-800', iconColor: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { label: 'Revenue Recovered', value: 42000, prefix: '₹', icon: IndianRupee, color: 'text-emerald-700', iconColor: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
               ].map((stat, idx) => (
                 <motion.div
                   key={stat.label}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 1.0 + idx * 0.08, duration: 0.4 }}
-                  className={`rounded-xl p-4 border border-white/[0.06] ${stat.bg}`}
+                  className={`rounded-xl p-4 border border-slate-100 ${stat.bg}`}
                 >
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${stat.bg}`}>
                     <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
@@ -831,12 +809,12 @@ export default function ReactivationDashboard() {
               ].map((step, idx) => (
                 <div key={step.label} className="flex items-center gap-4">
                   <div className="w-32 text-right flex-shrink-0">
-                    <span className="text-[12px] font-semibold text-slate-300">{step.label}</span>
+                    <span className="text-[12px] font-semibold text-slate-700">{step.label}</span>
                   </div>
 
                   <div className="flex-1 flex items-center gap-3">
                     {/* Progress bar */}
-                    <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+                    <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: '#F1F5F9' }}>
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${step.pct}%` }}
@@ -848,7 +826,7 @@ export default function ReactivationDashboard() {
 
                     {/* Count + pct */}
                     <div className="flex items-center gap-2 flex-shrink-0 w-28">
-                      <span className="text-sm font-bold text-white">{step.value.toLocaleString('en-IN')}</span>
+                      <span className="text-sm font-bold text-slate-800">{step.value.toLocaleString('en-IN')}</span>
                       <span className="text-[11px] text-slate-500">({step.pct}%)</span>
                     </div>
                   </div>
@@ -858,14 +836,14 @@ export default function ReactivationDashboard() {
 
             {/* Conversion insight chip */}
             <div className="mt-5 flex items-center gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[11px] text-emerald-400 font-semibold">14.6% reply rate</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-                <span className="text-[11px] text-indigo-400 font-semibold">₹2,333 avg. revenue per booking</span>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-250/20">
+                <span className="text-[11px] text-indigo-700 font-semibold">₹2,333 avg. revenue per booking</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200">
                 <span className="text-[11px] text-amber-400 font-semibold">3.6% conversion to appointment</span>
               </div>
             </div>

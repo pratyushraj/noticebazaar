@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react';
+import React, { type ReactNode, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '@/contexts/SessionContext';
@@ -13,6 +13,8 @@ import {
   Zap as ZapIcon,
   MessageCircle,
   Star,
+  Menu,
+  X,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -116,7 +118,7 @@ const SidebarNavItem: React.FC<{ item: NavItem }> = ({ item }) => {
           {isActive && (
             <motion.div
               layoutId="nav-accent"
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-400"
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500"
               initial={{ opacity: 0, scaleY: 0 }}
               animate={{ opacity: 1, scaleY: 1 }}
               exit={{ opacity: 0, scaleY: 0 }}
@@ -130,15 +132,15 @@ const SidebarNavItem: React.FC<{ item: NavItem }> = ({ item }) => {
             flex items-center gap-3 mx-2 px-3 py-2.5 rounded-lg cursor-pointer select-none
             transition-all duration-150
             ${isActive
-              ? 'bg-indigo-500/20 text-indigo-400'
-              : 'text-white/50 hover:text-white/80 hover:bg-white/[0.04]'
+              ? 'bg-indigo-50 text-indigo-600'
+              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100'
             }
           `}
         >
           <Icon
             size={18}
             className={`flex-shrink-0 transition-colors duration-150 ${
-              isActive ? 'text-indigo-400' : 'text-current'
+              isActive ? 'text-indigo-600' : 'text-current'
             }`}
           />
           <span className="text-[13px] font-medium tracking-wide flex-1 leading-none">
@@ -168,6 +170,7 @@ const SidebarNavItem: React.FC<{ item: NavItem }> = ({ item }) => {
 const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => {
   const location = useLocation();
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'AI Reactivation';
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { user } = useSession();
   const userEmail = user?.email;
@@ -193,35 +196,63 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
     }
   }, [activeClinic]);
 
+  // Close sidebar on route change (for mobile)
+  React.useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [location.pathname]);
+
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#080C14' }}>
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC]">
+      {/* Backdrop overlay for mobile */}
+      <AnimatePresence>
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden backdrop-blur-sm"
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <aside
-        className="flex-shrink-0 flex flex-col h-full"
+        className={`
+          flex-shrink-0 flex flex-col h-full fixed inset-y-0 left-0 z-50 lg:static lg:translate-x-0
+          transition-transform duration-300 ease-in-out bg-white border-r border-slate-200
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
         style={{
           width: 260,
-          background: '#0A0F1C',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
         }}
       >
         {/* Logo area */}
-        <div className="px-5 pt-6 pb-5">
-          <div className="flex items-center gap-2.5 mb-1">
-            {/* Lightning bolt logo mark */}
-            <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
-              <ZapIcon size={14} className="text-indigo-400" />
+        <div className="px-5 pt-6 pb-5 flex items-center justify-between lg:block">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              {/* Lightning bolt logo mark */}
+              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+                <ZapIcon size={14} className="text-indigo-400" />
+              </div>
+              <span className="text-[15px] font-bold text-slate-800 tracking-tight leading-none">
+                Dental CRM
+              </span>
             </div>
-            <span className="text-[15px] font-bold text-white tracking-tight leading-none">
-              Dental CRM
-            </span>
+            <p className="text-[10px] text-slate-400 tracking-wider pl-[38px] font-medium">
+              WhatsApp follow-ups, bookings, and patient rechecks
+            </p>
           </div>
-          <p className="text-[10px] text-white/25 tracking-wider pl-[38px] font-medium">
-            WhatsApp follow-ups, bookings, and patient rechecks
-          </p>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Separator */}
-        <div className="mx-4 mb-3 h-px bg-white/[0.05]" />
+        <div className="mx-4 mb-3 h-px bg-slate-200" />
 
         {/* Navigation */}
         <nav className="flex-1 py-1 overflow-y-auto scrollbar-none">
@@ -233,7 +264,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
         </nav>
 
         {/* Separator */}
-        <div className="mx-4 h-px bg-white/[0.05]" />
+        <div className="mx-4 h-px bg-slate-200" />
 
         {/* AI Status indicator */}
         <div className="px-5 py-4">
@@ -259,46 +290,50 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top header */}
         <header
-          className="flex-shrink-0 flex items-center justify-between px-6 h-14"
-          style={{
-            background: 'rgba(10,15,28,0.8)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-          }}
+          className="flex-shrink-0 flex items-center justify-between px-4 sm:px-6 h-14 bg-white border-b border-slate-200"
         >
-          {/* Page title */}
-          <AnimatePresence mode="wait">
-            <motion.h1
-              key={location.pathname}
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="text-[15px] font-semibold text-white tracking-tight"
+          <div className="flex items-center gap-2">
+            {/* Hamburger button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden"
             >
-              {pageTitle}
-            </motion.h1>
-          </AnimatePresence>
+              <Menu size={20} />
+            </button>
+
+            {/* Page title */}
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={location.pathname}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 6 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="text-[15px] font-semibold text-slate-800 tracking-tight"
+              >
+                {pageTitle}
+              </motion.h1>
+            </AnimatePresence>
+          </div>
 
           {/* Right side chips */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Locked Clinic Branding Chip */}
-            <div className="flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-lg">
-              <span className="text-[10px] uppercase font-bold text-indigo-400 tracking-widest shrink-0">Clinic:</span>
-              <span className="text-[11.5px] font-bold text-white shrink-0 font-sans">
+            <div className="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1.2 rounded-lg">
+              <span className="text-[9px] uppercase font-bold text-indigo-500 tracking-widest hidden sm:inline shrink-0">Clinic:</span>
+              <span className="text-[11px] sm:text-[11.5px] font-bold text-slate-800 shrink-0 font-sans">
                 {activeClinic === 'Shree Ram Dental Care Patna' ? 'Shree Ram Dental Care' : 'Your Dentist'}
               </span>
             </div>
 
             {/* WhatsApp connection chip */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08]">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.2 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08]">
               <div className="relative flex-shrink-0">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-50" />
               </div>
-              <MessageCircle size={12} className="text-emerald-400 flex-shrink-0" />
-              <span className="text-[11px] font-semibold text-emerald-400 tracking-wide whitespace-nowrap">
+              <MessageCircle size={11} className="text-emerald-500 flex-shrink-0" />
+              <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-500 tracking-wide whitespace-nowrap hidden md:inline">
                 WhatsApp Connected
               </span>
             </div>
@@ -307,8 +342,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
 
         {/* Scrollable content area */}
         <main
-          className="flex-1 overflow-y-auto"
-          style={{ background: '#080C14', padding: 24 }}
+          className="flex-1 overflow-y-auto bg-[#F1F5F9] p-4 sm:p-6"
         >
           <AnimatePresence mode="wait">
             <motion.div

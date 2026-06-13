@@ -174,7 +174,7 @@ export const CARE_PROGRAMS: CareProgramTemplate[] = [
   }
 ];
 
-const MOCK_CUSTOMERS: Customer[] = [
+export const MOCK_CUSTOMERS: Customer[] = [
   {
     id: '1',
     name: 'Rahul Sharma',
@@ -595,11 +595,11 @@ const StatChip: React.FC<{
   dot?: string;
   icon?: React.ReactNode;
 }> = ({ label, value, dot, icon }) => (
-  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.07] backdrop-blur-sm">
+  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 shadow-sm">
     {dot && <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />}
     {icon && <span className="flex-shrink-0">{icon}</span>}
-    <span className="text-white/40 text-[12px] font-medium">{label}</span>
-    <span className="text-white text-[13px] font-bold">{value}</span>
+    <span className="text-slate-500 text-[12px] font-medium">{label}</span>
+    <span className="text-slate-800 text-[13px] font-bold">{value}</span>
   </div>
 );
 
@@ -935,10 +935,10 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   };
 
   const inputBase =
-    'w-full px-3 py-2.5 rounded-lg text-[13px] text-white placeholder:text-white/25 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50';
+    'w-full px-3 py-2.5 rounded-lg text-[13px] text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/50';
   const inputStyle = {
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
+    background: '#F8FAFC',
+    border: '1px solid #E2E8F0',
   };
   const inputFocusStyle = 'focus:border-indigo-500/40';
 
@@ -953,7 +953,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
         <DialogContent
           className="max-w-2xl border-0 p-0 overflow-hidden"
-          style={{ background: '#0D1220', border: '1px solid rgba(255,255,255,0.1)' }}
+          style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
         >
           <AnimatePresence>
             {open && (
@@ -966,14 +966,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {/* Header */}
                 <div
                   className="px-6 pt-5 pb-3"
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+                  style={{ borderBottom: '1px solid #E2E8F0' }}
                 >
                   <DialogHeader className="flex flex-row items-center justify-between">
                     <div>
-                      <DialogTitle className="text-white text-[16px] font-semibold tracking-tight">
+                      <DialogTitle className="text-slate-800 text-[16px] font-semibold tracking-tight">
                         {isEdit ? 'Patient Profile' : 'Add New Patient'}
                       </DialogTitle>
-                      <p className="text-white/40 text-[12px] mt-0.5">
+                      <p className="text-slate-500 text-[12px] mt-0.5">
                         {isEdit
                           ? 'Review medical records, X-rays, and contact info'
                           : 'Create a new client record in database'}
@@ -981,14 +981,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Tab Selector */}
-                    <div className="flex bg-white/[0.04] p-1 rounded-lg border border-white/[0.08] mr-6 gap-0.5">
+                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-6 gap-0.5">
                       <button
                         type="button"
                         onClick={() => setActiveTab('general')}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 ${
                           activeTab === 'general'
-                            ? 'bg-indigo-500 text-white shadow-md'
-                            : 'text-white/40 hover:text-white/70'
+                            ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                            : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
                         General Info
@@ -998,8 +998,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         onClick={() => setActiveTab('medical')}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 ${
                           activeTab === 'medical'
-                            ? 'bg-indigo-500 text-white shadow-md'
-                            : 'text-white/40 hover:text-white/70'
+                            ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                            : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
                         <Stethoscope size={10} />
@@ -1043,7 +1043,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Name + Phone row */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Full Name <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -1055,7 +1055,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Phone <span className="text-red-400">*</span>
                         </label>
                         <input
@@ -1071,19 +1071,19 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Last Visit + Service */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Last Visit Date
                         </label>
                         <input
                           type="date"
                           className={`${inputBase} ${inputFocusStyle}`}
-                          style={{ ...inputStyle, colorScheme: 'dark' }}
+                          style={{ ...inputStyle, colorScheme: 'light' }}
                           value={form.lastVisit}
                           onChange={(e) => handleChange('lastVisit', e.target.value)}
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Service Used
                         </label>
                         <input
@@ -1099,7 +1099,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Spend + Status */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Total Spend (₹)
                         </label>
                         <input
@@ -1112,7 +1112,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Status
                         </label>
                         <select
@@ -1132,7 +1132,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-[11px] text-white/40 font-medium mb-1.5 uppercase tracking-wider">
+                      <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                         Notes
                       </label>
                       <textarea
@@ -1158,8 +1158,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             <Mic size={12} className="text-indigo-400" />
                           </div>
                           <div>
-                            <h4 className="text-[12px] font-bold text-white uppercase tracking-wider">AI Dental Scribe</h4>
-                            <p className="text-[10px] text-white/40 mt-0.5">Dictate consultation notes to automatically populate EMR conditions & tag teeth</p>
+                            <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">AI Dental Scribe</h4>
+                            <p className="text-[10px] text-slate-500 mt-0.5">Dictate consultation notes to automatically populate EMR conditions & tag teeth</p>
                           </div>
                         </div>
 
@@ -1188,7 +1188,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       {/* Transcript Window */}
                       {(scribeTranscript || scribeStatus === 'listening') && (
                         <div className="bg-black/45 border border-white/[0.05] rounded-lg p-3 space-y-3">
-                          <p className="text-[11.5px] font-mono text-white/80 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-[11.5px] font-mono text-slate-700 leading-relaxed whitespace-pre-wrap">
                             {scribeTranscript}
                           </p>
 
@@ -1218,7 +1218,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Mock consult presets */}
                       <div className="space-y-1.5 pt-1">
-                        <span className="text-[9.5px] text-white/30 uppercase font-bold tracking-wider">Voice Dictation Presets (Standard Indian Clinic Examples)</span>
+                        <span className="text-[9.5px] text-slate-400 uppercase font-bold tracking-wider">Voice Dictation Presets (Standard Indian Clinic Examples)</span>
                         <div className="flex flex-wrap gap-2">
                           {[
                             { label: 'Tooth 14 Cavity', text: 'Patient presents with severe food lodgement in upper right. Deep distal cavity found on tooth 14 requiring composite restoration.' },
@@ -1232,7 +1232,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                 setScribeTranscript(preset.text);
                                 setScribeStatus('done');
                               }}
-                              className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded text-[10.5px] text-white/60 hover:text-white/95 transition-all text-left"
+                              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 hover:border-slate-300 rounded text-[10.5px] text-slate-600 hover:text-slate-900 transition-all text-left"
                             >
                               🎤 {preset.label}
                             </button>
@@ -1248,7 +1248,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                         <div className="space-y-1">
                           <h5 className="text-[12px] font-bold text-rose-400 uppercase tracking-wider">Clinical Alerts / Contraindications</h5>
-                          <p className="text-[11px] text-white/70 leading-relaxed">
+                          <p className="text-[11px] text-slate-600 leading-relaxed">
                             {form.allergies && form.allergies.length > 0 && (
                               <span className="block"><strong>⚠️ ALLERGIES:</strong> {form.allergies.join(', ')}</span>
                             )}
@@ -1264,7 +1264,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     <div className="grid grid-cols-2 gap-4">
                       {/* Allergies Checklist */}
                       <div className="bg-white/[0.02] border border-white/[0.07] rounded-xl p-4 space-y-3">
-                        <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">Allergies</h4>
+                        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
                         <div className="grid grid-cols-1 gap-2.5">
                           {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
                             const hasAllergy = (form.allergies || []).includes(allergy);
@@ -1868,7 +1868,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Calculations summary panel */}
                       <div className="bg-white/[0.02] p-4.5 space-y-2.5">
-                        <div className="flex justify-between text-[11px] text-white/50">
+                        <div className="flex justify-between text-[11px] text-slate-500">
                           <span>Subtotal</span>
                           <span className="font-mono">₹{calculatedSubtotal.toLocaleString('en-IN')}</span>
                         </div>
@@ -1898,14 +1898,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           </div>
                         )}
 
-                        <div className="flex justify-between text-[11px] text-white/50">
-                          <span>CGST (9%) + SGST (9%) <span className="text-[9px] text-white/20">(Cosmetic only)</span></span>
+                        <div className="flex justify-between text-[11px] text-slate-500">
+                          <span>CGST (9%) + SGST (9%) <span className="text-[9px] text-slate-400">(Cosmetic only)</span></span>
                           <span className="font-mono">₹{calculatedGST.toLocaleString('en-IN')}</span>
                         </div>
 
-                        <div className="h-px bg-white/[0.08] my-1.5" />
+                        <div className="h-px bg-slate-200 my-1.5" />
 
-                        <div className="flex justify-between text-[13px] font-bold text-white">
+                        <div className="flex justify-between text-[13px] font-bold text-slate-800">
                           <span className="uppercase tracking-wider">Estimated Total</span>
                           <span className="font-mono text-indigo-400">₹{calculatedGrandTotal.toLocaleString('en-IN')}</span>
                         </div>
@@ -1914,14 +1914,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                     {/* WhatsApp Estimate Proposal Generator */}
                     {estimateItems.length > 0 && (
-                      <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 space-y-3">
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="text-[11.5px] font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <h4 className="text-[11.5px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                               <Sparkles size={11} className="text-indigo-400" />
                               WhatsApp Estimate Proposal (Simulated)
                             </h4>
-                            <p className="text-[10px] text-white/40 mt-0.5">Copy message format to send to patient next to the chair</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">Copy message format to send to patient next to the chair</p>
                           </div>
 
                           <button
@@ -1934,15 +1934,15 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               setCopiedEstimate(true);
                               setTimeout(() => setCopiedEstimate(false), 2000);
                             }}
-                            className="px-2.5 py-1 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/30 rounded text-[10.5px] font-bold text-indigo-300 flex items-center gap-1 transition-all"
+                            className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[10.5px] font-bold text-indigo-600 flex items-center gap-1 transition-all"
                           >
                             {copiedEstimate ? 'Copied! ✓' : 'Copy Message'}
                           </button>
                         </div>
 
-                        <div className="bg-black/30 border border-white/[0.05] rounded-xl p-3 text-[12px] font-mono leading-relaxed text-white/70">
-                          <span className="text-[10px] text-indigo-400 font-bold block">MESSAGE PREVIEW:</span>
-                          <div className="whitespace-pre-wrap select-all bg-black/20 p-2.5 rounded border border-white/[0.03]">
+                        <div className="bg-white border border-slate-200 rounded-xl p-3 text-[12px] font-mono leading-relaxed text-slate-700">
+                          <span className="text-[10px] text-indigo-500 font-bold block">MESSAGE PREVIEW:</span>
+                          <div className="whitespace-pre-wrap select-all bg-slate-50 p-2.5 rounded border border-slate-100">
                             <strong>{localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care'} - Treatment Proposal</strong><br/><br/>
                             Hi {form.name},<br/><br/>
                             Here is your customized treatment cost estimate:<br/>
@@ -1984,11 +1984,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           >
                             <div className="flex items-start justify-between gap-4">
                               <div>
-                                <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-bold text-indigo-300 uppercase tracking-widest">
+                                <span className="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-[9px] font-bold text-indigo-600 uppercase tracking-widest">
                                   Active Care Program
                                 </span>
-                                <h3 className="text-base font-bold text-white mt-1.5">{program.name}</h3>
-                                <p className="text-white/40 text-[12px] mt-0.5">{program.description}</p>
+                                <h3 className="text-base font-bold text-slate-800 mt-1.5">{program.name}</h3>
+                                <p className="text-slate-500 text-[12px] mt-0.5">{program.description}</p>
                               </div>
 
                               <div className="flex flex-col items-end gap-1.5">
@@ -1998,21 +1998,21 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                   onChange={(e) => {
                                     handleChange('programStatus', e.target.value);
                                   }}
-                                  className="text-[11px] font-bold uppercase tracking-wider text-white bg-[#121828] border border-white/[0.08] hover:border-white/15 px-2.5 py-1 rounded-lg outline-none cursor-pointer"
+                                  className="text-[11px] font-bold uppercase tracking-wider text-slate-700 bg-white border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded-lg outline-none cursor-pointer"
                                 >
                                   <option value="Active">Active</option>
                                   <option value="Paused">Paused</option>
                                   <option value="Completed">Completed</option>
                                 </select>
-                                <span className="text-[10px] text-white/30">Enrolled: {formatDate(enrollmentDate)}</span>
+                                <span className="text-[10px] text-slate-400">Enrolled: {formatDate(enrollmentDate)}</span>
                               </div>
                             </div>
                           </div>
 
                           {/* Progress Steps Timeline */}
                           <div className="space-y-4">
-                            <h4 className="text-[11px] font-bold text-white uppercase tracking-wider">WhatsApp Follow-Up Timeline</h4>
-                            <div className="relative pl-6 space-y-5 border-l border-white/[0.07] ml-3">
+                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">WhatsApp Follow-Up Timeline</h4>
+                            <div className="relative pl-6 space-y-5 border-l border-slate-200 ml-3">
                               {program.steps.map((step, idx) => {
                                 const stepNum = idx + 1;
                                 const isSent = stepNum < currentStep;
@@ -2029,7 +2029,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                           ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
                                           : isCurrent
                                           ? 'bg-indigo-500 border-indigo-500/60 text-white shadow-md shadow-indigo-500/30 scale-110'
-                                          : 'bg-white/[0.03] border-white/[0.08] text-white/20'
+                                          : 'bg-slate-100 border-slate-300 text-slate-400'
                                       }`}
                                     >
                                       {isSent ? '✓' : stepNum}
@@ -2045,11 +2045,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     >
                                       <div className="flex items-center justify-between gap-3 mb-2">
                                         <div className="flex items-center gap-2">
-                                          <span className={`text-[11px] font-bold ${isCurrent ? 'text-indigo-400' : 'text-white/40'}`}>
+                                          <span className={`text-[11px] font-bold ${isCurrent ? 'text-indigo-600' : 'text-slate-400'}`}>
                                             Day {step.day}
                                           </span>
-                                          <span className="text-white/20">•</span>
-                                          <span className="text-[11px] text-white/60 font-medium">{step.subLabel}</span>
+                                          <span className="text-slate-300">•</span>
+                                          <span className="text-[11px] text-slate-500 font-medium">{step.subLabel}</span>
                                         </div>
 
                                         <span
@@ -2058,14 +2058,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                               : isCurrent
                                               ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 animate-pulse'
-                                              : 'bg-white/[0.03] text-white/25 border border-white/[0.05]'
+                                              : 'bg-slate-100 text-slate-400 border border-slate-200'
                                           }`}
                                         >
                                           {isSent ? 'Sent' : isCurrent ? 'Next Up' : 'Scheduled'}
                                         </span>
                                       </div>
 
-                                      <p className="text-[12px] text-white/75 leading-relaxed bg-black/20 p-2.5 rounded-lg border border-white/[0.03] font-mono whitespace-pre-wrap select-all">
+                                      <p className="text-[12px] text-slate-700 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200 font-mono whitespace-pre-wrap select-all">
                                         {formattedMsg}
                                       </p>
                                     </div>
@@ -2076,7 +2076,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           </div>
 
                           {/* Actions panel */}
-                          <div className="flex items-center justify-between bg-white/[0.02] border border-white/[0.06] rounded-xl p-4">
+                          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
                             <button
                               type="button"
                               onClick={() => {
@@ -2111,12 +2111,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     })() : (
                       /* Disenrolled / No Active Program State */
                       <div className="py-8 text-center space-y-4">
-                        <div className="w-12 h-12 rounded-full bg-white/[0.02] border border-dashed border-white/[0.1] flex items-center justify-center mx-auto text-white/30">
+                        <div className="w-12 h-12 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center mx-auto text-slate-400">
                           <Zap size={20} />
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-white">No Active Care Program</h4>
-                          <p className="text-[12px] text-white/40 mt-1 max-w-sm mx-auto">
+                          <h4 className="text-sm font-bold text-slate-800">No Active Care Program</h4>
+                          <p className="text-[12px] text-slate-500 mt-1 max-w-sm mx-auto">
                             Enroll patient in an automated check-up flow to track symptoms and request feedback post-op.
                           </p>
                         </div>
@@ -2125,7 +2125,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <div className="max-w-xs mx-auto pt-4 space-y-3">
                           <select
                             id="programSelect"
-                            className="w-full bg-[#121828] border border-white/[0.08] rounded-lg px-3 py-2 text-[12px] text-white outline-none cursor-pointer"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[12px] text-slate-700 outline-none cursor-pointer"
                             defaultValue=""
                             onChange={(e) => {
                               const progId = e.target.value;
@@ -2150,11 +2150,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {/* Footer */}
                 <div
                   className="px-6 py-4 flex items-center justify-end gap-3"
-                  style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
+                  style={{ borderTop: '1px solid #E2E8F0' }}
                 >
                   <button
                     onClick={onClose}
-                    className="px-4 py-2 text-[13px] text-white/50 hover:text-white/80 rounded-lg transition-colors duration-150"
+                    className="px-4 py-2 text-[13px] text-slate-500 hover:text-slate-700 rounded-lg transition-colors duration-150"
                   >
                     Cancel
                   </button>
@@ -2181,7 +2181,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
         <Dialog open={!!lightboxImg} onOpenChange={() => setLightboxImg(null)}>
           <DialogContent
             className="max-w-4xl p-1 border-0 overflow-hidden"
-            style={{ background: '#090D16', border: '1px solid rgba(255,255,255,0.1)' }}
+            style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
           >
             <div className="relative w-full h-[70vh] flex items-center justify-center p-4">
               <img src={lightboxImg} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Patient X-Ray Radiograph scan Zoom" />
@@ -2347,7 +2347,7 @@ const ReactivationCustomers: React.FC = () => {
 
   // ─── Dropdown select styling ──────────────────────────────────────────────
   const selectTriggerClass =
-    'h-9 text-[12px] text-white/70 bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.06] focus:ring-indigo-500/30 rounded-lg transition-all duration-150 min-w-[130px]';
+    'h-9 text-[12px] text-slate-600 bg-white border-slate-200 hover:bg-slate-50 focus:ring-indigo-500/30 rounded-lg transition-all duration-150 min-w-[130px]';
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
@@ -2363,8 +2363,8 @@ const ReactivationCustomers: React.FC = () => {
         >
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-[22px] font-bold text-white tracking-tight">
-                Customer Database
+              <h1 className="text-[22px] font-bold text-slate-800 tracking-tight">
+                Patient Database
               </h1>
               <span
                 className="px-2.5 py-1 rounded-full text-[11px] font-bold text-indigo-300 tracking-wide"
@@ -2373,18 +2373,18 @@ const ReactivationCustomers: React.FC = () => {
                   border: '1px solid rgba(99,102,241,0.25)',
                 }}
               >
-                847 customers
+                20 patients
               </span>
             </div>
-            <p className="text-white/40 text-[13px] mt-1">
-              Manage and track your customer relationships
+            <p className="text-slate-500 text-[13px] mt-1">
+              Manage and track your patient relationships
             </p>
           </div>
 
           <div className="flex items-center gap-2.5 flex-shrink-0">
             <button
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-white/60 transition-all duration-150 hover:text-white/80 hover:bg-white/[0.05]"
-              style={{ border: '1px solid rgba(255,255,255,0.1)' }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-slate-500 transition-all duration-150 hover:text-slate-700 hover:bg-slate-100"
+              style={{ border: '1px solid #E2E8F0' }}
             >
               <Upload size={14} />
               Import CSV
@@ -2398,7 +2398,7 @@ const ReactivationCustomers: React.FC = () => {
               }}
             >
               <Plus size={15} />
-              Add Customer
+              Add Patient
             </button>
           </div>
         </motion.div>
@@ -2413,7 +2413,7 @@ const ReactivationCustomers: React.FC = () => {
           <StatChip
             label="Total"
             value={stats.total.toLocaleString('en-IN')}
-            icon={<Users size={13} className="text-white/40" />}
+            icon={<Users size={13} className="text-slate-400" />}
           />
           <StatChip
             label="Active"
@@ -2439,8 +2439,8 @@ const ReactivationCustomers: React.FC = () => {
           transition={{ duration: 0.25, delay: 0.1, ease: 'easeOut' }}
           className="flex items-center gap-2.5 flex-wrap"
           style={{
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
             borderRadius: 14,
             padding: '12px 16px',
           }}
@@ -2449,13 +2449,13 @@ const ReactivationCustomers: React.FC = () => {
           <div className="relative flex-1 min-w-[200px] max-w-xs">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
             />
             <input
-              className="w-full pl-9 pr-3 py-2 rounded-lg text-[12px] text-white placeholder:text-white/25 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/40"
+              className="w-full pl-9 pr-3 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/40"
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
               }}
               placeholder="Search name or phone…"
               value={search}
@@ -2472,8 +2472,8 @@ const ReactivationCustomers: React.FC = () => {
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent
-              style={{ background: '#0D1220', border: '1px solid rgba(255,255,255,0.1)' }}
-              className="text-white"
+              style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
+              className="text-slate-700"
             >
               <SelectItem value="All">All Statuses</SelectItem>
               {STATUS_OPTIONS.map((s) => (
@@ -2491,8 +2491,8 @@ const ReactivationCustomers: React.FC = () => {
               <SelectValue placeholder="All Services" />
             </SelectTrigger>
             <SelectContent
-              style={{ background: '#0D1220', border: '1px solid rgba(255,255,255,0.1)' }}
-              className="text-white max-h-[260px] overflow-y-auto"
+              style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
+              className="text-slate-700 max-h-[260px] overflow-y-auto"
             >
               {SERVICES.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -2509,8 +2509,8 @@ const ReactivationCustomers: React.FC = () => {
               <SelectValue placeholder="Any time" />
             </SelectTrigger>
             <SelectContent
-              style={{ background: '#0D1220', border: '1px solid rgba(255,255,255,0.1)' }}
-              className="text-white"
+              style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
+              className="text-slate-700"
             >
               {DATE_RANGES.map((r) => (
                 <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
@@ -2521,7 +2521,7 @@ const ReactivationCustomers: React.FC = () => {
           {/* Reset */}
           <button
             onClick={handleResetFilters}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] text-white/40 hover:text-white/70 transition-colors duration-150"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] text-slate-400 hover:text-slate-600 transition-colors duration-150"
           >
             <RotateCcw size={13} />
             Reset
@@ -2535,24 +2535,24 @@ const ReactivationCustomers: React.FC = () => {
           transition={{ duration: 0.28, delay: 0.14, ease: 'easeOut' }}
           className="rounded-2xl overflow-hidden flex-1"
           style={{
-            background: '#0A0F1C',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
           }}
         >
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <tr style={{ borderBottom: '1px solid #E2E8F0', background: '#F8FAFC' }}>
                   {/* Checkbox */}
                   <th className="pl-5 pr-2 py-3.5 w-10">
                     <button
                       onClick={handleSelectAll}
-                      className="text-white/30 hover:text-white/60 transition-colors"
+                      className="text-slate-300 hover:text-slate-500 transition-colors"
                     >
                       {allPageSelected ? (
-                        <CheckSquare size={15} className="text-indigo-400" />
+                        <CheckSquare size={15} className="text-indigo-500" />
                       ) : somePageSelected ? (
-                        <CheckSquare size={15} className="text-white/40" />
+                        <CheckSquare size={15} className="text-slate-400" />
                       ) : (
                         <Square size={15} />
                       )}
@@ -2575,8 +2575,8 @@ const ReactivationCustomers: React.FC = () => {
                     >
                       <button
                         className={`flex items-center gap-1.5 text-[11px] font-semibold tracking-wider uppercase ${
-                          col.sortKey ? 'cursor-pointer hover:text-white/70' : 'cursor-default'
-                        } text-white/35 transition-colors duration-150`}
+                          col.sortKey ? 'cursor-pointer hover:text-slate-600' : 'cursor-default'
+                        } text-slate-400 transition-colors duration-150`}
                         onClick={() => col.sortKey && handleSort(col.sortKey)}
                         disabled={!col.sortKey}
                       >
@@ -2594,7 +2594,7 @@ const ReactivationCustomers: React.FC = () => {
                 <AnimatePresence mode="popLayout">
                   {pageRows.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-16 text-center text-white/30 text-[13px]">
+                      <td colSpan={9} className="py-16 text-center text-slate-400 text-[13px]">
                         No customers match your filters.
                       </td>
                     </tr>
@@ -2611,15 +2611,15 @@ const ReactivationCustomers: React.FC = () => {
                           onClick={() => handleOpenEdit(customer)}
                           className="group cursor-pointer transition-all duration-100"
                           style={{
-                            borderBottom: '1px solid rgba(255,255,255,0.04)',
+                            borderBottom: '1px solid #F1F5F9',
                             background: isSelected
-                              ? 'rgba(99,102,241,0.07)'
+                              ? 'rgba(99,102,241,0.05)'
                               : undefined,
                           }}
                           onMouseEnter={(e) => {
                             if (!isSelected)
                               (e.currentTarget as HTMLTableRowElement).style.background =
-                                'rgba(255,255,255,0.025)';
+                                '#F8FAFC';
                           }}
                           onMouseLeave={(e) => {
                             (e.currentTarget as HTMLTableRowElement).style.background = isSelected
@@ -2631,10 +2631,10 @@ const ReactivationCustomers: React.FC = () => {
                           <td className="pl-5 pr-2 py-3.5" onClick={(e) => e.stopPropagation()}>
                             <button
                               onClick={() => handleSelectRow(customer.id)}
-                              className="text-white/30 hover:text-white/60 transition-colors"
+                              className="text-slate-300 hover:text-slate-500 transition-colors"
                             >
                               {isSelected ? (
-                                <CheckSquare size={15} className="text-indigo-400" />
+                                <CheckSquare size={15} className="text-indigo-500" />
                               ) : (
                                 <Square size={15} />
                               )}
@@ -2647,7 +2647,7 @@ const ReactivationCustomers: React.FC = () => {
                               <Avatar name={customer.name} color={customer.avatarColor} />
                               <div className="flex flex-col gap-0.5">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-[13px] font-semibold text-white leading-tight">
+                                  <span className="text-[13px] font-semibold text-slate-800 leading-tight">
                                     {customer.name}
                                   </span>
                                   {((customer.allergies && customer.allergies.length > 0) || (customer.medicalConditions && customer.medicalConditions.length > 0)) && (
@@ -2657,7 +2657,7 @@ const ReactivationCustomers: React.FC = () => {
                                 {((customer.allergies && customer.allergies.length > 0) || (customer.medicalConditions && customer.medicalConditions.length > 0)) && (
                                   <div className="flex flex-wrap gap-1 mt-0.5 max-w-[200px]">
                                     {[...(customer.allergies || []), ...(customer.medicalConditions || [])].map((alert) => (
-                                      <span key={alert} className="px-1.5 py-0.5 bg-rose-500/10 border border-rose-500/20 rounded text-[8.5px] font-extrabold uppercase tracking-widest text-rose-400">
+                                      <span key={alert} className="px-1.5 py-0.5 bg-rose-50 border border-rose-200 rounded text-[8.5px] font-extrabold uppercase tracking-widest text-rose-600">
                                         {alert}
                                       </span>
                                     ))}
@@ -2669,7 +2669,7 @@ const ReactivationCustomers: React.FC = () => {
 
                           {/* Phone */}
                           <td className="px-3 py-3.5">
-                            <span className="text-[12px] text-white/50 font-mono tracking-wide">
+                            <span className="text-[12px] text-slate-500 font-mono tracking-wide">
                               {customer.phone}
                             </span>
                           </td>
@@ -2677,10 +2677,10 @@ const ReactivationCustomers: React.FC = () => {
                           {/* Last Visit */}
                           <td className="px-3 py-3.5">
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-[12px] text-white/80 font-medium">
+                              <span className="text-[12px] text-slate-700 font-medium">
                                 {formatDate(customer.lastVisit)}
                               </span>
-                              <span className="text-[11px] text-white/35">
+                              <span className="text-[11px] text-slate-400">
                                 {timeAgo(customer.lastVisit)}
                               </span>
                             </div>
@@ -2689,7 +2689,7 @@ const ReactivationCustomers: React.FC = () => {
                           {/* Service */}
                           <td className="px-3 py-3.5">
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-[12px] text-white/60">{customer.service}</span>
+                              <span className="text-[12px] text-slate-600">{customer.service}</span>
                               {customer.problemTeeth && customer.problemTeeth.length > 0 && (
                                 <span className="text-[10px] text-rose-400 font-semibold tracking-wide flex items-center gap-1 mt-0.5">
                                   🦷 Teeth: {customer.problemTeeth.join(', ')}
@@ -2729,7 +2729,7 @@ const ReactivationCustomers: React.FC = () => {
                             {customer.notes ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="text-[12px] text-white/40 truncate block max-w-[160px] cursor-default">
+                                  <span className="text-[12px] text-slate-500 truncate block max-w-[160px] cursor-default">
                                     {customer.notes}
                                   </span>
                                 </TooltipTrigger>
@@ -2737,16 +2737,16 @@ const ReactivationCustomers: React.FC = () => {
                                   side="top"
                                   className="max-w-[240px] text-[12px] leading-relaxed"
                                   style={{
-                                    background: '#1a2035',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    color: 'rgba(255,255,255,0.8)',
+                                    background: '#1E293B',
+                                    border: '1px solid #334155',
+                                    color: '#F1F5F9',
                                   }}
                                 >
                                   {customer.notes}
                                 </TooltipContent>
                               </Tooltip>
                             ) : (
-                              <span className="text-[12px] text-white/20 italic">No notes</span>
+                              <span className="text-[12px] text-slate-300 italic">No notes</span>
                             )}
                           </td>
 
@@ -2757,7 +2757,7 @@ const ReactivationCustomers: React.FC = () => {
                           >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.07] transition-all duration-150 opacity-0 group-hover:opacity-100">
+                                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-150 opacity-0 group-hover:opacity-100">
                                   <MoreHorizontal size={15} />
                                 </button>
                               </DropdownMenuTrigger>
@@ -2765,32 +2765,32 @@ const ReactivationCustomers: React.FC = () => {
                                 align="end"
                                 className="w-44 text-[12px]"
                                 style={{
-                                  background: '#0D1220',
-                                  border: '1px solid rgba(255,255,255,0.1)',
-                                  color: 'rgba(255,255,255,0.8)',
+                                  background: '#FFFFFF',
+                                  border: '1px solid #E2E8F0',
+                                  color: '#1E293B',
                                 }}
                               >
                                 <DropdownMenuItem
                                   onClick={() => handleOpenEdit(customer)}
-                                  className="gap-2.5 cursor-pointer hover:bg-white/[0.06] focus:bg-white/[0.06]"
+                                  className="gap-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50"
                                 >
-                                  <Eye size={13} className="text-white/40" />
+                                  <Eye size={13} className="text-slate-400" />
                                   View
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleOpenEdit(customer)}
-                                  className="gap-2.5 cursor-pointer hover:bg-white/[0.06] focus:bg-white/[0.06]"
+                                  className="gap-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50"
                                 >
-                                  <Edit3 size={13} className="text-white/40" />
+                                  <Edit3 size={13} className="text-slate-400" />
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  className="gap-2.5 cursor-pointer hover:bg-white/[0.06] focus:bg-white/[0.06]"
+                                  className="gap-2.5 cursor-pointer hover:bg-slate-50 focus:bg-slate-50"
                                 >
-                                  <MessageSquare size={13} className="text-white/40" />
+                                  <MessageSquare size={13} className="text-slate-400" />
                                   Send Message
                                 </DropdownMenuItem>
-                                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                                <DropdownMenuSeparator className="bg-slate-200" />
                                 <DropdownMenuItem
                                   onClick={() => handleMarkHighValue(customer.id)}
                                   className="gap-2.5 cursor-pointer hover:bg-purple-500/10 focus:bg-purple-500/10"
@@ -2798,7 +2798,7 @@ const ReactivationCustomers: React.FC = () => {
                                   <Sparkles size={13} className="text-purple-400" />
                                   <span className="text-purple-400">Mark High Value</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuSeparator className="bg-white/[0.06]" />
+                                <DropdownMenuSeparator className="bg-slate-200" />
                                 <DropdownMenuItem
                                   onClick={() => handleDelete(customer.id)}
                                   className="gap-2.5 cursor-pointer hover:bg-red-500/10 focus:bg-red-500/10"
@@ -2821,23 +2821,23 @@ const ReactivationCustomers: React.FC = () => {
           {/* ── Pagination ───────────────────────────────────────────────── */}
           <div
             className="flex items-center justify-between px-5 py-3.5"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
+            style={{ borderTop: '1px solid #E2E8F0' }}
           >
-            <span className="text-[12px] text-white/35">
+            <span className="text-[12px] text-slate-400">
               Showing{' '}
-              <span className="text-white/60 font-medium">
+              <span className="text-slate-600 font-medium">
                 {Math.min((page - 1) * ROWS_PER_PAGE + 1, filtered.length)}–
                 {Math.min(page * ROWS_PER_PAGE, filtered.length)}
               </span>{' '}
               of{' '}
-              <span className="text-white/60 font-medium">{filtered.length}</span> results
+              <span className="text-slate-600 font-medium">{filtered.length}</span> results
             </span>
 
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.06] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -2853,7 +2853,7 @@ const ReactivationCustomers: React.FC = () => {
                 }, [])
                 .map((p, i) =>
                   p === '...' ? (
-                    <span key={`dots-${i}`} className="text-white/30 text-[12px] px-1">
+                    <span key={`dots-${i}`} className="text-slate-300 text-[12px] px-1">
                       …
                     </span>
                   ) : (
@@ -2881,7 +2881,7 @@ const ReactivationCustomers: React.FC = () => {
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.06] disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-25 disabled:cursor-not-allowed transition-all duration-150"
               >
                 <ChevronRight size={14} />
               </button>
