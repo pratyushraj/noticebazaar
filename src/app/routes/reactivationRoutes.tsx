@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import { LazyRoute } from './routeElements';
 
 // ─── Lazy page imports ────────────────────────────────────────────────────────
@@ -20,13 +20,7 @@ export const ReactivationRoutes = () => (
   <>
     <Route
       path="/reactivation"
-      element={
-        <LazyRoute>
-          <ReactivationLayout>
-            <ReactivationDashboard />
-          </ReactivationLayout>
-        </LazyRoute>
-      }
+      element={<Navigate to="/reactivation/customers" replace />}
     />
     <Route
       path="/reactivation/receptionist"

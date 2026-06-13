@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/lib/supabase';
 import {
   AreaChart,
   Area,
@@ -27,7 +29,6 @@ import {
   IndianRupee,
   Eye,
 } from 'lucide-react';
-import { MOCK_CUSTOMERS } from './ReactivationCustomers';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -74,68 +75,8 @@ interface RevenueDataPoint {
 
 // ─── Dynamic Data Computed Inside Component ───
 
-const campaignRows: CampaignRow[] = [
-  {
-    id: 'c1',
-    name: 'Scaling Recheckup Offer',
-    status: 'Active',
-    sent: 500,
-    revenue: 42000,
-    timeAgo: '2 days ago',
-    category: 'Dental',
-  },
-  {
-    id: 'c2',
-    name: 'Whitening Revisit Flow',
-    status: 'Completed',
-    sent: 320,
-    revenue: 28500,
-    timeAgo: '1 week ago',
-    category: 'Dental',
-  },
-  {
-    id: 'c3',
-    name: 'RCT Follow-Up Flow',
-    status: 'Completed',
-    sent: 180,
-    revenue: 54000,
-    timeAgo: '2 weeks ago',
-    category: 'Dental',
-  },
-  {
-    id: 'c4',
-    name: 'Implant Consultation Nudge',
-    status: 'Draft',
-    sent: null,
-    revenue: null,
-    timeAgo: 'Created today',
-    category: 'Dental',
-  },
-  {
-    id: 'c5',
-    name: 'Old Patient Winback',
-    status: 'Active',
-    sent: 240,
-    revenue: 31200,
-    timeAgo: '3 days ago',
-    category: 'Dental',
-  },
-];
-
-// Generate 30 days of realistic revenue data
-const generateRevenueData = (): RevenueDataPoint[] => {
-  const seed = [
-    3200, 4100, 2800, 5600, 7200, 3900, 4500, 8100, 6700, 5200,
-    9400, 7800, 6100, 4300, 8900, 11200, 7600, 5400, 9800, 13400,
-    8200, 6700, 10100, 14200, 9600, 7100, 11800, 15600, 12400, 10900,
-  ];
-  return seed.map((revenue, i) => ({
-    day: `May ${i + 7 > 31 ? `Jun ${i - 24}` : i + 7}`,
-    revenue,
-  }));
-};
-
-const revenueData = generateRevenueData();
+const campaignRows: CampaignRow[] = [];
+const revenueData: RevenueDataPoint[] = [];
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
 
@@ -214,18 +155,71 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ReactivationDashboard() {
+  const { organizationId } = useSession();
+  const clinicId = organizationId || '';
   const [generatingId, setGeneratingId] = useState<string | null>(null);
+  const [patients, setPatients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Dynamic calculations from real patient list with realistic offsets for a dental clinic
-  const totalPatients = 837 + MOCK_CUSTOMERS.length;
-  const dueForRecheckup = 309 + MOCK_CUSTOMERS.filter(c => c.status === 'Inactive' || c.status === 'Follow Up Needed').length;
-  const activeFlows = 2 + MOCK_CUSTOMERS.filter(c => c.programStatus === 'Active').length;
-  const appointmentsRebooked = 176100 + MOCK_CUSTOMERS.filter(c => c.programStatus).reduce((sum, c) => sum + (c.totalSpend || 0), 0);
+  useEffect(() => {
+    if (!clinicId) return;
+
+    async function fetchDashboardPatients() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('dental_patients')
+          .select('*')
+          .eq('clinic_id', clinicId);
+
+        if (error) throw error;
+
+        if (data) {
+          const mapped = data.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            phone: d.phone,
+            lastVisit: d.last_visit,
+            service: d.service,
+            totalSpend: Number(d.total_spend || 0),
+            status: d.status,
+            notes: d.notes,
+            avatarColor: d.avatar_color,
+            problemTeeth: d.problem_teeth || [],
+            xrays: d.xrays || [],
+            allergies: d.allergies || [],
+            medicalConditions: d.medical_conditions || [],
+            toothNotes: d.tooth_notes || {},
+            toothConditions: d.tooth_conditions || {},
+            vitals: d.vitals || {},
+            activeProgramId: d.active_program_id,
+            programEnrollmentDate: d.program_enrollment_date,
+            programCurrentStep: d.program_current_step,
+            programStatus: d.program_status,
+            estimates: d.estimates || []
+          }));
+          setPatients(mapped);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard patients:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboardPatients();
+  }, [clinicId]);
+
+  // Calculate completely dynamic metrics based on actual patients in Supabase!
+  const totalPatients = patients.length;
+  const dueForRecheckup = patients.filter(c => c.status === 'Inactive' || c.status === 'Follow Up Needed').length;
+  const activeFlows = patients.filter(c => c.programStatus === 'Active').length;
+  const appointmentsRebooked = patients.filter(c => c.status === 'Active' || c.programStatus === 'Completed').reduce((sum, c) => sum + (c.totalSpend || 0), 0);
 
   const eightMonthsAgo = new Date('2026-06-06');
   eightMonthsAgo.setMonth(eightMonthsAgo.getMonth() - 8);
-  const overdueCount = 140 + MOCK_CUSTOMERS.filter(c => new Date(c.lastVisit) < eightMonthsAgo).length;
-  const consultNoBookCount = 84 + MOCK_CUSTOMERS.filter(c => c.status === 'New Lead' || c.status === 'Follow Up Needed').length;
+  const overdueCount = patients.filter(c => new Date(c.lastVisit) < eightMonthsAgo).length;
+  const consultNoBookCount = patients.filter(c => c.status === 'New Lead' || c.status === 'Follow Up Needed').length;
 
   const kpiCards: KPICard[] = [
     {
@@ -251,7 +245,7 @@ export default function ReactivationDashboard() {
     },
     {
       id: 'campaigns',
-      title: 'Active WhatsApp Flows',
+      title: 'Active Follow-up Plans',
       value: activeFlows,
       icon: Megaphone,
       colorClass: 'text-emerald-600',
@@ -261,7 +255,7 @@ export default function ReactivationDashboard() {
     },
     {
       id: 'revenue',
-      title: 'Appointments Rebooked',
+      title: 'Bookings Rebooked',
       value: appointmentsRebooked,
       prefix: '₹',
       subLabel: 'This Month',
@@ -279,7 +273,7 @@ export default function ReactivationDashboard() {
       id: 'rec_1',
       customerCount: overdueCount,
       insight: "patients haven't visited in 8+ months",
-      suggestedCampaign: 'Recheckup Reminder Campaign',
+      suggestedCampaign: 'Recheckup Reminder',
       urgency: 'high',
       emoji: '🦷',
     },
@@ -287,15 +281,15 @@ export default function ReactivationDashboard() {
       id: 'rec_2',
       customerCount: consultNoBookCount,
       insight: 'patients had treatment consults but never booked',
-      suggestedCampaign: 'Treatment Follow-Up Offer',
+      suggestedCampaign: 'Treatment Follow-Up',
       urgency: 'medium',
       emoji: '✨',
     },
     {
       id: 'rec_3',
       customerCount: 1,
-      insight: 'patient birthday or anniversary is coming up — good time for a WhatsApp nudge',
-      suggestedCampaign: 'Birthday Recheckup Campaign',
+      insight: 'patient birthday or anniversary is coming up — good time for a courtesy reminder',
+      suggestedCampaign: 'Birthday Reminder',
       urgency: 'low',
       emoji: '🪔',
     },
@@ -342,10 +336,10 @@ export default function ReactivationDashboard() {
             </span>
             </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              WhatsApp Patient Recheckup Hub
+              Dental Patient CRM
             </h1>
             <p className="text-sm text-slate-500 mt-0.5">
-              AI-powered patient follow-ups, appointment booking, and medical note capture
+              Patient records, follow-ups, and consultation notes in one place
             </p>
           </div>
 
@@ -359,7 +353,7 @@ export default function ReactivationDashboard() {
             }}
           >
             <Sparkles className="w-4 h-4" />
-            New WhatsApp Flow
+            New Follow-up Plan
           </motion.button>
         </motion.div>
 
@@ -568,7 +562,7 @@ export default function ReactivationDashboard() {
                         className="flex items-center gap-1.5 whitespace-nowrap"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
-                        Generate Campaign
+                        Generate Plan
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -579,7 +573,7 @@ export default function ReactivationDashboard() {
         </motion.div>
 
         {/* ═══════════════════════════════════════════════════════
-            SECTION 3 — Campaign Activity + Revenue Chart
+            SECTION 3 — Follow-up Activity + Revenue Chart
         ═══════════════════════════════════════════════════════ */}
         <motion.div
           {...sectionAnim(0.7)}
@@ -593,8 +587,8 @@ export default function ReactivationDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
-                <h3 className="text-sm font-bold text-slate-800">Recent Campaign Activity</h3>
-                <p className="text-[11px] text-slate-500 mt-0.5">Last 30 days across all channels</p>
+                <h3 className="text-sm font-bold text-slate-800">Recent Follow-up Activity</h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">Last 30 days across clinic records</p>
               </div>
               <button className="text-[12px] text-indigo-400 font-medium flex items-center gap-1 hover:text-indigo-300 transition-colors">
                 View All <ChevronRight className="w-3.5 h-3.5" />
@@ -658,7 +652,7 @@ export default function ReactivationDashboard() {
             style={{}}
           >
             <div className="mb-4">
-              <h3 className="text-sm font-bold text-slate-800">Revenue Recovered</h3>
+              <h3 className="text-sm font-bold text-slate-800">Recovered Revenue</h3>
               <p className="text-[11px] text-slate-500 mt-0.5">Last 30 Days</p>
             </div>
 
@@ -753,9 +747,9 @@ export default function ReactivationDashboard() {
                 </div>
                 <div>
                   <p className="text-[11px] font-bold text-indigo-500 uppercase tracking-[0.14em]">
-                    Top Campaign This Month
+                    Top Follow-up This Month
                   </p>
-                  <h3 className="text-lg font-bold text-slate-800">Teeth Cleaning Offer</h3>
+                  <h3 className="text-lg font-bold text-slate-800">Teeth Cleaning Recall</h3>
                 </div>
               </div>
 
@@ -772,10 +766,10 @@ export default function ReactivationDashboard() {
             {/* Funnel stats row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
               {[
-                { label: 'Messages Sent', value: 500, icon: MessageSquare, color: 'text-slate-800', iconColor: 'text-indigo-600', bg: 'bg-indigo-50' },
-                { label: 'Replied', value: 73, icon: CheckCircle2, color: 'text-slate-800', iconColor: 'text-amber-600', bg: 'bg-amber-50' },
-                { label: 'Appointments', value: 18, icon: CalendarCheck, color: 'text-slate-800', iconColor: 'text-emerald-600', bg: 'bg-emerald-50' },
-                { label: 'Revenue Recovered', value: 42000, prefix: '₹', icon: IndianRupee, color: 'text-emerald-700', iconColor: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
+                { label: 'Patients Notified', value: 500, icon: MessageSquare, color: 'text-slate-800', iconColor: 'text-indigo-600', bg: 'bg-indigo-50' },
+                { label: 'Responded', value: 73, icon: CheckCircle2, color: 'text-slate-800', iconColor: 'text-amber-600', bg: 'bg-amber-50' },
+                { label: 'Bookings', value: 18, icon: CalendarCheck, color: 'text-slate-800', iconColor: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { label: 'Recovered Revenue', value: 42000, prefix: '₹', icon: IndianRupee, color: 'text-emerald-700', iconColor: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
               ].map((stat, idx) => (
                 <motion.div
                   key={stat.label}
@@ -799,12 +793,12 @@ export default function ReactivationDashboard() {
             {/* Funnel visualization */}
             <div className="space-y-3">
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.14em] mb-3">
-                Campaign Funnel
+                Follow-up Funnel
               </p>
 
               {[
                 { label: 'Sent', value: 500, total: 500, color: '#6366F1', colorLight: 'rgba(99,102,241,0.2)', pct: 100 },
-                { label: 'Replied', value: 73, total: 500, color: '#F59E0B', colorLight: 'rgba(245,158,11,0.2)', pct: 14.6 },
+                { label: 'Responded', value: 73, total: 500, color: '#F59E0B', colorLight: 'rgba(245,158,11,0.2)', pct: 14.6 },
                 { label: 'Booked Appointment', value: 18, total: 500, color: '#10B981', colorLight: 'rgba(16,185,129,0.2)', pct: 3.6 },
               ].map((step, idx) => (
                 <div key={step.label} className="flex items-center gap-4">
@@ -838,7 +832,7 @@ export default function ReactivationDashboard() {
             <div className="mt-5 flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] text-emerald-400 font-semibold">14.6% reply rate</span>
+                <span className="text-[11px] text-emerald-400 font-semibold">14.6% response rate</span>
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-250/20">
                 <span className="text-[11px] text-indigo-700 font-semibold">₹2,333 avg. revenue per booking</span>

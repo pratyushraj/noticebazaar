@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CountUp from 'react-countup';
+import { useSession } from '@/contexts/SessionContext';
 import {
   RefreshCw,
   Sparkles,
@@ -192,72 +193,7 @@ const INDUSTRIES = [
   'Dental Clinic',
 ];
 
-const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: '1',
-    name: 'Priya Sharma',
-    phone: '+91 98765 43210',
-    lastVisit: '8 months ago',
-    status: 'Lapsed',
-    city: 'Patna',
-  },
-  {
-    id: '2',
-    name: 'Rahul Verma',
-    phone: '+91 87654 32109',
-    lastVisit: '9 months ago',
-    status: 'Lapsed',
-    city: 'Mumbai',
-  },
-  {
-    id: '3',
-    name: 'Anjali Singh',
-    phone: '+91 76543 21098',
-    lastVisit: '7 months ago',
-    status: 'Lapsed',
-    city: 'Delhi',
-  },
-  {
-    id: '4',
-    name: 'Vikram Patel',
-    phone: '+91 65432 10987',
-    lastVisit: '11 months ago',
-    status: 'Lapsed',
-    city: 'Ahmedabad',
-  },
-  {
-    id: '5',
-    name: 'Sneha Gupta',
-    phone: '+91 54321 09876',
-    lastVisit: '6 months ago',
-    status: 'Lapsed',
-    city: 'Lucknow',
-  },
-  {
-    id: '6',
-    name: 'Arjun Mehta',
-    phone: '+91 43210 98765',
-    lastVisit: '10 months ago',
-    status: 'Lapsed',
-    city: 'Jaipur',
-  },
-  {
-    id: '7',
-    name: 'Kavita Rao',
-    phone: '+91 32109 87654',
-    lastVisit: '8 months ago',
-    status: 'Lapsed',
-    city: 'Hyderabad',
-  },
-  {
-    id: '8',
-    name: 'Deepak Kumar',
-    phone: '+91 21098 76543',
-    lastVisit: '12 months ago',
-    status: 'Lapsed',
-    city: 'Bangalore',
-  },
-];
+const MOCK_CUSTOMERS: Customer[] = [];
 
 const GENERATED_MESSAGES: GeneratedMessage[] = [
   {
@@ -744,19 +680,25 @@ const CampaignPreviewCard: React.FC<CampaignPreviewCardProps> = ({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ReactivationCampaigns: React.FC = () => {
+  const { profile } = useSession();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<CampaignForm>(() => {
-    const defaultName = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna';
     return {
       name: '',
       type: '',
-      businessName: defaultName,
+      businessName: 'Dental Clinic',
       location: 'Patna',
       industry: 'Dental Clinic',
       offerDescription: '20% off teeth whitening this month',
       segment: '',
     };
   });
+
+  useEffect(() => {
+    if (profile?.business_name) {
+      setForm(prev => ({ ...prev, businessName: profile.business_name }));
+    }
+  }, [profile?.business_name]);
 
   // Dynamically map messages to use the current business name and location
   const generatedMessages = React.useMemo(() => {

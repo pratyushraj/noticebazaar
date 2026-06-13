@@ -61,6 +61,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -203,6 +205,83 @@ const DATE_RANGES = [
   { label: '90–180 days', value: '90-180' },
   { label: '6+ months', value: '180+' },
 ];
+
+const FOLLOW_UP_RULES: Array<{
+  match: (customer: Customer) => boolean;
+  days: number;
+  label: string;
+}> = [
+  {
+    match: (customer) => /root canal|rct/i.test(customer.service) || (customer.toothNotes && Object.values(customer.toothNotes).some((note) => /rct/i.test(note))),
+    days: 7,
+    label: 'RCT review',
+  },
+  {
+    match: (customer) => /implant/i.test(customer.service),
+    days: 14,
+    label: 'Implant review',
+  },
+  {
+    match: (customer) => /crown|bridge/i.test(customer.service),
+    days: 14,
+    label: 'Crown trial',
+  },
+  {
+    match: (customer) => /extraction|surgery/i.test(customer.service),
+    days: 7,
+    label: 'Healing check',
+  },
+  {
+    match: (customer) => /cleaning|scaling|polish|checkup|whitening/i.test(customer.service),
+    days: 90,
+    label: 'Recall visit',
+  },
+  {
+    match: (customer) => /braces|aligner/i.test(customer.service),
+    days: 30,
+    label: 'Progress review',
+  },
+];
+
+function addDays(dateStr: string, days: number): string {
+  const base = new Date(dateStr);
+  base.setDate(base.getDate() + days);
+  return base.toISOString();
+}
+
+function getNextVisitDate(customer: Customer): string | null {
+  if (customer.programStatus === 'Active' && customer.programEnrollmentDate) {
+    const step = Math.max(1, Number(customer.programCurrentStep || 1));
+    const baseRule = FOLLOW_UP_RULES.find((rule) => rule.match(customer));
+    const stepDays = baseRule ? baseRule.days : 30;
+    return addDays(customer.programEnrollmentDate, stepDays * step);
+  }
+
+  const rule = FOLLOW_UP_RULES.find((entry) => entry.match(customer));
+  if (rule) return addDays(customer.lastVisit, rule.days);
+
+  if (customer.status === 'Follow Up Needed') return addDays(customer.lastVisit, 7);
+  return null;
+}
+
+function getFollowUpLabel(customer: Customer): string {
+  const rule = FOLLOW_UP_RULES.find((entry) => entry.match(customer));
+  if (rule) return rule.label;
+  if (customer.programStatus === 'Active') return 'Care program';
+  if (customer.status === 'Follow Up Needed') return 'Follow-up';
+  return 'Review';
+}
+
+function getAppointmentWindow(dateIso: string): 'today' | 'tomorrow' | 'upcoming' {
+  const now = new Date();
+  const target = new Date(dateIso);
+  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfTarget = new Date(target.getFullYear(), target.getMonth(), target.getDate()).getTime();
+  const diffDays = Math.round((startOfTarget - startOfNow) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'today';
+  if (diffDays === 1) return 'tomorrow';
+  return 'upcoming';
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -408,10 +487,6 @@ const getToothName = (num: number): string => {
   return `${quadNames[quadrant]} ${toothNames[code]} (Tooth ${num})`;
 };
 
-const DEMO_PRE_OP_RVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" style="background:%23151b2d;"><text x="20" y="30" fill="%23ef4444" font-family="monospace" font-size="12" font-weight="bold">PRE-OP RVG: CAVITY DIAGNOSIS</text><path d="M 170,120 Q 200,60 230,120 Q 240,180 200,230 Q 160,180 170,120 Z" fill="%232c3858" stroke="%23556897" stroke-width="3"/><path d="M 185,90 Q 200,75 215,90 Q 210,120 200,130 Q 190,120 185,90 Z" fill="%230d1324" opacity="0.8"/><text x="180" y="115" fill="%23ef4444" font-family="sans-serif" font-size="10" font-weight="bold">DECAY</text><circle cx="200" cy="95" r="8" fill="%23ef4444" opacity="0.3"/><line x1="20" y1="210" x2="380" y2="210" stroke="%23475569" stroke-width="4" stroke-dasharray="8 4"/><text x="20" y="230" fill="%2364748b" font-family="sans-serif" font-size="10">Bone Level: Normal | Subgingival decay detected on Tooth 15</text></svg>`;
-
-const DEMO_POST_OP_RVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250" style="background:%23151b2d;"><text x="20" y="30" fill="%2310b981" font-family="monospace" font-size="12" font-weight="bold">POST-OP RVG: COMPLETED ROOT CANAL</text><path d="M 170,120 Q 200,60 230,120 Q 240,180 200,230 Q 160,180 170,120 Z" fill="%232c3858" stroke="%23556897" stroke-width="3"/><path d="M 198,80 L 198,180" stroke="%23ffffff" stroke-width="4" stroke-linecap="round" filter="drop-shadow(0 0 4px %23ffffff)"/><path d="M 202,80 L 202,180" stroke="%23ffffff" stroke-width="4" stroke-linecap="round" filter="drop-shadow(0 0 4px %23ffffff)"/><path d="M 185,90 Q 200,75 215,90 Q 210,120 200,130 Q 190,120 185,90 Z" fill="%2394a3b8" opacity="0.8"/><text x="180" y="115" fill="%2310b981" font-family="sans-serif" font-size="10" font-weight="bold">OBTURATED</text><line x1="20" y1="210" x2="380" y2="210" stroke="%23475569" stroke-width="4" stroke-dasharray="8 4"/><text x="20" y="230" fill="%2364748b" font-family="sans-serif" font-size="10">Obturation: Complete (Gutta-Percha hermetic seal) | Tooth 15</text></svg>`;
-
 interface Procedure {
   name: string;
   category: 'Therapeutic' | 'Cosmetic';
@@ -432,6 +507,7 @@ const PROCEDURES_CATALOG: Procedure[] = [
 ];
 
 const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, onSave }) => {
+  const { profile } = useSession();
   const isEdit = !!customer?.id;
   const [form, setForm] = useState<Customer>(() => getInitialForm(customer));
   const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'estimates'>('general');
@@ -441,6 +517,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [scribeTranscript, setScribeTranscript] = useState('');
   const [scribeStatus, setScribeStatus] = useState<'idle' | 'listening' | 'analyzing' | 'done'>('idle');
   const recognitionRef = React.useRef<any>(null);
+  const [showAdvancedClinical, setShowAdvancedClinical] = useState(false);
 
   // RVG slider state
   const [xraySliderPos, setXraySliderPos] = useState(50);
@@ -455,13 +532,16 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [builderProcedureIdx, setBuilderProcedureIdx] = useState<string>('0');
   const [builderCost, setBuilderCost] = useState<number>(3500);
   const [copiedEstimate, setCopiedEstimate] = useState(false);
+  const [showEstimateBuilder, setShowEstimateBuilder] = useState(false);
 
   React.useEffect(() => {
     setForm(getInitialForm(customer));
     setActiveTab('general');
     setScribeTranscript('');
     setScribeStatus('idle');
+    setShowAdvancedClinical(false);
     setCopiedEstimate(false);
+    setShowEstimateBuilder(false);
     
     if (customer?.estimates && customer.estimates.length > 0) {
       const activeEst = customer.estimates[0];
@@ -696,12 +776,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                   <DialogHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 text-left">
                     <div className="text-left">
                       <DialogTitle className="text-slate-800 text-[16px] font-semibold tracking-tight">
-                        {isEdit ? 'Patient Profile' : 'Add New Patient'}
+                        {isEdit ? 'Patient Record' : 'Add Patient'}
                       </DialogTitle>
                       <p className="text-slate-500 text-[12px] mt-0.5">
                         {isEdit
-                          ? 'Review medical records, X-rays, and contact info'
-                          : 'Create a new client record in database'}
+                          ? 'Update intake and consultation notes'
+                          : 'Enter patient details before treatment'}
                       </p>
                     </div>
 
@@ -716,7 +796,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             : 'text-slate-500 hover:text-slate-700'
                         }`}
                       >
-                        General Info
+                        Before Treatment
                       </button>
                       <button
                         type="button"
@@ -728,7 +808,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         }`}
                       >
                         <Stethoscope size={10} />
-                        Medical
+                        After Consultation
                       </button>
                       {isEdit && (
                         <>
@@ -785,7 +865,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                          Last Visit Date
+                          Visit Date
                         </label>
                         <input
                           type="date"
@@ -797,12 +877,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                          Service Used
+                          Planned Treatment / Reason
                         </label>
                         <input
                           className={`${inputBase} ${inputFocusStyle}`}
                           style={inputStyle}
-                          placeholder="e.g. Teeth Cleaning"
+                          placeholder="e.g. Tooth pain, cleaning, RCT consultation"
                           value={form.service}
                           onChange={(e) => handleChange('service', e.target.value)}
                         />
@@ -813,7 +893,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                          Total Spend (₹)
+                          Advance / Paid (₹)
                         </label>
                         <input
                           type="number"
@@ -826,7 +906,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                          Status
+                          Visit Stage
                         </label>
                         <select
                           className={`${inputBase} ${inputFocusStyle} cursor-pointer`}
@@ -846,13 +926,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Notes */}
                     <div>
                       <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                        Notes
+                        Complaint / Notes
                       </label>
                       <textarea
                         className={`${inputBase} ${inputFocusStyle} resize-none`}
                         style={inputStyle}
                         rows={3}
-                        placeholder="Any notes about this customer..."
+                        placeholder="Any complaint, pain, or front-desk note..."
                         value={form.notes}
                         onChange={(e) => handleChange('notes', e.target.value)}
                       />
@@ -862,7 +942,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - Medical tab */}
                 {activeTab === 'medical' && (
-                  <div className="px-4 sm:px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
+                  <div className="px-4 sm:px-6 py-5 space-y-5 max-h-[72vh] sm:max-h-[60vh] overflow-y-auto">
                     {/* AI Dental Scribe (Voice to Chart) */}
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3 relative">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -872,7 +952,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           </div>
                           <div>
                             <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">AI Dental Scribe</h4>
-                            <p className="text-[10px] text-slate-500 mt-0.5">Dictate consultation notes to automatically populate EMR conditions & tag teeth</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">Use after consultation to capture treatment, next visit, and prescription quickly</p>
                           </div>
                         </div>
 
@@ -931,12 +1011,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Mock consult presets */}
                       <div className="space-y-1.5 pt-1">
-                        <span className="text-[9.5px] text-slate-400 uppercase font-bold tracking-wider">Voice Dictation Presets (Standard Indian Clinic Examples)</span>
+                        <span className="text-[9.5px] text-slate-400 uppercase font-bold tracking-wider">Voice Dictation Presets</span>
                         <div className="flex flex-wrap gap-2">
                           {[
-                            { label: 'Tooth 14 Cavity', text: 'Patient presents with severe food lodgement in upper right. Deep distal cavity found on tooth 14 requiring composite restoration.' },
-                            { label: 'Tooth 15 RCT', text: 'Acute pain and tenderness on percussion. Tooth 15 has deep decay with pulpal involvement. Root canal treatment needed.' },
-                            { label: 'Tooth 46 Implant', text: 'Old missing tooth in lower right quadrant. Pre-implant bone width looks good. Dental implant replacement planned for tooth 46.' }
+                            { label: 'Tooth 14 Filling', text: 'Tooth 14 deep cavity, filling done today, prescribe medicines, review after one week.' },
+                            { label: 'Tooth 15 RCT', text: 'Tooth 15 RCT completed, advise soft food and pain medicine, next appointment after 7 days.' },
+                            { label: 'Tooth 46 Implant', text: 'Tooth 46 implant discussed, schedule next visit, share estimate and pre-op instructions.' }
                           ].map((preset, idx) => (
                             <button
                               key={idx}
@@ -960,7 +1040,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <Stethoscope size={16} />
                         </div>
                         <div className="space-y-1">
-                          <h5 className="text-[12px] font-bold text-rose-400 uppercase tracking-wider">Clinical Alerts / Contraindications</h5>
+                          <h5 className="text-[12px] font-bold text-rose-400 uppercase tracking-wider">Medical Alerts</h5>
                           <p className="text-[11px] text-slate-600 leading-relaxed">
                             {form.allergies && form.allergies.length > 0 && (
                               <span className="block"><strong>⚠️ ALLERGIES:</strong> {form.allergies.join(', ')}</span>
@@ -973,109 +1053,126 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                     )}
 
-                    {/* Allergies & Conditions Checklists */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Allergies Checklist */}
-                      <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
-                        <div className="grid grid-cols-1 gap-2.5">
-                          {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
-                            const hasAllergy = (form.allergies || []).includes(allergy);
-                            return (
-                              <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current = form.allergies || [];
-                                    const next = current.includes(allergy)
-                                      ? current.filter((a) => a !== allergy)
-                                      : [...current, allergy];
-                                    handleChange('allergies', next);
-                                  }}
-                                  className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
-                                    hasAllergy
-                                      ? 'bg-rose-50 border-rose-300 text-rose-600'
-                                      : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
-                                  }`}
-                                >
-                                  {hasAllergy && <span className="text-[9px] leading-none">✓</span>}
-                                </button>
-                                <span className="truncate">{allergy}</span>
-                              </label>
-                            );
-                          })}
+                    {/* Advanced Clinical Details */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Advanced Clinical Details</h4>
+                          <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden">Collapsed on phones to keep the consultation flow fast.</p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAdvancedClinical((prev) => !prev)}
+                          className="sm:hidden text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg"
+                        >
+                          {showAdvancedClinical ? 'Hide' : 'Show'}
+                        </button>
                       </div>
 
-                      {/* Medical Conditions Checklist */}
-                      <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                        <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Chronic Conditions</h4>
-                        <div className="grid grid-cols-1 gap-2.5">
-                          {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
-                            const hasCond = (form.medicalConditions || []).includes(cond);
-                            return (
-                              <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    const current = form.medicalConditions || [];
-                                    const next = current.includes(cond)
-                                      ? current.filter((c) => c !== cond)
-                                      : [...current, cond];
-                                    handleChange('medicalConditions', next);
-                                  }}
-                                  className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
-                                    hasCond
-                                      ? 'bg-rose-50 border-rose-300 text-rose-600'
-                                      : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
-                                  }`}
-                                >
-                                  {hasCond && <span className="text-[9px] leading-none">✓</span>}
-                                </button>
-                                <span className="truncate">{cond}</span>
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
+                      <div className={`${showAdvancedClinical ? 'block' : 'hidden'} sm:block space-y-4`}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Allergies Checklist */}
+                          <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
+                            <div className="grid grid-cols-1 gap-2.5">
+                              {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
+                                const hasAllergy = (form.allergies || []).includes(allergy);
+                                return (
+                                  <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const current = form.allergies || [];
+                                        const next = current.includes(allergy)
+                                          ? current.filter((a) => a !== allergy)
+                                          : [...current, allergy];
+                                        handleChange('allergies', next);
+                                      }}
+                                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                                        hasAllergy
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600'
+                                          : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
+                                      }`}
+                                    >
+                                      {hasAllergy && <span className="text-[9px] leading-none">✓</span>}
+                                    </button>
+                                    <span className="truncate">{allergy}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
 
-                    {/* Vitals Logger */}
-                    <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                      <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Patient Vitals</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
-                          <input
-                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="e.g. 120/80 mmHg"
-                            value={form.vitals?.bp || ''}
-                            onChange={(e) => {
-                              handleChange('vitals', { ...form.vitals, bp: e.target.value });
-                            }}
-                          />
+                          {/* Medical Conditions Checklist */}
+                          <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Medical Conditions</h4>
+                            <div className="grid grid-cols-1 gap-2.5">
+                              {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
+                                const hasCond = (form.medicalConditions || []).includes(cond);
+                                return (
+                                  <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const current = form.medicalConditions || [];
+                                        const next = current.includes(cond)
+                                          ? current.filter((c) => c !== cond)
+                                          : [...current, cond];
+                                        handleChange('medicalConditions', next);
+                                      }}
+                                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                                        hasCond
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600'
+                                          : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
+                                      }`}
+                                    >
+                                      {hasCond && <span className="text-[9px] leading-none">✓</span>}
+                                    </button>
+                                    <span className="truncate">{cond}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
-                          <input
-                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="e.g. 72 bpm"
-                            value={form.vitals?.pulse || ''}
-                            onChange={(e) => {
-                              handleChange('vitals', { ...form.vitals, pulse: e.target.value });
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
-                          <input
-                            className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="e.g. 98.6 °F"
-                            value={form.vitals?.temp || ''}
-                            onChange={(e) => {
-                              handleChange('vitals', { ...form.vitals, temp: e.target.value });
-                            }}
-                          />
+
+                        <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Vitals</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
+                              <input
+                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. 120/80 mmHg"
+                                value={form.vitals?.bp || ''}
+                                onChange={(e) => {
+                                  handleChange('vitals', { ...form.vitals, bp: e.target.value });
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
+                              <input
+                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. 72 bpm"
+                                value={form.vitals?.pulse || ''}
+                                onChange={(e) => {
+                                  handleChange('vitals', { ...form.vitals, pulse: e.target.value });
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
+                              <input
+                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. 98.6 °F"
+                                value={form.vitals?.temp || ''}
+                                onChange={(e) => {
+                                  handleChange('vitals', { ...form.vitals, temp: e.target.value });
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1407,49 +1504,76 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                       )}
 
-                      {/* Load Demo X-Rays option if patient has none or 1 */}
-                      {(!form.xrays || form.xrays.length < 2) && (
-                        <div className="flex justify-end pt-1">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleChange('xrays', [DEMO_PRE_OP_RVG, DEMO_POST_OP_RVG]);
-                            }}
-                            className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[10px] font-bold text-indigo-600 flex items-center gap-1 transition-all"
-                          >
-                            <Sparkles size={10} /> Load Pre/Post-Op Demo Scans
-                          </button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
 
-                {/* Body - Estimates & Billing tab */}
+                {/* Body - Post Consultation tab */}
                 {activeTab === 'estimates' && (
                   <div className="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
-                    {/* Add Item Builder */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+                    {!showEstimateBuilder ? (
+                      <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                        <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-3">
+                          <StickyNote size={18} />
+                        </div>
+                        <h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider mb-1">Treatment Summary & Billing</h4>
+                        <p className="text-[11px] text-slate-500 text-center max-w-sm mb-4">
+                          Log completed procedures, teeth/areas, professional concessions, and preview patient records.
+                        </p>
+                        {estimateItems.length > 0 && (
+                          <div className="mb-4 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                            Active: {estimateItems.length} item{estimateItems.length > 1 ? 's' : ''} logged · Final: ₹{calculatedGrandTotal.toLocaleString('en-IN')}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setShowEstimateBuilder(true)}
+                          className="px-5 py-2 rounded-lg text-xs font-bold text-white transition-all shadow-md shadow-indigo-500/20"
+                          style={{
+                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
+                          }}
+                        >
+                          Show Summary
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Treatment Summary Builder</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowEstimateBuilder(false)}
+                            className="text-[10px] text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider transition-colors"
+                          >
+                            Hide Summary
+                          </button>
+                        </div>
+
+                        {/* Add Item Builder */}
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded bg-indigo-500/20 flex items-center justify-center">
                           <Plus size={12} className="text-indigo-400" />
                         </div>
                         <div>
-                          <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Add Treatment Item</h4>
-                          <p className="text-[10px] text-slate-505 mt-0.5">Select tooth & procedure with GST categorization</p>
+                          <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Treatment Done</h4>
+                          <p className="text-[10px] text-slate-505 mt-0.5">Add the procedure completed after consultation</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                         {/* Tooth selector */}
                         <div>
-                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Select Tooth</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Tooth / Area</label>
                           <select
                             value={builderTooth}
                             onChange={(e) => setBuilderTooth(e.target.value)}
                             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-2 text-[12px] text-slate-700 outline-none cursor-pointer"
                           >
-                            <option value="">General (No Tooth)</option>
+                            <option value="">General / No Tooth</option>
                             {(form.problemTeeth || []).map((t) => (
                               <option key={t} value={t}>Tooth {t} ({getToothName(t).split(' (Tooth ')[0]})</option>
                             ))}
@@ -1458,7 +1582,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                         {/* Procedure selector */}
                         <div className="md:col-span-2">
-                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Select Procedure</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Procedure Done</label>
                           <select
                             value={builderProcedureIdx}
                             onChange={(e) => {
@@ -1478,7 +1602,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                         {/* Cost */}
                         <div>
-                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Cost (₹)</label>
+                          <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Amount (₹)</label>
                           <input
                             type="number"
                             value={builderCost}
@@ -1514,14 +1638,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Estimate Items Table */}
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">Current Estimate Details</span>
+                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">Current Treatment Summary</span>
                         <select
                           value={estimateStatus}
                           onChange={(e) => setEstimateStatus(e.target.value as any)}
                           className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md outline-none cursor-pointer"
                         >
                           <option value="Draft" style={{ background: '#fff', color: '#334155' }}>Draft</option>
-                          <option value="Sent" style={{ background: '#fff', color: '#334155' }}>Sent to Patient</option>
+                          <option value="Sent" style={{ background: '#fff', color: '#334155' }}>Shared</option>
                           <option value="Approved" style={{ background: '#fff', color: '#334155' }}>Approved</option>
                         </select>
                       </div>
@@ -1540,7 +1664,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                   <span className="text-slate-800 font-medium">{item.procedure}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
-                                  <span>{item.isCosmetic ? 'Cosmetic Dental (18% GST)' : 'Therapeutic Care (Exempt / 0% GST)'}</span>
+                                  <span>{item.isCosmetic ? 'Cosmetic Dental (18% GST)' : 'Therapeutic Care (0% GST)'}</span>
                                 </div>
                               </div>
 
@@ -1559,7 +1683,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                       ) : (
                         <div className="py-8 text-center text-[11px] text-slate-400 border-b border-slate-200">
-                          No estimate items added. Add procedures above to build the billing proposal.
+                          No treatment items added. Add procedures above to build the summary.
                         </div>
                       )}
 
@@ -1573,7 +1697,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         {/* Discount row */}
                         <div className="flex items-center justify-between text-[11px] text-slate-600 gap-4">
                           <span className="flex items-center gap-1.5 shrink-0">
-                            Discretionary Discount
+                            Discount / Concession
                           </span>
                           <div className="flex items-center gap-2 justify-end w-full max-w-[180px]">
                             <input
@@ -1596,14 +1720,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         )}
 
                         <div className="flex justify-between text-[11px] text-slate-500">
-                          <span>CGST (9%) + SGST (9%) <span className="text-[9px] text-slate-400">(Cosmetic only)</span></span>
+                          <span>GST <span className="text-[9px] text-slate-400">(Cosmetic only)</span></span>
                           <span className="font-mono">₹{calculatedGST.toLocaleString('en-IN')}</span>
                         </div>
 
                         <div className="h-px bg-slate-200 my-1.5" />
 
                         <div className="flex justify-between text-[13px] font-bold text-slate-800">
-                          <span className="uppercase tracking-wider">Estimated Total</span>
+                          <span className="uppercase tracking-wider">Final Amount</span>
                           <span className="font-mono text-indigo-600">₹{calculatedGrandTotal.toLocaleString('en-IN')}</span>
                         </div>
                       </div>
@@ -1616,17 +1740,17 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <div>
                             <h4 className="text-[11.5px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                               <Sparkles size={11} className="text-indigo-400" />
-                              WhatsApp Estimate Proposal (Simulated)
+                              WhatsApp Treatment Summary (Simulated)
                             </h4>
-                            <p className="text-[10px] text-slate-500 mt-0.5">Copy message format to send to patient next to the chair</p>
+                            <p className="text-[10px] text-slate-500 mt-0.5">Copy message format to share treatment details after consultation</p>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => {
-                              const clinicName = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care';
+                              const clinicName = profile?.business_name || 'Dental Clinic';
                               const summary = estimateItems.map((item) => `• ${item.procedure}${item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹${item.cost.toLocaleString('en-IN')}`).join('\n');
-                              const text = `*${clinicName} - Treatment Proposal*\n\nHi ${form.name},\n\nHere is your customized treatment cost estimate:\n\n${summary}\n\n*Subtotal:* ₹${calculatedSubtotal.toLocaleString('en-IN')}\n*Discount (${estimateDiscount}%):* -₹${calculatedDiscountAmount.toLocaleString('en-IN')}\n*GST (Cosmetic):* ₹${calculatedGST.toLocaleString('en-IN')}\n*Estimated Grand Total:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}\n\nOur patient manager will schedule your operatories slots. Let us know if we can proceed!`;
+                              const text = `*${clinicName} - Treatment Summary*\n\nHi ${form.name},\n\nHere is your treatment summary:\n\n${summary}\n\n*Subtotal:* ₹${calculatedSubtotal.toLocaleString('en-IN')}\n*Discount (${estimateDiscount}%):* -₹${calculatedDiscountAmount.toLocaleString('en-IN')}\n*GST (Cosmetic):* ₹${calculatedGST.toLocaleString('en-IN')}\n*Final Amount:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}\n\nPlease let us know your preferred next date.`;
                               navigator.clipboard.writeText(text);
                               setCopiedEstimate(true);
                               setTimeout(() => setCopiedEstimate(false), 2000);
@@ -1640,9 +1764,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <div className="bg-white border border-slate-200 rounded-xl p-3 text-[12px] font-mono leading-relaxed text-slate-700">
                           <span className="text-[10px] text-indigo-500 font-bold block">MESSAGE PREVIEW:</span>
                           <div className="whitespace-pre-wrap select-all bg-slate-50 p-2.5 rounded border border-slate-100">
-                            <strong>{localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care'} - Treatment Proposal</strong><br/><br/>
+                            <strong>{profile?.business_name || 'Dental Clinic'} - Treatment Summary</strong><br/><br/>
                             Hi {form.name},<br/><br/>
-                            Here is your customized treatment cost estimate:<br/>
+                            Here is your treatment summary:<br/>
                             {estimateItems.map((item, idx) => (
                               <span key={idx}>• {item.procedure}{item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹{item.cost.toLocaleString('en-IN')}<br/></span>
                             ))}
@@ -1650,11 +1774,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             <strong>Subtotal:</strong> ₹{calculatedSubtotal.toLocaleString('en-IN')}<br/>
                             <strong>Discount ({estimateDiscount}%):</strong> -₹{calculatedDiscountAmount.toLocaleString('en-IN')}<br/>
                             <strong>GST (Cosmetic):</strong> ₹{calculatedGST.toLocaleString('en-IN')}<br/>
-                            <strong>Estimated Grand Total:</strong> ₹{calculatedGrandTotal.toLocaleString('en-IN')}<br/><br/>
-                            Our patient manager will schedule your operatories slots. Let us know if we can proceed!
+                            <strong>Final Amount:</strong> ₹{calculatedGrandTotal.toLocaleString('en-IN')}<br/><br/>
+                            Please let us know your preferred next date.
                           </div>
                         </div>
                       </div>
+                    )}
+                      </>
                     )}
                   </div>
                 )}
@@ -1718,7 +1844,63 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 const ROWS_PER_PAGE = 10;
 
 const ReactivationCustomers: React.FC = () => {
+  const { organizationId } = useSession();
+  const clinicId = organizationId || '';
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    if (!clinicId) return;
+
+    async function fetchPatients() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('dental_patients')
+          .select('*')
+          .eq('clinic_id', clinicId)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const mapped = data.map((d: any) => ({
+            id: d.id,
+            name: d.name,
+            phone: d.phone,
+            lastVisit: d.last_visit,
+            service: d.service,
+            totalSpend: Number(d.total_spend || 0),
+            status: d.status,
+            notes: d.notes,
+            avatarColor: d.avatar_color,
+            problemTeeth: d.problem_teeth || [],
+            xrays: d.xrays || [],
+            allergies: d.allergies || [],
+            medicalConditions: d.medical_conditions || [],
+            toothNotes: d.tooth_notes || {},
+            toothConditions: d.tooth_conditions || {},
+            vitals: d.vitals || {},
+            activeProgramId: d.active_program_id,
+            programEnrollmentDate: d.program_enrollment_date,
+            programCurrentStep: d.program_current_step,
+            programStatus: d.program_status,
+            estimates: d.estimates || []
+          }));
+          setCustomers(mapped);
+        } else {
+          setCustomers([]);
+        }
+      } catch (err) {
+        console.error('Error fetching patients:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPatients();
+  }, [clinicId]);
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [serviceFilter, setServiceFilter] = useState('All Services');
@@ -1726,6 +1908,7 @@ const ReactivationCustomers: React.FC = () => {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [dismissedAppointmentIds, setDismissedAppointmentIds] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
@@ -1736,6 +1919,40 @@ const ReactivationCustomers: React.FC = () => {
     const inactive = customers.filter((c) => c.status === 'Inactive').length;
     return { total, active, inactive };
   }, [customers]);
+
+  const upcomingAppointments = useMemo(() => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const inSevenDays = todayStart + 7 * 24 * 60 * 60 * 1000;
+
+    return customers
+      .map((customer) => {
+        const nextVisitDate = getNextVisitDate(customer);
+        if (!nextVisitDate) return null;
+
+        const visitTime = new Date(nextVisitDate).getTime();
+        const appointmentWindow = getAppointmentWindow(nextVisitDate);
+        const isDueSoon = visitTime >= todayStart && visitTime <= inSevenDays;
+        const isOverdue = visitTime < todayStart;
+
+        if (!isDueSoon && !isOverdue) return null;
+        if (dismissedAppointmentIds.has(customer.id)) return null;
+
+        return {
+          id: customer.id,
+          name: customer.name,
+          phone: customer.phone,
+          service: customer.service,
+          nextVisitDate,
+          appointmentWindow,
+          dueLabel: getFollowUpLabel(customer),
+          overdue: isOverdue,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .sort((a, b) => new Date(a.nextVisitDate).getTime() - new Date(b.nextVisitDate).getTime())
+      .slice(0, 4);
+  }, [customers, dismissedAppointmentIds]);
 
   // ─── Filtering + Sorting ──────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -1820,23 +2037,149 @@ const ReactivationCustomers: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleSave = useCallback((c: Customer) => {
-    setCustomers((prev) => {
-      const idx = prev.findIndex((x) => x.id === c.id);
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = c;
-        return updated;
-      }
-      return [c, ...prev];
-    });
-  }, []);
+  const handleCallPatient = (phone: string) => {
+    if (!phone) return;
+    window.open(`tel:${phone.replace(/[^\d+]/g, '')}`, '_self');
+  };
 
-  const handleDelete = (id: string) => {
-    setCustomers((prev) => prev.filter((c) => c.id !== id));
-    const newSet = new Set(selectedIds);
-    newSet.delete(id);
-    setSelectedIds(newSet);
+  const handleWhatsAppPatient = (phone: string, name: string) => {
+    if (!phone) return;
+    const digits = phone.replace(/[^\d]/g, '');
+    const message = encodeURIComponent(`Hello ${name}, this is a reminder from the clinic for your upcoming appointment.`);
+    window.open(`https://wa.me/${digits}?text=${message}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleMarkSeen = (id: string) => {
+    setDismissedAppointmentIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  };
+
+  const handleSave = useCallback(async (c: Customer) => {
+    if (!clinicId) return;
+
+    const dbRow = {
+      clinic_id: clinicId,
+      name: c.name,
+      phone: c.phone,
+      last_visit: c.lastVisit,
+      service: c.service,
+      total_spend: c.totalSpend,
+      status: c.status,
+      notes: c.notes,
+      avatar_color: c.avatarColor,
+      problem_teeth: c.problemTeeth || [],
+      xrays: c.xrays || [],
+      allergies: c.allergies || [],
+      medical_conditions: c.medicalConditions || [],
+      tooth_notes: c.toothNotes || {},
+      tooth_conditions: c.toothConditions || {},
+      vitals: c.vitals || {},
+      active_program_id: c.activeProgramId || null,
+      program_enrollment_date: c.programEnrollmentDate || null,
+      program_current_step: c.programCurrentStep || null,
+      program_status: c.programStatus || null,
+      estimates: c.estimates || []
+    };
+
+    try {
+      const isNew = !c.id || c.id.startsWith('sim-') || c.id === '';
+      
+      if (isNew) {
+        // Insert patient into Supabase
+        const { data, error } = await supabase
+          .from('dental_patients')
+          .insert([dbRow])
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const mapped: Customer = {
+            id: data.id,
+            name: data.name,
+            phone: data.phone,
+            lastVisit: data.last_visit,
+            service: data.service,
+            totalSpend: Number(data.total_spend || 0),
+            status: data.status,
+            notes: data.notes,
+            avatarColor: data.avatar_color,
+            problemTeeth: data.problem_teeth || [],
+            xrays: data.xrays || [],
+            allergies: data.allergies || [],
+            medicalConditions: data.medical_conditions || [],
+            toothNotes: data.tooth_notes || {},
+            toothConditions: data.tooth_conditions || {},
+            vitals: data.vitals || {},
+            activeProgramId: data.active_program_id,
+            programEnrollmentDate: data.program_enrollment_date,
+            programCurrentStep: data.program_current_step,
+            programStatus: data.program_status,
+            estimates: data.estimates || []
+          };
+          setCustomers((prev) => [mapped, ...prev]);
+        }
+      } else {
+        // Update patient in Supabase
+        const { data, error } = await supabase
+          .from('dental_patients')
+          .update(dbRow)
+          .eq('id', c.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          const mapped: Customer = {
+            id: data.id,
+            name: data.name,
+            phone: data.phone,
+            lastVisit: data.last_visit,
+            service: data.service,
+            totalSpend: Number(data.total_spend || 0),
+            status: data.status,
+            notes: data.notes,
+            avatarColor: data.avatar_color,
+            problemTeeth: data.problem_teeth || [],
+            xrays: data.xrays || [],
+            allergies: data.allergies || [],
+            medicalConditions: data.medical_conditions || [],
+            toothNotes: data.tooth_notes || {},
+            toothConditions: data.tooth_conditions || {},
+            vitals: data.vitals || {},
+            activeProgramId: data.active_program_id,
+            programEnrollmentDate: data.program_enrollment_date,
+            programCurrentStep: data.program_current_step,
+            programStatus: data.program_status,
+            estimates: data.estimates || []
+          };
+          setCustomers((prev) => prev.map((x) => x.id === mapped.id ? mapped : x));
+        }
+      }
+    } catch (err) {
+      console.error('Error saving patient to database:', err);
+    }
+  }, [clinicId]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('dental_patients')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setCustomers((prev) => prev.filter((c) => c.id !== id));
+      const newSet = new Set(selectedIds);
+      newSet.delete(id);
+      setSelectedIds(newSet);
+    } catch (err) {
+      console.error('Error deleting patient from database:', err);
+    }
   };
 
 
@@ -1927,6 +2270,93 @@ const ReactivationCustomers: React.FC = () => {
             value={stats.inactive.toLocaleString('en-IN')}
             dot="bg-amber-500"
           />
+        </motion.div>
+
+        {/* ── Today’s Appointments ───────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.09, ease: 'easeOut' }}
+          className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5"
+          style={{ boxShadow: '0 10px 30px rgba(15,23,42,0.04)' }}
+        >
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Doctor Queue</p>
+              <h2 className="text-sm sm:text-base font-bold text-slate-800">Today&apos;s Appointments</h2>
+            </div>
+            <div className="text-[11px] text-slate-500">
+              Based on patient follow-up and treatment history
+            </div>
+          </div>
+
+          {upcomingAppointments.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+              No appointments due today or in the next 7 days.
+            </div>
+          ) : (
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              {upcomingAppointments.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-800 truncate">{item.name}</p>
+                      <p className="text-[12px] text-slate-500 truncate">{item.phone}</p>
+                    </div>
+                    <span
+                      className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        item.overdue
+                          ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                          : item.appointmentWindow === 'today'
+                          ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                      }`}
+                    >
+                      {item.overdue ? 'Overdue' : item.appointmentWindow}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3 text-[12px]">
+                    <span className="text-slate-500">{item.service}</span>
+                    <span className="font-semibold text-slate-700">
+                      {formatDate(item.nextVisitDate)}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-[11px] text-slate-400">
+                    {item.dueLabel}
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleCallPatient(item.phone)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    >
+                      <Phone size={12} />
+                      Call
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleWhatsAppPatient(item.phone, item.name)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                    >
+                      <MessageSquare size={12} />
+                      WhatsApp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMarkSeen(item.id)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+                    >
+                      <UserCheck size={12} />
+                      Mark Seen
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* ── Filter Bar ───────────────────────────────────────────────────── */}
@@ -2530,9 +2960,21 @@ const ReactivationCustomers: React.FC = () => {
 
               <button className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-[12px] font-medium text-red-400 hover:bg-red-500/10 transition-all duration-150"
                 style={{ border: '1px solid rgba(239,68,68,0.2)' }}
-                onClick={() => {
-                  setCustomers((prev) => prev.filter((c) => !selectedIds.has(c.id)));
-                  setSelectedIds(new Set());
+                onClick={async () => {
+                  try {
+                    const idsArray = Array.from(selectedIds);
+                    const { error } = await supabase
+                      .from('dental_patients')
+                      .delete()
+                      .in('id', idsArray);
+
+                    if (error) throw error;
+
+                    setCustomers((prev) => prev.filter((c) => !selectedIds.has(c.id)));
+                    setSelectedIds(new Set());
+                  } catch (err) {
+                    console.error('Error performing bulk delete:', err);
+                  }
                 }}>
                 <Trash2 size={13} />
                 Delete

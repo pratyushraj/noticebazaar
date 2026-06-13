@@ -33,44 +33,7 @@ interface GoogleReview {
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
-const MOCK_REVIEWS: GoogleReview[] = [
-  {
-    id: 'r1',
-    commenterName: 'Priya Sen',
-    rating: 5,
-    comment: 'The root canal session was completely painless. Dr. Priya Sharma is very gentle and explained every step. Highly recommend this clinic!',
-    timeAgo: '4 hours ago',
-    status: 'replied',
-    aiReplyDraft: 'Thank you Priya Sen! 💙 We are thrilled to hear you had a painless root canal experience with Dr. Priya Sharma. We always strive to provide gentle care and clear explanations. See you next time!',
-  },
-  {
-    id: 'r2',
-    commenterName: 'Amit Verma',
-    rating: 5,
-    comment: 'Great infrastructure and polite staff. Visited for scaling and polishing last week. Free parking pass was helpful too.',
-    timeAgo: '1 day ago',
-    status: 'pending',
-    aiReplyDraft: 'Hi Amit Verma! Thank you for the 5-star review! 🌟 We are glad you liked our modern infrastructure and polite staff during your scaling session. Happy to know the parking pass was convenient. See you again!',
-  },
-  {
-    id: 'r3',
-    commenterName: 'Karan Malhotra',
-    rating: 2,
-    comment: 'Clean clinic but wait times are extremely high. Had to wait 45 minutes past my scheduled slot for a dental consult.',
-    timeAgo: '2 days ago',
-    status: 'escalated',
-    aiReplyDraft: 'Dear Karan Malhotra, we sincerely apologize for the 45-minute delay past your scheduled appointment time. We value your feedback and would like to make this right. Please contact our clinic manager at manager@smiledental.com or call +91 98765 43210 so we can address this directly.',
-  },
-  {
-    id: 'r4',
-    commenterName: 'Neha Das',
-    rating: 5,
-    comment: 'Got my clear aligners from here and the 3D smile design mockup was super detailed. Excited for my alignment results.',
-    timeAgo: '4 days ago',
-    status: 'replied',
-    aiReplyDraft: 'Thank you Neha Das! 🦷 We are excited for your clear aligner journey and glad the 3D smile design was helpful. We look forward to seeing your beautiful results!',
-  },
-];
+const MOCK_REVIEWS: GoogleReview[] = [];
 
 export default function ReactivationReviews() {
   const [reviews, setReviews] = useState<GoogleReview[]>(MOCK_REVIEWS);

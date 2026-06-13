@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '@/contexts/SessionContext';
 import {
   Bot,
-  LayoutDashboard,
   Users,
   Zap as ZapIcon,
   Star,
@@ -30,12 +29,6 @@ interface ReactivationLayoutProps {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: 'Dashboard',
-    path: '/reactivation',
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
     label: 'Patients',
     path: '/reactivation/customers',
     icon: Users,
@@ -56,10 +49,10 @@ const NAV_ITEMS: NavItem[] = [
 // ─── Page title map ───────────────────────────────────────────────────────────
 
 const PAGE_TITLES: Record<string, string> = {
-  '/reactivation': 'Dashboard',
   '/reactivation/receptionist': 'AI Receptionist',
   '/reactivation/customers': 'Patients',
   '/reactivation/reviews': 'Google Reviews',
+  '/reactivation': 'Patients',
 };
 
 // ─── Sidebar Nav Item ─────────────────────────────────────────────────────────
@@ -142,29 +135,12 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'AI Reactivation';
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { user } = useSession();
-  const userEmail = user?.email;
+  const { profile } = useSession();
+  const activeClinic = profile?.business_name || 'Dental Clinic';
 
-  // Determine clinic context based on authenticated user email
-  let activeClinic = 'Shree Ram Dental Care Patna';
-  if (userEmail?.toLowerCase().includes('yourdentist')) {
-    activeClinic = 'Your Dentist';
-  } else if (userEmail?.toLowerCase().includes('shreeramdental')) {
-    activeClinic = 'Shree Ram Dental Care Patna';
-  } else if (userEmail === 'test@creatorarmour.com' || userEmail === 'test@noticebazaar.com') {
-    activeClinic = 'Your Dentist';
-  } else {
-    // If not matched, read from localStorage fallback
-    activeClinic = localStorage.getItem('reactivation_clinic_name') || 'Shree Ram Dental Care Patna';
-  }
-
-  // Sync back to localStorage so that other pages read the correct active clinic context dynamically
   React.useEffect(() => {
-    const currentLocal = localStorage.getItem('reactivation_clinic_name');
-    if (currentLocal !== activeClinic) {
-      localStorage.setItem('reactivation_clinic_name', activeClinic);
-    }
-  }, [activeClinic]);
+    document.title = `${pageTitle} | Dental CRM`;
+  }, [pageTitle]);
 
   // Close sidebar on route change (for mobile)
   React.useEffect(() => {
@@ -210,7 +186,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
               </span>
             </div>
             <p className="text-[10px] text-slate-400 tracking-wider pl-[38px] font-medium">
-              WhatsApp follow-ups, bookings, and patient rechecks
+              Patient records, follow-ups, and chairside notes
             </p>
           </div>
           <button
@@ -272,7 +248,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
             <div className="flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1.2 rounded-lg">
               <span className="text-[9px] uppercase font-bold text-indigo-500 tracking-widest hidden sm:inline shrink-0">Clinic:</span>
               <span className="text-[11px] sm:text-[11.5px] font-bold text-slate-800 shrink-0 font-sans">
-                {activeClinic === 'Shree Ram Dental Care Patna' ? 'Shree Ram Dental Care' : 'Your Dentist'}
+                {activeClinic}
               </span>
             </div>
 

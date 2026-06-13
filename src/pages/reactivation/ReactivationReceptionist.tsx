@@ -31,13 +31,12 @@ import {
   IndianRupee,
   Flame,
   Circle,
-  RefreshCw,
   Activity,
   CalendarDays,
-  Link2,
   Shield,
   UserCheck,
   TrendingUp,
+  RefreshCw,
   Wifi,
   ExternalLink,
   ToggleLeft,
@@ -47,6 +46,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import confetti from 'canvas-confetti';
+import { useSession } from '@/contexts/SessionContext';
+import { supabase } from '@/lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,7 +72,7 @@ interface FAQ {
   answer: string;
 }
 
-interface Offer {
+interface ClinicNotice {
   id: string;
   title: string;
   description: string;
@@ -105,46 +106,18 @@ interface RecentConversation {
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const INITIAL_STAFF: StaffMember[] = [
-  { id: '1', name: 'Dr. Priya Sharma', role: 'Dental Surgeon', days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] },
-  { id: '2', name: 'Dr. Arjun Mehta', role: 'Orthodontist', days: ['Mon', 'Wed', 'Fri'] },
-];
+const INITIAL_STAFF: StaffMember[] = [];
 
-const INITIAL_SERVICES: Service[] = [
-  { id: '1', name: 'Teeth Cleaning', duration: 45, price: 800, description: 'Professional scaling and polishing' },
-  { id: '2', name: 'Teeth Whitening', duration: 60, price: 3500, description: 'In-clinic laser whitening treatment' },
-  { id: '3', name: 'Root Canal', duration: 90, price: 6000, description: 'Single sitting root canal with rotary files' },
-  { id: '4', name: 'Dental Implant', duration: 120, price: 35000, description: 'Titanium implant with zirconia crown' },
-  { id: '5', name: 'Clear Aligners', duration: 30, price: 45000, description: 'Custom Invisalign-style treatment plan' },
-];
+const INITIAL_SERVICES: Service[] = [];
 
-const INITIAL_FAQS: FAQ[] = [
-  { id: '1', question: 'Do you offer EMI?', answer: 'Yes, we offer 0% EMI on treatments above ₹5,000 through Bajaj Finance and HDFC PayLater.' },
-  { id: '2', question: 'Is parking available?', answer: 'Yes, free parking for 2 hours is available in our building basement. Ask reception for the pass.' },
-  { id: '3', question: 'Do you accept insurance?', answer: 'We accept Star Health, Niva Bupa, and ICICI Lombard dental policies.' },
-  { id: '4', question: 'How long does a root canal take?', answer: 'A single-sitting root canal takes approximately 90 minutes. Multi-sitting may be required for complex cases.' },
-];
+const INITIAL_FAQS: FAQ[] = [];
 
-const INITIAL_OFFERS: Offer[] = [
-  { id: '1', title: 'Summer Smile Package', description: '20% off on teeth whitening + free consultation', validUntil: '2026-06-30' },
-  { id: '2', title: 'New Patient Welcome', description: '₹200 off on your first scaling + free X-ray', validUntil: '2026-07-15' },
-];
+const INITIAL_NOTICES: ClinicNotice[] = [];
 
-const INITIAL_AI_TOGGLES: AIToggle[] = [
-  { id: 'faq', label: 'Answer FAQs', icon: <HelpCircle className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'services', label: 'Explain Services', icon: <BookOpen className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'pricing', label: 'Handle Pricing', icon: <IndianRupee className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'leads', label: 'Capture Leads', icon: <UserCheck className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'booking', label: 'Book Appointments', icon: <CalendarCheck className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'followup', label: 'Follow Up with Leads', icon: <RefreshCw className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'reviews', label: 'Request Reviews', icon: <Star className="w-4 h-4" />, enabled: true, color: 'indigo' },
-  { id: 'escalate', label: 'Escalate Urgent Cases', icon: <AlertTriangle className="w-4 h-4" />, enabled: false, color: 'red' },
-];
+const INITIAL_AI_TOGGLES: AIToggle[] = [];
 
 const INTEGRATION_OPTIONS = [
   { id: 'gcal', name: 'Google Calendar', icon: CalendarDays, connected: false },
-  { id: 'zoho', name: 'Zoho Bookings', icon: CalendarCheck, connected: true },
-  { id: 'calendly', name: 'Calendly', icon: Link2, connected: false },
 ];
 
 const HANDOFF_TRIGGERS = [
@@ -154,7 +127,7 @@ const HANDOFF_TRIGGERS = [
   { id: 'diagnosis', label: 'Medical diagnosis request' },
 ];
 
-const NOTIFY_OPTIONS = ['WhatsApp', 'SMS', 'Email'];
+const NOTIFY_OPTIONS = ['SMS', 'Email'];
 
 const RECENT_CONVERSATIONS: RecentConversation[] = [
   { name: 'Rahul Sharma', inquiry: 'Aligners', lastSeen: '3 days ago', temperature: 'hot' },
@@ -162,33 +135,14 @@ const RECENT_CONVERSATIONS: RecentConversation[] = [
   { name: 'Arun Singh', inquiry: 'Whitening', lastSeen: '2 weeks ago', temperature: 'cold' },
 ];
 
-const DEMO_CONVERSATION: ChatMessage[] = [
-  { id: 'u1', role: 'user', text: 'Hi', timestamp: '10:02 AM' },
-  {
-    id: 'a1', role: 'ai',
-    text: "Welcome to Smile Dental Clinic! 👋 I'm your AI receptionist. How can I help you today?\n\n1️⃣ Book an Appointment\n2️⃣ Know about Services & Pricing\n3️⃣ Talk to a Doctor\n4️⃣ Current Offers",
-    timestamp: '10:02 AM'
-  },
-  { id: 'u2', role: 'user', text: "What's the cost of teeth whitening?", timestamp: '10:03 AM' },
-  {
-    id: 'a2', role: 'ai',
-    text: "Our Teeth Whitening treatment costs ₹3,500 and takes about 60 minutes. ✨\n\nWe also have a **Summer Smile Package** with 20% off — just ₹2,800!\n\nWould you like to book a slot?",
-    timestamp: '10:03 AM'
-  },
-  { id: 'u3', role: 'user', text: 'Yes please', timestamp: '10:04 AM' },
-  {
-    id: 'a3', role: 'ai',
-    text: "Great! Let me check Dr. Priya's availability... 🔍\n\nAvailable slots this week:\n📅 Tomorrow (Tue) — 11 AM or 3 PM\n📅 Thursday — 2 PM or 5 PM\n\nWhich works best for you?",
-    timestamp: '10:04 AM'
-  },
-];
+const DEMO_CONVERSATION: ChatMessage[] = [];
 
 const SCENARIO_SCRIPTS: Record<string, ChatMessage[]> = {
   pricing: [
     { id: 'su1', role: 'user', text: 'What are your service charges?', timestamp: 'Now' },
     { id: 'sa1', role: 'ai', text: "Here's our pricing menu 💰\n\n🦷 Teeth Cleaning — ₹800 (45 min)\n✨ Teeth Whitening — ₹3,500 (60 min)\n🔩 Root Canal — ₹6,000 (90 min)\n💎 Dental Implant — ₹35,000 (120 min)\n\nAll treatments include a free pre-consultation!", timestamp: 'Now' },
     { id: 'su2', role: 'user', text: 'Is there any discount available?', timestamp: 'Now' },
-    { id: 'sa2', role: 'ai', text: "Yes! We have active offers right now 🎉\n\n🌟 **Summer Smile Package** — 20% off whitening (valid till June 30)\n🎁 **New Patient Welcome** — ₹200 off first scaling + free X-ray\n\nWant me to book you in?", timestamp: 'Now' },
+    { id: 'sa2', role: 'ai', text: "Yes! We have current clinic notices right now 🎉\n\n🌟 **Whitening notice** — 20% off whitening (valid till June 30)\n🎁 **New Patient Welcome** — ₹200 off first scaling + free X-ray\n\nWant me to book you in?", timestamp: 'Now' },
   ],
   booking: [
     { id: 'bu1', role: 'user', text: 'I want to book an appointment for root canal', timestamp: 'Now' },
@@ -200,7 +154,7 @@ const SCENARIO_SCRIPTS: Record<string, ChatMessage[]> = {
   ],
   faq: [
     { id: 'fu1', role: 'user', text: 'Do you provide EMI options?', timestamp: 'Now' },
-    { id: 'fa1', role: 'ai', text: "Yes, we offer 0% EMI on treatments above ₹5,000! 💳\n\nAvailable through:\n✅ Bajaj Finance (3-12 months)\n✅ HDFC PayLater (up to 6 months)\n✅ ZestMoney (3-9 months)\n\nNo processing fee. Approval in 2 minutes!", timestamp: 'Now' },
+    { id: 'fa1', role: 'ai', text: "Yes, we notice 0% EMI on treatments above ₹5,000! 💳\n\nAvailable through:\n✅ Bajaj Finance (3-12 months)\n✅ HDFC PayLater (up to 6 months)\n✅ ZestMoney (3-9 months)\n\nNo processing fee. Approval in 2 minutes!", timestamp: 'Now' },
     { id: 'fu2', role: 'user', text: 'Do you accept Star Health insurance?', timestamp: 'Now' },
     { id: 'fa2', role: 'ai', text: "Yes, we accept Star Health insurance! ✅\n\nWe also accept:\n• Niva Bupa\n• ICICI Lombard\n• Care Health\n\nPlease bring your insurance card. Our billing team will handle the rest.", timestamp: 'Now' },
   ],
@@ -208,7 +162,7 @@ const SCENARIO_SCRIPTS: Record<string, ChatMessage[]> = {
     { id: 'lu1', role: 'user', text: "I'm interested in clear aligners", timestamp: 'Now' },
     { id: 'la1', role: 'ai', text: "Great choice! Clear aligners are amazing 😍\n\nOur package includes:\n🔬 3D smile simulation\n📐 Custom aligners\n♾️ Lifetime retainers\n👨‍⚕️ Monthly check-ups\n\nStarting ₹45,000. May I capture your details for a free consultation call?", timestamp: 'Now' },
     { id: 'lu2', role: 'user', text: 'Sure', timestamp: 'Now' },
-    { id: 'la2', role: 'ai', text: "Perfect! 📝 I've captured your interest.\n\n✅ Lead saved: Clear Aligners\n📞 Our treatment coordinator will call you within 2 hours\n\nName saved. WhatsApp notification sent to clinic. You're all set!", timestamp: 'Now' },
+    { id: 'la2', role: 'ai', text: "Perfect! 📝 I've captured your details.\n\n✅ Patient saved: Clear Aligners\n📞 Our team will call you within 2 hours\n\nName saved. Notification sent to clinic. You're all set!", timestamp: 'Now' },
   ],
   handoff: [
     { id: 'hu1', role: 'user', text: 'I want to speak to a real person', timestamp: 'Now' },
@@ -256,6 +210,9 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function ReactivationReceptionist() {
+  const { organizationId } = useSession();
+  const clinicId = organizationId || '';
+
   // ── Business Profile State
   const [clinicName, setClinicName] = useState('Smile Dental Clinic');
   const [industry, setIndustry] = useState('Dental Clinic');
@@ -265,23 +222,23 @@ export default function ReactivationReceptionist() {
   const [timingsNote, setTimingsNote] = useState('Closed on Sundays & public holidays. Emergency contact: +91 99887 76655');
 
   // ── Staff State
-  const [staff, setStaff] = useState<StaffMember[]>(INITIAL_STAFF);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [newStaffName, setNewStaffName] = useState('');
   const [newStaffRole, setNewStaffRole] = useState('');
   const [newStaffDays, setNewStaffDays] = useState<string[]>([]);
 
   // ── Services State
-  const [services, setServices] = useState<Service[]>(INITIAL_SERVICES);
+  const [services, setServices] = useState<Service[]>([]);
   const [newService, setNewService] = useState({ name: '', duration: '', price: '', description: '' });
 
   // ── FAQs State
-  const [faqs, setFaqs] = useState<FAQ[]>(INITIAL_FAQS);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [newFaq, setNewFaq] = useState({ question: '', answer: '' });
   const [expandedFaq, setExpandedFaq] = useState<string | undefined>(undefined);
 
-  // ── Offers State
-  const [offers, setOffers] = useState<Offer[]>(INITIAL_OFFERS);
-  const [newOffer, setNewOffer] = useState({ title: '', description: '', validUntil: '' });
+  // ── Notices State
+  const [notices, setNotices] = useState<ClinicNotice[]>([]);
+  const [newNotice, setNewNotice] = useState({ title: '', description: '', validUntil: '' });
 
   // ── AI Toggles State
   const [aiToggles, setAiToggles] = useState<AIToggle[]>(INITIAL_AI_TOGGLES);
@@ -292,7 +249,7 @@ export default function ReactivationReceptionist() {
   // ── Handoff State
   const [handoffOpen, setHandoffOpen] = useState(false);
   const [enabledTriggers, setEnabledTriggers] = useState<string[]>(['human_request', 'emergency', 'complaint']);
-  const [notifyVia, setNotifyVia] = useState('WhatsApp');
+  const [notifyVia, setNotifyVia] = useState('SMS');
 
   // ── Train AI State
   const [trainState, setTrainState] = useState<'idle' | 'loading' | 'success'>('idle');
@@ -310,16 +267,94 @@ export default function ReactivationReceptionist() {
     }
   }, [chatMessages]);
 
+  // ── Load and Seed Data from Supabase
+  useEffect(() => {
+    if (!clinicId) return;
+
+    async function loadData() {
+      try {
+        // 1. Fetch clinic details
+        const { data: clinic } = await supabase.from('dental_clinics').select('*').eq('id', clinicId).single();
+        if (clinic) {
+          setClinicName(clinic.name || '');
+          setAddress(clinic.address || '');
+          setPhone(clinic.phone || '');
+          setWorkingHours(clinic.working_hours || '');
+          setTimingsNote(clinic.timings_note || '');
+        }
+
+        // 2. Fetch staff
+        const { data: staffData } = await supabase.from('clinic_staff').select('*').eq('clinic_id', clinicId);
+        if (staffData && staffData.length > 0) {
+          setStaff(staffData.map((s: any) => ({ id: s.id, name: s.name, role: s.role, days: s.days || [] })));
+        } else {
+          setStaff([]);
+        }
+
+        // 3. Fetch services
+        const { data: servicesData } = await supabase.from('clinic_services').select('*').eq('clinic_id', clinicId);
+        if (servicesData && servicesData.length > 0) {
+          setServices(servicesData.map((s: any) => ({ id: s.id, name: s.name, duration: s.duration, price: Number(s.price), description: s.description || '' })));
+        } else {
+          setServices([]);
+        }
+
+        // 4. Fetch FAQs
+        const { data: faqsData } = await supabase.from('clinic_faqs').select('*').eq('clinic_id', clinicId);
+        if (faqsData && faqsData.length > 0) {
+          setFaqs(faqsData.map((f: any) => ({ id: f.id, question: f.question, answer: f.answer })));
+        } else {
+          setFaqs([]);
+        }
+
+        // 5. Fetch Notices
+        const { data: noticesData } = await supabase.from('clinic_notices').select('*').eq('clinic_id', clinicId);
+        if (noticesData && noticesData.length > 0) {
+          setNotices(noticesData.map((n: any) => ({ id: n.id, title: n.title, description: n.description || '', validUntil: n.valid_until || '' })));
+        } else {
+          setNotices([]);
+        }
+      } catch (err) {
+        console.error('Error loading clinic receptionist settings from Supabase:', err);
+      }
+    }
+
+    loadData();
+  }, [clinicId]);
+
   // ── Staff Handlers
-  const addStaff = () => {
-    if (!newStaffName.trim()) return;
-    setStaff(prev => [...prev, {
-      id: crypto.randomUUID(),
-      name: newStaffName,
-      role: newStaffRole,
-      days: newStaffDays,
-    }]);
-    setNewStaffName(''); setNewStaffRole(''); setNewStaffDays([]);
+  const addStaff = async () => {
+    if (!newStaffName.trim() || !clinicId) return;
+    try {
+      const { data, error } = await supabase.from('clinic_staff').insert({
+        clinic_id: clinicId,
+        name: newStaffName,
+        role: newStaffRole,
+        days: newStaffDays,
+      }).select().single();
+      if (error) throw error;
+      if (data) {
+        setStaff(prev => [...prev, {
+          id: data.id,
+          name: data.name,
+          role: data.role,
+          days: data.days || [],
+        }]);
+      }
+      setNewStaffName(''); setNewStaffRole(''); setNewStaffDays([]);
+    } catch (err) {
+      console.error('Error inserting staff:', err);
+    }
+  };
+
+  const deleteStaff = async (id: string) => {
+    try {
+      const { error } = await supabase.from('clinic_staff').delete().eq('id', id);
+      if (error) throw error;
+      setStaff(prev => prev.filter(s => s.id !== id));
+    } catch (err) {
+      console.error('Error deleting staff:', err);
+    }
   };
 
   const toggleStaffDay = (day: string) => {
@@ -327,33 +362,103 @@ export default function ReactivationReceptionist() {
   };
 
   // ── Service Handlers
-  const addService = () => {
-    if (!newService.name.trim()) return;
-    setServices(prev => [...prev, {
-      id: crypto.randomUUID(),
-      name: newService.name,
-      duration: Number(newService.duration),
-      price: Number(newService.price),
-      description: newService.description,
-    }]);
-    setNewService({ name: '', duration: '', price: '', description: '' });
+  const addService = async () => {
+    if (!newService.name.trim() || !clinicId) return;
+    try {
+      const { data, error } = await supabase.from('clinic_services').insert({
+        clinic_id: clinicId,
+        name: newService.name,
+        duration: Number(newService.duration || 0),
+        price: Number(newService.price || 0),
+        description: newService.description,
+      }).select().single();
+      if (error) throw error;
+      if (data) {
+        setServices(prev => [...prev, {
+          id: data.id,
+          name: data.name,
+          duration: data.duration,
+          price: Number(data.price),
+          description: data.description || '',
+        }]);
+      }
+      setNewService({ name: '', duration: '', price: '', description: '' });
+    } catch (err) {
+      console.error('Error adding service:', err);
+    }
+  };
+
+  const deleteService = async (id: string) => {
+    try {
+      const { error } = await supabase.from('clinic_services').delete().eq('id', id);
+      if (error) throw error;
+      setServices(prev => prev.filter(s => s.id !== id));
+    } catch (err) {
+      console.error('Error deleting service:', err);
+    }
   };
 
   // ── FAQ Handlers
-  const addFaq = () => {
-    if (!newFaq.question.trim()) return;
-    setFaqs(prev => [...prev, { id: crypto.randomUUID(), ...newFaq }]);
-    setNewFaq({ question: '', answer: '' });
+  const addFaq = async () => {
+    if (!newFaq.question.trim() || !clinicId) return;
+    try {
+      const { data, error } = await supabase.from('clinic_faqs').insert({
+        clinic_id: clinicId,
+        question: newFaq.question,
+        answer: newFaq.answer,
+      }).select().single();
+      if (error) throw error;
+      if (data) {
+        setFaqs(prev => [...prev, { id: data.id, question: data.question, answer: data.answer }]);
+      }
+      setNewFaq({ question: '', answer: '' });
+    } catch (err) {
+      console.error('Error adding FAQ:', err);
+    }
   };
 
-  // ── Offer Handlers
-  const addOffer = () => {
-    if (!newOffer.title.trim()) return;
-    setOffers(prev => [...prev, { id: crypto.randomUUID(), ...newOffer }]);
-    setNewOffer({ title: '', description: '', validUntil: '' });
+  const deleteFaq = async (id: string) => {
+    try {
+      const { error } = await supabase.from('clinic_faqs').delete().eq('id', id);
+      if (error) throw error;
+      setFaqs(prev => prev.filter(f => f.id !== id));
+    } catch (err) {
+      console.error('Error deleting FAQ:', err);
+    }
+  };
+
+  // ── Clinic Notice Handlers
+  const addNotice = async () => {
+    if (!newNotice.title.trim() || !clinicId) return;
+    try {
+      const { data, error } = await supabase.from('clinic_notices').insert({
+        clinic_id: clinicId,
+        title: newNotice.title,
+        description: newNotice.description,
+        valid_until: newNotice.validUntil || null,
+      }).select().single();
+      if (error) throw error;
+      if (data) {
+        setNotices(prev => [...prev, { id: data.id, title: data.title, description: data.description || '', validUntil: data.valid_until || '' }]);
+      }
+      setNewNotice({ title: '', description: '', validUntil: '' });
+    } catch (err) {
+      console.error('Error adding notice:', err);
+    }
+  };
+
+  const deleteNotice = async (id: string) => {
+    try {
+      const { error } = await supabase.from('clinic_notices').delete().eq('id', id);
+      if (error) throw error;
+      setNotices(prev => prev.filter(n => n.id !== id));
+    } catch (err) {
+      console.error('Error deleting notice:', err);
+    }
   };
 
   const daysUntil = (dateStr: string) => {
+    if (!dateStr) return 0;
     const diff = new Date(dateStr).getTime() - Date.now();
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
@@ -371,6 +476,23 @@ export default function ReactivationReceptionist() {
   // ── Train AI Handler
   const handleTrainAI = async () => {
     setTrainState('loading');
+    try {
+      if (clinicId) {
+        const { error } = await supabase
+          .from('dental_clinics')
+          .update({
+            name: clinicName,
+            address: address,
+            phone: phone,
+            working_hours: workingHours,
+            timings_note: timingsNote,
+          })
+          .eq('id', clinicId);
+        if (error) throw error;
+      }
+    } catch (err) {
+      console.error('Error training AI / saving clinic info:', err);
+    }
     await new Promise(r => setTimeout(r, 2400));
     setTrainState('success');
     confetti({
@@ -432,8 +554,8 @@ export default function ReactivationReceptionist() {
             <Bot className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-slate-800 leading-none">AI Receptionist Setup</h1>
-            <p className="text-[11px] text-slate-500 mt-0.5">Customer Reactivation Module</p>
+            <h1 className="text-sm font-bold text-slate-800 leading-none">Front Desk Setup</h1>
+            <p className="text-[11px] text-slate-500 mt-0.5">Dental Front Desk Module</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -460,9 +582,9 @@ export default function ReactivationReceptionist() {
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
               <div className="flex items-center gap-2 mb-1">
                 <Brain className="w-5 h-5 text-indigo-500" />
-                <h2 className="text-lg font-bold text-slate-800">Train Your AI Receptionist</h2>
+                <h2 className="text-lg font-bold text-slate-800">Train Front Desk Assistant</h2>
               </div>
-              <p className="text-sm text-slate-500">Teach the AI everything about your clinic</p>
+              <p className="text-sm text-slate-500">Teach the assistant your clinic basics</p>
             </motion.div>
           </div>
 
@@ -475,7 +597,7 @@ export default function ReactivationReceptionist() {
                   { value: 'staff', icon: Users, label: 'Staff' },
                   { value: 'services', icon: Scissors, label: 'Services' },
                   { value: 'faqs', icon: HelpCircle, label: 'FAQs' },
-                  { value: 'offers', icon: Tag, label: 'Offers' },
+                  { value: 'notices', icon: Tag, label: 'Clinic Notices' },
                 ].map(tab => (
                   <TabsTrigger
                     key={tab.value}
@@ -584,7 +706,7 @@ export default function ReactivationReceptionist() {
                         </div>
                       </div>
                       <button
-                        onClick={() => setStaff(prev => prev.filter(s => s.id !== member.id))}
+                        onClick={() => deleteStaff(member.id)}
                         className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -652,7 +774,7 @@ export default function ReactivationReceptionist() {
                           </td>
                           <td className="px-2 py-3">
                             <button
-                               onClick={() => setServices(prev => prev.filter(s => s.id !== svc.id))}
+                               onClick={() => deleteService(svc.id)}
                                className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -672,7 +794,7 @@ export default function ReactivationReceptionist() {
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add FAQ</p>
                   <div>
                     <SectionLabel>Question</SectionLabel>
-                    <GlassInput value={newFaq.question} onChange={e => setNewFaq(p => ({ ...p, question: e.target.value }))} placeholder="e.g. Do you offer home visits?" />
+                    <GlassInput value={newFaq.question} onChange={e => setNewFaq(p => ({ ...p, question: e.target.value }))} placeholder="e.g. Do you notice home visits?" />
                   </div>
                   <div>
                     <SectionLabel>Answer</SectionLabel>
@@ -698,7 +820,7 @@ export default function ReactivationReceptionist() {
                               <span
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setFaqs(prev => prev.filter(f => f.id !== faq.id));
+                                  deleteFaq(faq.id);
                                 }}
                                 className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all cursor-pointer inline-flex items-center justify-center"
                               >
@@ -729,37 +851,37 @@ export default function ReactivationReceptionist() {
                 </div>
               </TabsContent>
 
-              {/* ── Tab 5: Active Offers ── */}
-              <TabsContent value="offers" className="mt-4 space-y-4">
-                {/* Add Offer Form */}
+              {/* ── Tab 5: Active Notices ── */}
+              <TabsContent value="notices" className="mt-4 space-y-4">
+                {/* Add Notice Form */}
                 <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add Offer</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Add Notice</p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <SectionLabel>Title</SectionLabel>
-                      <GlassInput value={newOffer.title} onChange={e => setNewOffer(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Monsoon Special" />
+                      <GlassInput value={newNotice.title} onChange={e => setNewNotice(p => ({ ...p, title: e.target.value }))} placeholder="e.g. Monsoon Special" />
                     </div>
                     <div>
                       <SectionLabel>Valid Until</SectionLabel>
-                      <GlassInput type="date" value={newOffer.validUntil} onChange={e => setNewOffer(p => ({ ...p, validUntil: e.target.value }))} />
+                      <GlassInput type="date" value={newNotice.validUntil} onChange={e => setNewNotice(p => ({ ...p, validUntil: e.target.value }))} />
                     </div>
                   </div>
                   <div>
                     <SectionLabel>Description</SectionLabel>
-                    <GlassTextarea rows={2} value={newOffer.description} onChange={e => setNewOffer(p => ({ ...p, description: e.target.value }))} placeholder="Offer details..." />
+                    <GlassTextarea rows={2} value={newNotice.description} onChange={e => setNewNotice(p => ({ ...p, description: e.target.value }))} placeholder="Notice details..." />
                   </div>
-                  <button onClick={addOffer} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-semibold hover:bg-indigo-100/80 transition-all">
-                    <Plus className="w-3.5 h-3.5" /> Add Offer
+                  <button onClick={addNotice} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-semibold hover:bg-indigo-100/80 transition-all">
+                    <Plus className="w-3.5 h-3.5" /> Add Notice
                   </button>
                 </div>
 
-                {/* Offers Cards */}
+                {/* Notices Cards */}
                 <div className="space-y-3">
-                  {offers.map((offer, i) => {
-                    const days = daysUntil(offer.validUntil);
+                  {notices.map((notice, i) => {
+                    const days = daysUntil(notice.validUntil);
                     return (
                       <motion.div
-                        key={offer.id}
+                        key={notice.id}
                         initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.07 }}
@@ -770,16 +892,16 @@ export default function ReactivationReceptionist() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm font-semibold text-slate-800">{offer.title}</span>
+                              <span className="text-sm font-semibold text-slate-800">{notice.title}</span>
                               <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Active</span>
                             </div>
-                            <p className="text-xs text-slate-500">{offer.description}</p>
+                            <p className="text-xs text-slate-500">{notice.description}</p>
                             <p className="text-[11px] text-amber-600 mt-1.5">
-                              ⏳ {days > 0 ? `${days} days remaining` : 'Expired'} · Valid till {offer.validUntil}
+                              ⏳ {days > 0 ? `${days} days remaining` : 'Expired'} · Valid till {notice.validUntil}
                             </p>
                           </div>
                           <button
-                            onClick={() => setOffers(prev => prev.filter(o => o.id !== offer.id))}
+                            onClick={() => deleteNotice(notice.id)}
                             className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/15 text-red-400 transition-all"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -839,8 +961,11 @@ export default function ReactivationReceptionist() {
           <div className="px-6 py-2 pb-4">
             <div className="flex items-center gap-2 mb-3">
               <CalendarDays className="w-4 h-4 text-indigo-500" />
-              <h3 className="text-sm font-bold text-slate-800">Booking Integration</h3>
+              <h3 className="text-sm font-bold text-slate-800">Optional Calendar Sync</h3>
             </div>
+            <p className="text-[11px] text-slate-500 mb-3">
+              The CRM stays as the source of truth. Use Google Calendar only if the doctor wants reminders on a personal calendar.
+            </p>
             <div className="space-y-2">
               {integrations.map((intg) => (
                 <div key={intg.id} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3">
@@ -853,7 +978,7 @@ export default function ReactivationReceptionist() {
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <div className={`w-1.5 h-1.5 rounded-full ${intg.connected ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                         <span className={`text-[11px] ${intg.connected ? 'text-emerald-600' : 'text-slate-400'}`}>
-                          {intg.connected ? 'Connected' : 'Not Connected'}
+                          {intg.connected ? 'Connected' : 'Not connected'}
                         </span>
                       </div>
                     </div>
@@ -866,7 +991,7 @@ export default function ReactivationReceptionist() {
                         : 'bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100/50'
                     }`}
                   >
-                    {intg.connected ? 'Disconnect' : 'Connect'}
+                    {intg.connected ? 'Disconnect' : 'Connect Google Calendar'}
                   </button>
                 </div>
               ))}
@@ -963,7 +1088,7 @@ export default function ReactivationReceptionist() {
         </div>
 
         {/* ══════════════════════════════════════════════════════
-            RIGHT PANEL — Live WhatsApp Chat Preview
+            RIGHT PANEL — Live Chat Preview
         ══════════════════════════════════════════════════════ */}
         <div className="w-full lg:w-1/2 flex flex-col h-auto lg:h-full overflow-y-auto bg-slate-50 border-t lg:border-t-0 border-slate-200 scrollbar-hide">
           <div className="flex flex-col items-center py-6 px-6 h-full">
@@ -989,7 +1114,7 @@ export default function ReactivationReceptionist() {
               </div>
             </motion.div>
 
-            {/* ── WhatsApp Phone Frame ── */}
+            {/* ── Chat Phone Frame ── */}
             <motion.div
               initial={{ opacity: 0, y: 20, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -999,7 +1124,7 @@ export default function ReactivationReceptionist() {
               {/* Phone shell */}
               <div className="rounded-[2rem] border-2 border-white/10 shadow-2xl shadow-black/60 overflow-hidden bg-[#111b21]">
 
-                {/* WhatsApp Header */}
+                {/* Chat Header */}
                 <div className="bg-[#202c33] px-4 py-3 flex items-center gap-3">
                   <div className="relative">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -1070,7 +1195,7 @@ export default function ReactivationReceptionist() {
                 {/* Chat input bar */}
                 <div className="bg-[#202c33] px-3 py-2 flex items-center gap-2">
                   <div className="flex-1 bg-[#2a3942] rounded-full px-4 py-2 text-xs text-white/30">
-                    Type a message...
+                    Type a reply...
                   </div>
                   <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center">
                     <Send className="w-3.5 h-3.5 text-white ml-0.5" />
@@ -1087,7 +1212,7 @@ export default function ReactivationReceptionist() {
                   { key: 'pricing', label: 'Ask Pricing', icon: IndianRupee },
                   { key: 'booking', label: 'Book Appt.', icon: CalendarCheck },
                   { key: 'faq', label: 'Test FAQ', icon: HelpCircle },
-                  { key: 'lead', label: 'Capture Lead', icon: UserCheck },
+                  { key: 'lead', label: 'Capture Patient', icon: UserCheck },
                   { key: 'handoff', label: 'Test Handoff', icon: Phone },
                   { key: 'returning', label: 'Returning Patient', icon: RefreshCw },
                 ].map(({ key, label, icon: Icon }) => (
