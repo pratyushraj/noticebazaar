@@ -498,7 +498,7 @@ export default function ReactivationReceptionist() {
                   <div>
                     <SectionLabel>Industry / Type</SectionLabel>
                     <GlassSelect value={industry} onChange={e => setIndustry(e.target.value)}>
-                      {['Dental Clinic', 'Salon', 'Gym', 'Skin Clinic', 'Aesthetic Clinic', 'Restaurant'].map(opt => (
+                  {['Dental Clinic'].map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
                     </GlassSelect>
