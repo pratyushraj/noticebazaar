@@ -630,7 +630,7 @@ export default function ReactivationReceptionist() {
                   <SectionLabel>Address</SectionLabel>
                   <GlassTextarea rows={2} value={address} onChange={e => setAddress(e.target.value)} placeholder="Full clinic address..." />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <SectionLabel>Phone Number</SectionLabel>
                     <div className="relative">

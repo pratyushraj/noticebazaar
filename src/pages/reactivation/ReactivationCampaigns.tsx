@@ -521,7 +521,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => (
 
       return (
         <React.Fragment key={stepNum}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0 sm:gap-2">
             {/* Circle */}
             <motion.div
               animate={{
@@ -546,9 +546,9 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => (
                 </span>
               )}
             </motion.div>
-            {/* Label */}
+            {/* Label — hidden on xs, visible on sm+ */}
             <span
-              className={`text-[12px] font-medium whitespace-nowrap transition-colors duration-200 ${
+              className={`hidden sm:inline text-[12px] font-medium whitespace-nowrap transition-colors duration-200 ${
                 isActive ? 'text-slate-800' : isCompleted ? 'text-indigo-600' : 'text-slate-400'
               }`}
             >
@@ -974,7 +974,7 @@ const ReactivationCampaigns: React.FC = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="grid grid-cols-3 gap-5 pb-6"
+              className="grid grid-cols-1 lg:grid-cols-3 gap-5 pb-6"
             >
               {/* Left Panel — Form */}
               <div className="col-span-2 flex flex-col gap-4">
@@ -1526,7 +1526,7 @@ const ReactivationCampaigns: React.FC = () => {
               initial="enter"
               animate="center"
               exit="exit"
-              className="grid grid-cols-3 gap-5 pb-6"
+              className="grid grid-cols-1 lg:grid-cols-3 gap-5 pb-6"
             >
               {/* Left — Contact selection + settings */}
               <div className="col-span-2 flex flex-col gap-4">

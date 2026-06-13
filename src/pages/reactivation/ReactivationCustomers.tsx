@@ -1196,7 +1196,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Tooth Chart Layout Grid */}
                       <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
-                        <div className="min-w-[560px] bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
+                        <div className="min-w-0 w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
                           {/* Midline guides */}
                           <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
                           <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
@@ -1204,7 +1204,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         {/* UPPER ARCH */}
                         <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
                           {/* Upper Right Quadrant (UR: 18 -> 11) */}
-                          <div className="flex items-center gap-1 sm:gap-1.5 justify-end flex-1">
+                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-end flex-1">
                             {quad1.map((num) => {
                               const isProblem = (form.problemTeeth || []).includes(num);
                               return (
@@ -1213,7 +1213,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
@@ -1234,7 +1234,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <div className="w-[1px] h-8 bg-indigo-500/20" />
 
                           {/* Upper Left Quadrant (UL: 21 -> 28) */}
-                          <div className="flex items-center gap-1 sm:gap-1.5 justify-start flex-1">
+                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-start flex-1">
                             {quad2.map((num) => {
                               const isProblem = (form.problemTeeth || []).includes(num);
                               return (
@@ -1243,7 +1243,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
@@ -1264,7 +1264,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         {/* LOWER ARCH */}
                         <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
                           {/* Lower Right Quadrant (LR: 48 -> 41) */}
-                          <div className="flex items-center gap-1 sm:gap-1.5 justify-end flex-1">
+                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-end flex-1">
                             {quad4.map((num) => {
                               const isProblem = (form.problemTeeth || []).includes(num);
                               return (
@@ -1273,7 +1273,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
@@ -1294,7 +1294,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <div className="w-[1px] h-8 bg-indigo-500/20" />
 
                           {/* Lower Left Quadrant (LL: 31 -> 38) */}
-                          <div className="flex items-center gap-1 sm:gap-1.5 justify-start flex-1">
+                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-start flex-1">
                             {quad3.map((num) => {
                               const isProblem = (form.problemTeeth || []).includes(num);
                               return (
@@ -1303,7 +1303,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
