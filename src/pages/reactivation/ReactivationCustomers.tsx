@@ -1195,10 +1195,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
 
                       {/* Tooth Chart Layout Grid */}
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
-                        {/* Midline guides */}
-                        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
-                        <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
+                      <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
+                        <div className="min-w-[560px] bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
+                          {/* Midline guides */}
+                          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
+                          <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
 
                         {/* UPPER ARCH */}
                         <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
@@ -1320,6 +1321,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           </div>
                         </div>
                       </div>
+                    </div>
 
                       {/* Selected teeth details */}
                       {form.problemTeeth && form.problemTeeth.length > 0 ? (
@@ -1341,7 +1343,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       <span className="text-[12px] font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">
                                         🦷 Tooth {t}
                                       </span>
-                                      <span className="text-[11px] text-white/50 truncate max-w-[200px]" title={getToothName(t)}>
+                                      <span className="text-[11px] text-slate-500 truncate max-w-[200px]" title={getToothName(t)}>
                                         {getToothName(t).split(' (Tooth ')[0]}
                                       </span>
                                     </div>
@@ -1374,10 +1376,6 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       handleChange('toothNotes', notes);
                                     }}
                                     className="w-full px-2.5 py-1.5 rounded-lg text-[11.5px] text-slate-700 placeholder:text-slate-400 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500/40 bg-white border border-slate-200 focus:border-indigo-500"
-                                    style={{
-                                      background: 'rgba(255,255,255,0.02)',
-                                      border: '1px solid rgba(255,255,255,0.06)',
-                                    }}
                                   />
                                 </div>
                               );
@@ -1801,11 +1799,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                   <button
                     onClick={handleSave}
                     disabled={!form.name || !form.phone}
-                    className="px-5 py-2 text-[13px] font-semibold text-white rounded-lg transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{
-                      background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-                      boxShadow: '0 0 20px rgba(99,102,241,0.3)',
-                    }}
+                    className="px-5 py-2 text-[13px] font-semibold text-white rounded-lg transition-all duration-150 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed shadow-md shadow-indigo-500/20"
                   >
                     {isEdit ? 'Save Changes' : 'Add Patient'}
                   </button>
