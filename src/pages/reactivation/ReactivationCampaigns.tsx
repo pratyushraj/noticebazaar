@@ -139,6 +139,12 @@ const CAMPAIGN_TYPES: CampaignType[] = [
 
 const SEGMENTS: AudienceSegment[] = [
   {
+    id: 'lapsed-rct',
+    label: 'Lapsed RCT (No Crown) 🚨',
+    count: 14,
+    description: 'RCT sitting done but Cap/Crown is pending trial',
+  },
+  {
     id: 'no-visit-6m',
     label: 'No Visit 6+ Months',
     count: 143,
@@ -753,16 +759,70 @@ const ReactivationCampaigns: React.FC = () => {
   });
 
   // Dynamically map messages to use the current business name and location
-  const generatedMessages = GENERATED_MESSAGES.map(msg => {
-    let content = msg.content
-      .replace(/Smile Dental Clinic/g, form.businessName)
-      .replace(/Smile Dental Team/g, `${form.businessName} Team`)
-      .replace(/98765 43210/g, '93041 23456');
-    return {
-      ...msg,
-      content
-    };
-  });
+  const generatedMessages = React.useMemo(() => {
+    const isHinglish = form.offerDescription.toLowerCase().includes('mahine') || 
+                      form.offerDescription.toLowerCase().includes('tooth') ||
+                      form.offerDescription.toLowerCase().includes('daant') ||
+                      form.offerDescription.toLowerCase().includes('cap') ||
+                      form.offerDescription.toLowerCase().includes('crown') ||
+                      form.offerDescription.toLowerCase().includes('rct') ||
+                      form.offerDescription.toLowerCase().includes('gums') ||
+                      form.offerDescription.toLowerCase().includes('cleaning') ||
+                      form.offerDescription.toLowerCase().includes('bleeding');
+
+    if (isHinglish) {
+      if (form.offerDescription.toLowerCase().includes('cap') || form.offerDescription.toLowerCase().includes('crown')) {
+        return [
+          {
+            id: 'msg1',
+            label: 'WhatsApp Message (Hinglish)',
+            day: 'Day 1 — Primary Nudge',
+            cta: 'CAP',
+            ctaColor: 'bg-rose-50 text-rose-700 border-rose-200',
+            content: `Namaste {{Name}} ji! 🙏\n\nDr. Aryan baat kar rahe hain ${form.businessName} se.\n\nAapka root canal sitting ho gaya hai par daant me *Cap/Crown lagwana pending* hai.\n\n⚠️ *Awasyak Nudge:* Bina Cap ke RCT kiya hua daant brittle ho jata hai aur chabane se beech se toot sakta hai. Fir tooth extraction (daant nikalna) karna padega.\n\nहमारे पास standard crowns starting ₹3,000 & premium Zirconia cap starting ₹8,000 available hain.\n\nक्या हम इस हफ्ते cap trial के लिए schedule karein?\n\nReply 'CAP' for booking 📞`,
+          },
+          {
+            id: 'msg2',
+            label: 'Follow-Up (Hinglish)',
+            day: 'Day 3 — Safety Check',
+            cta: 'YES',
+            ctaColor: 'bg-amber-50 text-amber-700 border-amber-200',
+            content: `Hi {{Name}} ji,\n\nBina crown fitting ke side se khana chabana harmful ho sakta hai. \n\nKya hum kal ya parso Doctor ke sath cap trial session finalize karein?\n\nReply 'YES' to schedule direct ⚡`,
+          }
+        ];
+      } else if (form.offerDescription.toLowerCase().includes('cleaning') || form.offerDescription.toLowerCase().includes('scaling') || form.offerDescription.toLowerCase().includes('bleeding')) {
+        return [
+          {
+            id: 'msg1',
+            label: 'WhatsApp Message (Hinglish)',
+            day: 'Day 1 — Primary Checkup',
+            cta: 'CLEAN',
+            ctaColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            content: `Namaste {{Name}} ji! 🙏\n\nDr. Aryan baat kar rahe hain ${form.businessName} se.\n\nAapki teeth cleaning & scaling ko 6 mahine ho gaye hain. 🦷\n\nDaanto me pathri (tartar/calculus) jamne se gums weak ho jate hain, bleeding aur bad breath start ho sakti hai jo brush karne se clean nahi hoti.\n\n🎉 *Special Clinic Offer:* Complete Scaling & Deep Polishing just ₹1,000 me available hai.\n\nKya hum kal aane ke liye appointment book karein?\n\nReply 'CLEAN' to book directly 💬`,
+          },
+          {
+            id: 'msg2',
+            label: 'Follow-Up (Hinglish)',
+            day: 'Day 3 — Booking Nudge',
+            cta: 'YES',
+            ctaColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+            content: `Hi {{Name}} ji,\n\nKal ke slots empty hain. Gums infection se bachne ke liye regular cleaning jaruri hai.\n\nReply 'YES' to block your chair slot ⚡`,
+          }
+        ];
+      }
+    }
+
+    return GENERATED_MESSAGES.map(msg => {
+      let content = msg.content
+        .replace(/Smile Dental Clinic/g, form.businessName)
+        .replace(/Smile Dental Team/g, `${form.businessName} Team`)
+        .replace(/98765 43210/g, '93041 23456');
+      return {
+        ...msg,
+        content
+      };
+    });
+  }, [form.businessName, form.offerDescription]);
 
   // Step 2 — message generation state
   const [generatingStep, setGeneratingStep] = useState(0);
@@ -992,17 +1052,13 @@ const ReactivationCampaigns: React.FC = () => {
                     placeholder="e.g. June Reactivation — Dental Patients"
                     value={form.name}
                     onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    className="w-full text-[14px] text-slate-800 placeholder-white/20 outline-none rounded-xl px-4 py-3 transition-all duration-150"
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                    }}
+                    className="w-full text-[14px] text-slate-800 placeholder-slate-400 outline-none rounded-xl px-4 py-3 transition-all duration-150 bg-white border border-slate-200"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)';
                       e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.08)';
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   />
@@ -1088,16 +1144,12 @@ const ReactivationCampaigns: React.FC = () => {
                         onChange={(e) =>
                           setForm((f) => ({ ...f, businessName: e.target.value }))
                         }
-                        className="w-full text-[13px] text-slate-800 placeholder-white/15 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150"
-                        style={{
-                          background: '#ffffff',
-                          border: '1px solid #e2e8f0',
-                        }}
+                        className="w-full text-[13px] text-slate-800 placeholder-slate-400 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150 bg-white border border-slate-200"
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
                         }}
                         onBlur={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                          e.currentTarget.style.borderColor = '#e2e8f0';
                         }}
                       />
                     </div>
@@ -1111,16 +1163,12 @@ const ReactivationCampaigns: React.FC = () => {
                         placeholder="e.g. Patna, Mumbai"
                         value={form.location}
                         onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                        className="w-full text-[13px] text-slate-800 placeholder-white/15 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150"
-                        style={{
-                          background: '#ffffff',
-                          border: '1px solid #e2e8f0',
-                        }}
+                        className="w-full text-[13px] text-slate-800 placeholder-slate-400 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150 bg-white border border-slate-200"
                         onFocus={(e) => {
                           e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
                         }}
                         onBlur={(e) => {
-                          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                          e.currentTarget.style.borderColor = '#e2e8f0';
                         }}
                       />
                     </div>
@@ -1132,18 +1180,13 @@ const ReactivationCampaigns: React.FC = () => {
                       <select
                         value={form.industry}
                         onChange={(e) => setForm((f) => ({ ...f, industry: e.target.value }))}
-                        className="w-full text-[13px] text-slate-800 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150 cursor-pointer"
-                        style={{
-                          background: '#ffffff',
-                          border: '1px solid #e2e8f0',
-                          color: form.industry ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.2)',
-                        }}
+                        className="w-full text-[13px] text-slate-800 outline-none rounded-xl px-3.5 py-2.5 transition-all duration-150 cursor-pointer bg-white border border-slate-200"
                       >
-                        <option value="" disabled style={{ background: '#0d1120' }}>
+                        <option value="" disabled>
                           Select Industry
                         </option>
                         {INDUSTRIES.map((ind) => (
-                          <option key={ind} value={ind} style={{ background: '#0d1120' }}>
+                          <option key={ind} value={ind}>
                             {ind}
                           </option>
                         ))}
@@ -1160,9 +1203,60 @@ const ReactivationCampaigns: React.FC = () => {
                     border: '1px solid #e2e8f0',
                   }}
                 >
-                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-2">
+                  <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-1.5">
                     Offer Description
                   </label>
+                  
+                  {/* Dentist Presets Row */}
+                  <div className="flex gap-2 mb-3 flex-wrap">
+                    <span className="text-[10px] text-slate-400 font-bold self-center mr-1">CLINIC PRESETS:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm(f => ({
+                          ...f,
+                          name: 'Scaling Nudge (Hinglish)',
+                          segment: 'no-visit-6m',
+                          type: 'reactivation',
+                          offerDescription: 'Scaling & Polishing deal: 6 mahine checkup overdue. Prevent tartar & bleeding gums. Standard charge: ₹1,000. Clean teeth, fresh breath!'
+                        }));
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-semibold bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-650 transition-all cursor-pointer"
+                    >
+                      🦷 Scaling & Gums (Hinglish)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm(f => ({
+                          ...f,
+                          name: 'Urgent RCT Crown Pending Nudge',
+                          segment: 'lapsed-rct',
+                          type: 'reactivation',
+                          offerDescription: 'Urgent Cap/Crown follow-up: Sitting completed but Cap/Crown is pending trial. Avoid tooth fracture. Metal-ceramic starts ₹3,000, premium Zirconia ₹8,000.'
+                        }));
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-semibold bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-650 transition-all cursor-pointer"
+                    >
+                      👑 Cap/Crown Pending (Hinglish)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm(f => ({
+                          ...f,
+                          name: 'Whitening cosmetic offer',
+                          segment: 'whitening',
+                          type: 'festival',
+                          offerDescription: 'Teeth Whitening special package: get 20% off laser whitening. Original price ₹12,000, now only ₹9,600! Single sitting 60 min.'
+                        }));
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-semibold bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-indigo-650 transition-all cursor-pointer"
+                    >
+                      ✨ Teeth Whitening Promo
+                    </button>
+                  </div>
+
                   <textarea
                     placeholder="e.g. 20% off teeth whitening this month, valid till 30th June"
                     value={form.offerDescription}
@@ -1170,16 +1264,12 @@ const ReactivationCampaigns: React.FC = () => {
                       setForm((f) => ({ ...f, offerDescription: e.target.value }))
                     }
                     rows={3}
-                    className="w-full text-[13px] text-slate-800 placeholder-white/15 outline-none rounded-xl px-4 py-3 resize-none transition-all duration-150"
-                    style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                    }}
+                    className="w-full text-[13px] text-slate-800 placeholder-slate-400 outline-none rounded-xl px-4 py-3 resize-none transition-all duration-150 bg-white border border-slate-200"
                     onFocus={(e) => {
                       e.currentTarget.style.borderColor = 'rgba(99,102,241,0.4)';
                     }}
                     onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+                      e.currentTarget.style.borderColor = '#e2e8f0';
                     }}
                   />
                 </div>
