@@ -959,6 +959,118 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         onChange={(e) => handleChange('notes', e.target.value)}
                       />
                     </div>
+
+                    {/* Before & After Photos Section (Optional) */}
+                    <div className="space-y-3 pt-2">
+                      <div>
+                        <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Before & After Teeth Photos (Optional)</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Attach clinical photographs showing teeth condition before and after treatment</p>
+                      </div>
+
+                      {/* Uploader dropzone */}
+                      <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
+                        <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                        <span className="text-[12px] font-semibold text-slate-650 group-hover:text-slate-800 transition-colors">Upload Teeth Photo</span>
+                        <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB)</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleTeethPhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Photo preview gallery */}
+                      {form.beforeAfterPhotos && form.beforeAfterPhotos.length > 0 ? (
+                        <div className="grid grid-cols-3 gap-3">
+                          {form.beforeAfterPhotos.map((photo, idx) => (
+                            <div key={idx} className="relative aspect-[16/11] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
+                              <img src={photo} alt="Teeth Photo" className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxImg(photo)}
+                                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveTeethPhoto(idx)}
+                                  className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bg-slate-50/50 border border-dashed border-slate-200 rounded-xl py-4 text-center text-slate-400 text-[11px]">
+                          No teeth photos attached. Use the uploader above to add photographs.
+                        </div>
+                      )}
+
+                      {/* Slider Compare sandbox for Teeth Photos */}
+                      {form.beforeAfterPhotos && form.beforeAfterPhotos.length >= 2 && (
+                        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 mt-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles size={11} className="text-indigo-400" />
+                              Before vs After Teeth Comparison
+                            </span>
+                            <span className="text-[10px] text-slate-500">Drag slider to see cosmetic treatment transformation</span>
+                          </div>
+                          
+                          <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 select-none">
+                            {/* Before Image */}
+                            <img src={form.beforeAfterPhotos[0]} alt="Before treatment" className="absolute inset-0 w-full h-full object-cover" />
+                            
+                            {/* After Image */}
+                            <div 
+                              className="absolute inset-y-0 left-0 overflow-hidden" 
+                              style={{ width: `${teethPhotoSliderPos}%` }}
+                            >
+                              <img 
+                                src={form.beforeAfterPhotos[1]} 
+                                alt="After treatment" 
+                                className="absolute inset-y-0 left-0 w-full h-full object-cover"
+                                style={{ width: '100%', maxWidth: 'none' }} 
+                              />
+                            </div>
+                            
+                            {/* Slider Handle */}
+                            <div 
+                              className="absolute inset-y-0 w-1 bg-indigo-500 cursor-ew-resize flex items-center justify-center"
+                              style={{ left: `${teethPhotoSliderPos}%` }}
+                            >
+                              <div className="w-6 h-6 rounded-full bg-indigo-500 border border-white/25 flex items-center justify-center text-white text-[10px] shadow-lg">
+                                ↔
+                              </div>
+                            </div>
+                            
+                            {/* Invisible range inputs overlay */}
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={teethPhotoSliderPos}
+                              onChange={(e) => setTeethPhotoSliderPos(Number(e.target.value))}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
+                            />
+                            
+                            {/* Labels */}
+                            <span className="absolute bottom-3 left-3 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-rose-300">
+                              Before / Pre-Op
+                            </span>
+                            <span className="absolute bottom-3 right-3 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-emerald-300">
+                              After / Post-Op
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
