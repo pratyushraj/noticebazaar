@@ -64,7 +64,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type CustomerStatus = 'Active' | 'Inactive' | 'New Lead' | 'High Value' | 'Follow Up Needed';
+type CustomerStatus = 'Active' | 'Inactive' | 'New Lead' | 'Follow Up Needed';
 
 interface CareStep {
   day: number;
@@ -174,273 +174,7 @@ export const CARE_PROGRAMS: CareProgramTemplate[] = [
   }
 ];
 
-export const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: '1',
-    name: 'Rahul Sharma',
-    phone: '+91 98765 43210',
-    lastVisit: '2025-04-12',
-    service: 'Teeth Cleaning',
-    totalSpend: 8400,
-    status: 'Active',
-    notes: 'Prefers morning appointments. Very punctual.',
-    avatarColor: AVATAR_COLORS[0],
-    problemTeeth: [14, 15],
-    xrays: ['/assets/yourdentist/dental_xray.png'],
-    allergies: ['Penicillin'],
-    medicalConditions: ['Hypertension'],
-    vitals: { bp: '135/85', pulse: '76', temp: '98.4' },
-    toothConditions: { 14: 'Decayed / Cavity', 15: 'Root Canal Needed' },
-    toothNotes: { 14: 'Deep distal cavity', 15: 'Hot/cold sensitivity' },
-    activeProgramId: 'extraction',
-    programEnrollmentDate: '2025-04-12',
-    programCurrentStep: 2,
-    programStatus: 'Active'
-  },
-  {
-    id: '2',
-    name: 'Priya Mehta',
-    phone: '+91 87654 32109',
-    lastVisit: '2025-01-03',
-    service: 'Teeth Whitening',
-    totalSpend: 15500,
-    status: 'Inactive',
-    notes: 'Missed last 2 follow-up calls. Try evening slot.',
-    avatarColor: AVATAR_COLORS[1],
-    problemTeeth: [26, 27],
-    xrays: [],
-    allergies: ['Latex'],
-    medicalConditions: ['Asthma'],
-    vitals: { bp: '120/80', pulse: '72', temp: '98.6' },
-    toothConditions: { 26: 'Crown / Bridge', 27: 'Decayed / Cavity' },
-    toothNotes: { 27: 'Incipient decay on occlusal surface' },
-    activeProgramId: 'aligners',
-    programEnrollmentDate: '2025-01-03',
-    programCurrentStep: 1,
-    programStatus: 'Paused'
-  },
-  {
-    id: '3',
-    name: 'Arjun Kapoor',
-    phone: '+91 76543 21098',
-    lastVisit: '2024-11-15',
-    service: 'Root Canal',
-    totalSpend: 34000,
-    status: 'High Value',
-    notes: 'CEO of Kapoor Textiles. Refer him for dental implants.',
-    avatarColor: AVATAR_COLORS[2],
-    problemTeeth: [36, 46],
-    xrays: ['/assets/yourdentist/dental_xray.png'],
-    allergies: [],
-    medicalConditions: ['Diabetes'],
-    vitals: { bp: '128/82', pulse: '80', temp: '99.1' },
-    toothConditions: { 36: 'Missing Tooth', 46: 'Dental Implant' },
-    toothNotes: { 36: 'Extracted in 2023', 46: 'Abutment check needed' },
-    activeProgramId: 'implant',
-    programEnrollmentDate: '2024-11-15',
-    programCurrentStep: 3,
-    programStatus: 'Completed'
-  },
-  {
-    id: '4',
-    name: 'Sneha Patel',
-    phone: '+91 91234 56789',
-    lastVisit: '2025-05-20',
-    service: 'Hair Smoothing',
-    totalSpend: 6200,
-    status: 'Active',
-    notes: 'Comes every 3 months for smoothing treatment.',
-    avatarColor: AVATAR_COLORS[3],
-  },
-  {
-    id: '5',
-    name: 'Vikram Singh',
-    phone: '+91 80012 34567',
-    lastVisit: '2024-08-30',
-    service: 'Gym Membership',
-    totalSpend: 18000,
-    status: 'Follow Up Needed',
-    notes: 'Annual membership expired. Good conversion probability.',
-    avatarColor: AVATAR_COLORS[4],
-  },
-  {
-    id: '6',
-    name: 'Ananya Iyer',
-    phone: '+91 99887 76655',
-    lastVisit: '2025-03-08',
-    service: 'Dental Implants',
-    totalSpend: 72000,
-    status: 'High Value',
-    notes: 'Referral from Dr. Reddy. Second implant planned for Q3.',
-    avatarColor: AVATAR_COLORS[5],
-    problemTeeth: [11, 21, 22],
-    xrays: [],
-  },
-  {
-    id: '7',
-    name: 'Rohan Desai',
-    phone: '+91 70099 11223',
-    lastVisit: '2025-02-14',
-    service: 'Facial Treatment',
-    totalSpend: 4800,
-    status: 'Inactive',
-    notes: 'Valentine special package availed. Not responded since.',
-    avatarColor: AVATAR_COLORS[6],
-  },
-  {
-    id: '8',
-    name: 'Kavya Nair',
-    phone: '+91 88990 22334',
-    lastVisit: '2025-05-30',
-    service: 'Braces Consultation',
-    totalSpend: 2000,
-    status: 'New Lead',
-    notes: 'First consultation done. Quote sent for full treatment.',
-    avatarColor: AVATAR_COLORS[7],
-    problemTeeth: [41, 42],
-    xrays: [],
-  },
-  {
-    id: '9',
-    name: 'Aditya Joshi',
-    phone: '+91 77665 54433',
-    lastVisit: '2025-04-25',
-    service: 'Personal Training',
-    totalSpend: 24000,
-    status: 'Active',
-    notes: 'Preparing for marathon. 3 sessions per week.',
-    avatarColor: AVATAR_COLORS[8],
-  },
-  {
-    id: '10',
-    name: 'Meera Rajput',
-    phone: '+91 99001 87654',
-    lastVisit: '2024-12-20',
-    service: 'Hair Colour & Cut',
-    totalSpend: 3500,
-    status: 'Follow Up Needed',
-    notes: 'Christmas package client. Discount offered not taken.',
-    avatarColor: AVATAR_COLORS[9],
-  },
-  {
-    id: '11',
-    name: 'Saurabh Gupta',
-    phone: '+91 98112 33445',
-    lastVisit: '2025-01-18',
-    service: 'Root Canal',
-    totalSpend: 28500,
-    status: 'Inactive',
-    notes: 'Second root canal deferred due to travel schedule.',
-    avatarColor: AVATAR_COLORS[0],
-    problemTeeth: [34, 35],
-    xrays: [],
-  },
-  {
-    id: '12',
-    name: 'Divya Krishnan',
-    phone: '+91 87223 44556',
-    lastVisit: '2025-05-10',
-    service: 'Zumba Classes',
-    totalSpend: 9600,
-    status: 'Active',
-    notes: 'Group class leader. Brings 2–3 friends each month.',
-    avatarColor: AVATAR_COLORS[1],
-  },
-  {
-    id: '13',
-    name: 'Harsh Agarwal',
-    phone: '+91 76334 55667',
-    lastVisit: '2025-06-01',
-    service: 'Teeth Cleaning',
-    totalSpend: 4200,
-    status: 'New Lead',
-    notes: 'Referred by Rahul Sharma. First visit completed.',
-    avatarColor: AVATAR_COLORS[2],
-    problemTeeth: [16, 17],
-    xrays: [],
-  },
-  {
-    id: '14',
-    name: 'Ritu Verma',
-    phone: '+91 65445 66778',
-    lastVisit: '2024-07-15',
-    service: 'Body Massage',
-    totalSpend: 11200,
-    status: 'Follow Up Needed',
-    notes: 'Lapsed 11 months. High win-back probability.',
-    avatarColor: AVATAR_COLORS[3],
-  },
-  {
-    id: '15',
-    name: 'Nikhil Bose',
-    phone: '+91 54556 77889',
-    lastVisit: '2025-04-05',
-    service: 'Orthodontic Review',
-    totalSpend: 45000,
-    status: 'High Value',
-    notes: 'Long-term braces patient. Retainer phase starting.',
-    avatarColor: AVATAR_COLORS[4],
-    problemTeeth: [12, 22],
-    xrays: ['/assets/yourdentist/dental_xray.png'],
-  },
-  {
-    id: '16',
-    name: 'Pooja Saxena',
-    phone: '+91 43667 88990',
-    lastVisit: '2025-05-22',
-    service: 'Keratin Treatment',
-    totalSpend: 7800,
-    status: 'Active',
-    notes: 'Loyal client since 2022. Refer for nail services.',
-    avatarColor: AVATAR_COLORS[5],
-  },
-  {
-    id: '17',
-    name: 'Gaurav Tiwari',
-    phone: '+91 32778 99001',
-    lastVisit: '2025-03-30',
-    service: 'Yoga Sessions',
-    totalSpend: 14400,
-    status: 'Active',
-    notes: 'Corporate wellness package. Attends 5x/week.',
-    avatarColor: AVATAR_COLORS[6],
-  },
-  {
-    id: '18',
-    name: 'Laleh Mirza',
-    phone: '+91 21889 00112',
-    lastVisit: '2024-10-05',
-    service: 'Teeth Whitening',
-    totalSpend: 13000,
-    status: 'Inactive',
-    notes: 'Relocated to Bengaluru. Check if back in city.',
-    avatarColor: AVATAR_COLORS[7],
-  },
-  {
-    id: '19',
-    name: 'Deepak Malhotra',
-    phone: '+91 10990 11223',
-    lastVisit: '2025-06-04',
-    service: 'Dental Implants',
-    totalSpend: 95000,
-    status: 'High Value',
-    notes: 'Premium patient. Full mouth restoration underway.',
-    avatarColor: AVATAR_COLORS[8],
-    problemTeeth: [36, 37, 46, 47],
-    xrays: ['/assets/yourdentist/dental_xray.png'],
-  },
-  {
-    id: '20',
-    name: 'Swati Bhatt',
-    phone: '+91 99101 22334',
-    lastVisit: '2025-05-15',
-    service: 'Hair Spa',
-    totalSpend: 5400,
-    status: 'New Lead',
-    notes: 'Discovered via Instagram promo. Keen on monthly plan.',
-    avatarColor: AVATAR_COLORS[9],
-  },
-];
+export const MOCK_CUSTOMERS: Customer[] = [];
 
 const SERVICES = [
   'All Services',
@@ -463,7 +197,7 @@ const SERVICES = [
   'Zumba Classes',
 ];
 
-const STATUS_OPTIONS: CustomerStatus[] = ['Active', 'Inactive', 'New Lead', 'High Value', 'Follow Up Needed'];
+const STATUS_OPTIONS: CustomerStatus[] = ['Active', 'Inactive', 'New Lead', 'Follow Up Needed'];
 
 const DATE_RANGES = [
   { label: 'All Time', value: 'all' },
@@ -541,13 +275,6 @@ const STATUS_CONFIG: Record<
     text: 'text-blue-400',
     dot: 'bg-blue-500',
     border: 'border-blue-500/25',
-  },
-  'High Value': {
-    bg: 'bg-purple-500/10',
-    text: 'text-purple-400',
-    dot: 'bg-purple-500',
-    border: 'border-purple-500/25',
-    icon: <Sparkles size={10} className="text-purple-400" />,
   },
   'Follow Up Needed': {
     bg: 'bg-red-500/10',
@@ -710,7 +437,7 @@ const PROCEDURES_CATALOG: Procedure[] = [
 const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, onSave }) => {
   const isEdit = !!customer?.id;
   const [form, setForm] = useState<Customer>(() => getInitialForm(customer));
-  const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'estimates' | 'programs'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'estimates'>('general');
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   // AI Scribe states
@@ -954,6 +681,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
         <DialogContent
           className="max-w-2xl border-0 p-0 overflow-hidden"
           style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
+          aria-describedby={undefined}
         >
           <AnimatePresence>
             {open && (
@@ -965,11 +693,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
               >
                 {/* Header */}
                 <div
-                  className="px-6 pt-5 pb-3"
+                  className="px-4 sm:px-6 pt-5 pb-3"
                   style={{ borderBottom: '1px solid #E2E8F0' }}
                 >
-                  <DialogHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
-                    <div>
+                  <DialogHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 text-left">
+                    <div className="text-left">
                       <DialogTitle className="text-slate-800 text-[16px] font-semibold tracking-tight">
                         {isEdit ? 'Patient Profile' : 'Add New Patient'}
                       </DialogTitle>
@@ -981,7 +709,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Tab Selector */}
-                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-0 sm:mr-6 gap-0.5 overflow-x-auto scrollbar-none flex-nowrap shrink-0">
+                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 gap-0.5 overflow-x-auto scrollbar-none flex-nowrap shrink-0 self-start sm:self-auto w-full sm:w-auto sm:mr-6">
                       <button
                         type="button"
                         onClick={() => setActiveTab('general')}
@@ -1019,18 +747,6 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             <StickyNote size={10} />
                             Billing & Estimates
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab('programs')}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
-                              activeTab === 'programs'
-                                ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
-                                : 'text-slate-500 hover:text-slate-700'
-                            }`}
-                          >
-                            <Zap size={10} />
-                            Programs
-                          </button>
                         </>
                       )}
                     </div>
@@ -1039,9 +755,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - General Tab */}
                 {activeTab === 'general' && (
-                  <div className="px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                  <div className="px-4 sm:px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
                     {/* Name + Phone row */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Full Name <span className="text-red-400">*</span>
@@ -1069,7 +785,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Last Visit + Service */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Last Visit Date
@@ -1097,7 +813,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Spend + Status */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Total Spend (₹)
@@ -1149,9 +865,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - Medical tab */}
                 {activeTab === 'medical' && (
-                  <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
+                  <div className="px-4 sm:px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
                     {/* AI Dental Scribe (Voice to Chart) */}
-                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4.5 space-y-3 relative overflow-hidden">
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3 relative">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center">
@@ -1261,7 +977,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     )}
 
                     {/* Allergies & Conditions Checklists */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Allergies Checklist */}
                       <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
                         <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
@@ -1330,7 +1046,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* Vitals Logger */}
                     <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
                       <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Patient Vitals</h4>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                           <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
                           <input
@@ -1946,190 +1662,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                   </div>
                 )}
 
-                {/* Body - Care Programs Tab */}
-                {activeTab === 'programs' && (
-                  <div className="px-6 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
-                    {form.activeProgramId ? (() => {
-                      const program = CARE_PROGRAMS.find((p) => p.id === form.activeProgramId);
-                      if (!program) return null;
-                      const enrollmentDate = form.programEnrollmentDate || new Date().toISOString().split('T')[0];
-                      const currentStep = form.programCurrentStep || 1;
-                      const status = form.programStatus || 'Active';
 
-                      return (
-                        <div className="space-y-6">
-                          {/* Active Program Card */}
-                          <div
-                            className="rounded-2xl border border-indigo-500/20 p-5 relative overflow-hidden"
-                            style={{
-                              background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(139,92,246,0.06) 100%)',
-                              boxShadow: '0 0 30px rgba(99,102,241,0.05), inset 0 1px 0 rgba(255,255,255,0.05)',
-                            }}
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              <div>
-                                <span className="px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-[9px] font-bold text-indigo-600 uppercase tracking-widest">
-                                  Active Care Program
-                                </span>
-                                <h3 className="text-base font-bold text-slate-800 mt-1.5">{program.name}</h3>
-                                <p className="text-slate-500 text-[12px] mt-0.5">{program.description}</p>
-                              </div>
-
-                              <div className="flex flex-col items-end gap-1.5">
-                                {/* Status selector */}
-                                <select
-                                  value={status}
-                                  onChange={(e) => {
-                                    handleChange('programStatus', e.target.value);
-                                  }}
-                                  className="text-[11px] font-bold uppercase tracking-wider text-slate-700 bg-white border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded-lg outline-none cursor-pointer"
-                                >
-                                  <option value="Active">Active</option>
-                                  <option value="Paused">Paused</option>
-                                  <option value="Completed">Completed</option>
-                                </select>
-                                <span className="text-[10px] text-slate-400">Enrolled: {formatDate(enrollmentDate)}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Progress Steps Timeline */}
-                          <div className="space-y-4">
-                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">WhatsApp Follow-Up Timeline</h4>
-                            <div className="relative pl-6 space-y-5 border-l border-slate-200 ml-3">
-                              {program.steps.map((step, idx) => {
-                                const stepNum = idx + 1;
-                                const isSent = stepNum < currentStep;
-                                const isCurrent = stepNum === currentStep;
-                                const isPending = stepNum > currentStep;
-                                const formattedMsg = step.message.replace('{name}', form.name);
-
-                                return (
-                                  <div key={idx} className="relative group">
-                                    {/* Timeline bullet indicator */}
-                                    <div
-                                      className={`absolute -left-[31px] top-1 w-5 h-5 rounded-full flex items-center justify-center border text-[9px] font-bold transition-all duration-200 ${
-                                        isSent
-                                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                                          : isCurrent
-                                          ? 'bg-indigo-500 border-indigo-500/60 text-white shadow-md shadow-indigo-500/30 scale-110'
-                                          : 'bg-slate-100 border-slate-300 text-slate-400'
-                                      }`}
-                                    >
-                                      {isSent ? '✓' : stepNum}
-                                    </div>
-
-                                    {/* Step card */}
-                                    <div
-                                      className={`rounded-xl border p-4 transition-all ${
-                                        isCurrent
-                                          ? 'bg-indigo-50/50 border-indigo-500/30'
-                                          : 'bg-slate-50/50 border-slate-200 opacity-60'
-                                      }`}
-                                    >
-                                      <div className="flex items-center justify-between gap-3 mb-2">
-                                        <div className="flex items-center gap-2">
-                                          <span className={`text-[11px] font-bold ${isCurrent ? 'text-indigo-600' : 'text-slate-500'}`}>
-                                            Day {step.day}
-                                          </span>
-                                          <span className="text-slate-400">•</span>
-                                          <span className="text-[11px] text-slate-500 font-medium">{step.subLabel}</span>
-                                        </div>
-
-                                        <span
-                                          className={`text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded ${
-                                            isSent
-                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                              : isCurrent
-                                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 animate-pulse'
-                                              : 'bg-slate-100 text-slate-500 border border-slate-200'
-                                          }`}
-                                        >
-                                          {isSent ? 'Sent' : isCurrent ? 'Next Up' : 'Scheduled'}
-                                        </span>
-                                      </div>
-
-                                      <p className="text-[12px] text-slate-700 leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200 font-mono whitespace-pre-wrap select-all">
-                                        {formattedMsg}
-                                      </p>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Actions panel */}
-                          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-4">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleChange('activeProgramId', undefined);
-                                handleChange('programEnrollmentDate', undefined);
-                                handleChange('programCurrentStep', undefined);
-                                handleChange('programStatus', undefined);
-                              }}
-                              className="text-[11px] font-bold text-rose-500/70 hover:text-rose-400 hover:bg-rose-500/[0.06] border border-rose-500/15 px-3 py-2 rounded-lg transition-all"
-                            >
-                              Disenroll Patient
-                            </button>
-
-                            {currentStep <= program.steps.length && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  handleChange('programCurrentStep', currentStep + 1);
-                                  if (currentStep === program.steps.length) {
-                                    handleChange('programStatus', 'Completed');
-                                  }
-                                }}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white rounded-lg text-[12px] font-semibold transition-all shadow-md shadow-indigo-500/20"
-                              >
-                                <Send size={12} />
-                                Simulate WhatsApp Nudge
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })() : (
-                      /* Disenrolled / No Active Program State */
-                      <div className="py-8 text-center space-y-4">
-                        <div className="w-12 h-12 rounded-full bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center mx-auto text-slate-400">
-                          <Zap size={20} />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-800">No Active Care Program</h4>
-                          <p className="text-[12px] text-slate-500 mt-1 max-w-sm mx-auto">
-                            Enroll patient in an automated check-up flow to track symptoms and request feedback post-op.
-                          </p>
-                        </div>
-
-                        {/* Select program list */}
-                        <div className="max-w-xs mx-auto pt-4 space-y-3">
-                          <select
-                            id="programSelect"
-                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-[12px] text-slate-700 outline-none cursor-pointer"
-                            defaultValue=""
-                            onChange={(e) => {
-                              const progId = e.target.value;
-                              if (!progId) return;
-                              handleChange('activeProgramId', progId);
-                              handleChange('programEnrollmentDate', new Date().toISOString().split('T')[0]);
-                              handleChange('programCurrentStep', 1);
-                              handleChange('programStatus', 'Active');
-                            }}
-                          >
-                            <option value="" disabled>-- Choose Care Program --</option>
-                            {CARE_PROGRAMS.map((p) => (
-                              <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {/* Footer */}
                 <div
@@ -2188,7 +1721,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 const ROWS_PER_PAGE = 10;
 
 const ReactivationCustomers: React.FC = () => {
-  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [serviceFilter, setServiceFilter] = useState('All Services');
@@ -2200,13 +1733,12 @@ const ReactivationCustomers: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>(undefined);
 
-  // ─── Stats ────────────────────────────────────────────────────────────────
-  const stats = useMemo(() => ({
-    total: 847,
-    active: 390,
-    inactive: 312,
-    highValue: 45,
-  }), []);
+  const stats = useMemo(() => {
+    const total = customers.length;
+    const active = customers.filter((c) => c.status === 'Active').length;
+    const inactive = customers.filter((c) => c.status === 'Inactive').length;
+    return { total, active, inactive };
+  }, [customers]);
 
   // ─── Filtering + Sorting ──────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -2310,11 +1842,7 @@ const ReactivationCustomers: React.FC = () => {
     setSelectedIds(newSet);
   };
 
-  const handleMarkHighValue = (id: string) => {
-    setCustomers((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, status: 'High Value' as CustomerStatus } : c))
-    );
-  };
+
 
   const handleResetFilters = () => {
     setSearch('');
@@ -2357,7 +1885,7 @@ const ReactivationCustomers: React.FC = () => {
                   border: '1px solid rgba(99,102,241,0.25)',
                 }}
               >
-                20 patients
+                {stats.total.toLocaleString('en-IN')} patients
               </span>
             </div>
             <p className="text-slate-500 text-[12px] sm:text-[13px] mt-1">
@@ -2366,13 +1894,6 @@ const ReactivationCustomers: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto justify-stretch sm:justify-start">
-            <button
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium text-slate-500 transition-all duration-150 hover:text-slate-700 hover:bg-slate-100"
-              style={{ border: '1px solid #E2E8F0' }}
-            >
-              <Upload size={14} />
-              Import CSV
-            </button>
             <button
               onClick={handleOpenAdd}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-[13px] font-semibold text-white transition-all duration-150 hover:opacity-90 active:scale-95"
@@ -2392,7 +1913,7 @@ const ReactivationCustomers: React.FC = () => {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, delay: 0.06, ease: 'easeOut' }}
-          className="grid grid-cols-2 lg:flex lg:items-center gap-2.5 w-full"
+          className="grid grid-cols-3 lg:flex lg:items-center gap-2 sm:gap-2.5 w-full"
         >
           <StatChip
             label="Total"
@@ -2408,11 +1929,6 @@ const ReactivationCustomers: React.FC = () => {
             label="Inactive"
             value={stats.inactive.toLocaleString('en-IN')}
             dot="bg-amber-500"
-          />
-          <StatChip
-            label="High Value"
-            value={stats.highValue.toLocaleString('en-IN')}
-            icon={<Sparkles size={12} className="text-purple-400" />}
           />
         </motion.div>
 
@@ -2512,12 +2028,102 @@ const ReactivationCustomers: React.FC = () => {
           </button>
         </motion.div>
 
+        {/* ── Mobile Cards ───────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, delay: 0.14, ease: 'easeOut' }}
+          className="md:hidden rounded-2xl overflow-hidden flex-1"
+          style={{
+            background: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+          }}
+        >
+          <div className="p-3 space-y-3">
+            {pageRows.length === 0 ? (
+              <div className="py-14 text-center text-slate-400 text-[13px]">
+                No patients match your filters.
+              </div>
+            ) : (
+              pageRows.map((customer) => {
+                const isSelected = selectedIds.has(customer.id);
+                return (
+                  <button
+                    key={customer.id}
+                    type="button"
+                    onClick={() => handleOpenEdit(customer)}
+                    className="w-full text-left rounded-2xl border p-4 transition-all duration-150 active:scale-[0.99]"
+                    style={{
+                      background: isSelected ? 'rgba(99,102,241,0.05)' : '#FFFFFF',
+                      borderColor: isSelected ? 'rgba(99,102,241,0.25)' : '#E2E8F0',
+                      boxShadow: '0 10px 30px rgba(15,23,42,0.04)',
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Avatar name={customer.name} color={customer.avatarColor} size="sm" />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-[14px] font-semibold text-slate-800 truncate">
+                              {customer.name}
+                            </span>
+                            {((customer.allergies && customer.allergies.length > 0) || (customer.medicalConditions && customer.medicalConditions.length > 0)) && (
+                              <span
+                                className="w-2 h-2 rounded-full bg-rose-500 shrink-0"
+                                title="Clinical alert"
+                              />
+                            )}
+                          </div>
+                          <div className="mt-1 text-[12px] text-slate-500 font-mono">
+                            {customer.phone}
+                          </div>
+                        </div>
+                      </div>
+                      <StatusBadge status={customer.status} />
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-wider">Last visit</div>
+                        <div className="text-slate-700 font-medium mt-0.5">{formatDate(customer.lastVisit)}</div>
+                        <div className="text-slate-400 text-[11px] mt-0.5">{timeAgo(customer.lastVisit)}</div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-wider">Paid so far</div>
+                        <div className="text-emerald-500 font-semibold mt-0.5">{formatSpend(customer.totalSpend)}</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3">
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Treatment</div>
+                      <div className="text-[13px] text-slate-700 mt-1">{customer.service}</div>
+                      {customer.problemTeeth && customer.problemTeeth.length > 0 && (
+                        <div className="mt-1 text-[11px] text-rose-400 font-semibold">
+                          Teeth: {customer.problemTeeth.join(', ')}
+                        </div>
+                      )}
+                    </div>
+
+                    {customer.notes ? (
+                      <p className="mt-3 text-[12px] text-slate-500 leading-relaxed line-clamp-2">
+                        {customer.notes}
+                      </p>
+                    ) : (
+                      <p className="mt-3 text-[12px] text-slate-300 italic">No notes</p>
+                    )}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </motion.div>
+
         {/* ── Table ────────────────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.28, delay: 0.14, ease: 'easeOut' }}
-          className="rounded-2xl overflow-hidden flex-1"
+          className="hidden md:block rounded-2xl overflow-hidden flex-1"
           style={{
             background: '#FFFFFF',
             border: '1px solid #E2E8F0',
@@ -2544,7 +2150,7 @@ const ReactivationCustomers: React.FC = () => {
                   </th>
 
                   {[
-                    { label: 'Customer', w: 'min-w-[160px]', sortKey: null },
+                    { label: 'Patient', w: 'min-w-[160px]', sortKey: null },
                     { label: 'Phone', w: 'min-w-[140px]', sortKey: null },
                     { label: 'Last Visit', w: 'min-w-[160px]', sortKey: 'lastVisit' as SortField },
                     { label: 'Service', w: 'min-w-[160px]', sortKey: null },
@@ -2640,11 +2246,26 @@ const ReactivationCustomers: React.FC = () => {
                                 </div>
                                 {((customer.allergies && customer.allergies.length > 0) || (customer.medicalConditions && customer.medicalConditions.length > 0)) && (
                                   <div className="flex flex-wrap gap-1 mt-0.5 max-w-[200px]">
-                                    {[...(customer.allergies || []), ...(customer.medicalConditions || [])].map((alert) => (
-                                      <span key={alert} className="px-1.5 py-0.5 bg-rose-50 border border-rose-200 rounded text-[8.5px] font-extrabold uppercase tracking-widest text-rose-600">
-                                        {alert}
-                                      </span>
-                                    ))}
+                                    {(() => {
+                                      const allAlerts = [...(customer.allergies || []), ...(customer.medicalConditions || [])];
+                                      const maxVisible = 1;
+                                      const visible = allAlerts.slice(0, maxVisible);
+                                      const extra = allAlerts.length - maxVisible;
+                                      return (
+                                        <>
+                                          {visible.map((alert) => (
+                                            <span key={alert} className="px-1.5 py-0.5 bg-rose-50 border border-rose-200 rounded text-[8.5px] font-extrabold uppercase tracking-widest text-rose-600">
+                                              {alert}
+                                            </span>
+                                          ))}
+                                          {extra > 0 && (
+                                            <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[8.5px] font-bold text-slate-500">
+                                              +{extra}
+                                            </span>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
                                   </div>
                                 )}
                               </div>
@@ -2741,7 +2362,7 @@ const ReactivationCustomers: React.FC = () => {
                           >
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-150 opacity-0 group-hover:opacity-100">
+                                <button className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-150 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                                   <MoreHorizontal size={15} />
                                 </button>
                               </DropdownMenuTrigger>
@@ -2773,14 +2394,6 @@ const ReactivationCustomers: React.FC = () => {
                                 >
                                   <MessageSquare size={13} className="text-slate-400" />
                                   Send Message
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator className="bg-slate-200" />
-                                <DropdownMenuItem
-                                  onClick={() => handleMarkHighValue(customer.id)}
-                                  className="gap-2.5 cursor-pointer hover:bg-purple-500/10 focus:bg-purple-500/10"
-                                >
-                                  <Sparkles size={13} className="text-purple-400" />
-                                  <span className="text-purple-400">Mark High Value</span>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator className="bg-slate-200" />
                                 <DropdownMenuItem

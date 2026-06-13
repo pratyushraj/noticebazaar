@@ -6,12 +6,7 @@ import {
   Bot,
   LayoutDashboard,
   Users,
-  Layers,
-  Megaphone,
-  BarChart3,
-  Zap,
   Zap as ZapIcon,
-  MessageCircle,
   Star,
   Menu,
   X,
@@ -35,60 +30,35 @@ interface ReactivationLayoutProps {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: 'AI Receptionist',
-    path: '/reactivation/receptionist',
-    icon: Bot,
-    badge: 'CORE',
-  },
-  {
     label: 'Dashboard',
     path: '/reactivation',
     icon: LayoutDashboard,
     exact: true,
   },
   {
-    label: 'Customers',
+    label: 'Patients',
     path: '/reactivation/customers',
     icon: Users,
   },
   {
-    label: 'Segments',
-    path: '/reactivation/segments',
-    icon: Layers,
-  },
-  {
-    label: 'Campaigns',
-    path: '/reactivation/campaigns',
-    icon: Megaphone,
-  },
-  {
-    label: 'Analytics',
-    path: '/reactivation/analytics',
-    icon: BarChart3,
-  },
-  {
-    label: 'Automations',
-    path: '/reactivation/automations',
-    icon: Zap,
+    label: 'AI Receptionist',
+    path: '/reactivation/receptionist',
+    icon: Bot,
+    badge: 'AI',
   },
   {
     label: 'Google Reviews',
     path: '/reactivation/reviews',
     icon: Star,
-    badge: 'AI',
   },
 ];
 
 // ─── Page title map ───────────────────────────────────────────────────────────
 
 const PAGE_TITLES: Record<string, string> = {
-  '/reactivation': 'Dental CRM',
+  '/reactivation': 'Dashboard',
   '/reactivation/receptionist': 'AI Receptionist',
   '/reactivation/customers': 'Patients',
-  '/reactivation/segments': 'Segments',
-  '/reactivation/campaigns': 'Campaigns',
-  '/reactivation/analytics': 'Analytics',
-  '/reactivation/automations': 'Automations',
   '/reactivation/reviews': 'Google Reviews',
 };
 
@@ -263,27 +233,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
           </div>
         </nav>
 
-        {/* Separator */}
-        <div className="mx-4 h-px bg-slate-200" />
 
-        {/* AI Status indicator */}
-        <div className="px-5 py-4">
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/20">
-            {/* Pulsing green dot */}
-            <div className="relative flex-shrink-0">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-60" />
-            </div>
-            <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="text-[11px] font-semibold text-emerald-400 leading-none">
-                WhatsApp Assistant Active
-              </span>
-              <span className="text-[9px] text-emerald-500/60 font-medium tracking-wide leading-none">
-                AI Status
-              </span>
-            </div>
-          </div>
-        </div>
       </aside>
 
       {/* ── Main area ────────────────────────────────────────────── */}
@@ -326,17 +276,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
               </span>
             </div>
 
-            {/* WhatsApp connection chip */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1.2 rounded-full border border-emerald-500/25 bg-emerald-500/[0.08]">
-              <div className="relative flex-shrink-0">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <div className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-50" />
-              </div>
-              <MessageCircle size={11} className="text-emerald-500 flex-shrink-0" />
-              <span className="text-[10px] sm:text-[11px] font-semibold text-emerald-500 tracking-wide whitespace-nowrap hidden md:inline">
-                WhatsApp Connected
-              </span>
-            </div>
+
           </div>
         </header>
 
