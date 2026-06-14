@@ -105,7 +105,7 @@ interface Customer {
   allergies?: string[];
   medicalConditions?: string[];
   toothNotes?: Record<number, string>;
-  toothConditions?: Record<number, string>;
+  toothConditions?: Record<number, any>;
   vitals?: {
     bp?: string;
     pulse?: string;
@@ -953,27 +953,33 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
             }
             
             // Determine pathology/treatment
-            let condition = 'Decayed / Cavity';
+            let diagnosis = 'Decayed / Cavity';
+            let status = 'Required';
             let noteText = 'Diagnosed via AI Scribe';
             
             if (lower.includes('root canal') || lower.includes('rct') || lower.includes('root-canal')) {
-              condition = 'Root Canal Needed';
+              diagnosis = 'Root Canal Needed';
               noteText = 'Root canal therapy required';
             } else if (lower.includes('implant')) {
-              condition = 'Dental Implant';
+              diagnosis = 'Dental Implant Needed';
               noteText = 'Implant replacement planned';
             } else if (lower.includes('crown') || lower.includes('bridge')) {
-              condition = 'Crown / Bridge';
+              diagnosis = 'Crown / Bridge Needed';
               noteText = 'Restoration crown required';
             } else if (lower.includes('missing') || lower.includes('extract')) {
-              condition = 'Missing Tooth';
+              diagnosis = 'Missing Tooth';
               noteText = 'Missing tooth area';
-            } else if (lower.includes('healthy') || lower.includes('clean')) {
-              condition = 'Healthy / Treated';
-              noteText = 'Checked & clean';
             }
             
-            newConditions[t] = condition;
+            if (lower.includes('pending') || lower.includes('progress')) {
+              status = 'Pending / In Progress';
+            } else if (lower.includes('completed') || lower.includes('done') || lower.includes('healthy') || lower.includes('clean')) {
+              status = 'Completed / Done';
+              diagnosis = 'Healthy / Normal';
+              noteText = 'Treatment completed successfully';
+            }
+            
+            newConditions[t] = { diagnosis, status };
             newNotes[t] = noteText;
             taggedCount++;
           });
@@ -1714,7 +1720,28 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           
                           <div className="space-y-3">
                             {form.problemTeeth.map((t) => {
-                              const condition = form.toothConditions?.[t] || 'Decayed / Cavity';
+                              const toothVal = form.toothConditions?.[t];
+                              let diagnosis = 'Decayed / Cavity';
+                              let status = 'Required';
+                              
+                              if (toothVal) {
+                                if (typeof toothVal === 'object' && toothVal !== null) {
+                                  diagnosis = (toothVal as any).diagnosis || 'Decayed / Cavity';
+                                  status = (toothVal as any).status || 'Required';
+                                } else if (typeof toothVal === 'string') {
+                                  const lowerVal = toothVal.toLowerCase();
+                                  if (lowerVal.includes('completed') || lowerVal.includes('done') || lowerVal.includes('healthy')) {
+                                    diagnosis = 'Healthy / Normal';
+                                    status = 'Completed / Done';
+                                  } else if (lowerVal.includes('pending') || lowerVal.includes('progress')) {
+                                    diagnosis = 'Decayed / Cavity';
+                                    status = 'Pending / In Progress';
+                                  } else {
+                                    diagnosis = toothVal.replace(' Needed', '').replace(' (Required)', '');
+                                    status = 'Required';
+                                  }
+                                }
+                              }
                               const note = form.toothNotes?.[t] || '';
                               
                               return (
@@ -1729,22 +1756,44 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                       </span>
                                     </div>
                                     
-                                    {/* Condition Select */}
-                                    <select
-                                      value={condition}
-                                      onChange={(e) => {
-                                        const conditions = { ...form.toothConditions, [t]: e.target.value };
-                                        handleChange('toothConditions', conditions);
-                                      }}
-                                      className="text-[11px] font-medium text-slate-700 bg-white border border-slate-200 hover:border-slate-300 px-2 py-1 rounded-md outline-none cursor-pointer"
-                                    >
-                                      <option value="Decayed / Cavity">Decayed / Cavity</option>
-                                      <option value="Root Canal Needed">Root Canal Needed</option>
-                                      <option value="Crown / Bridge">Crown / Bridge</option>
-                                      <option value="Missing Tooth">Missing Tooth</option>
-                                      <option value="Dental Implant">Dental Implant</option>
-                                      <option value="Healthy / Treated">Healthy / Treated</option>
-                                    </select>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      {/* Diagnosis select */}
+                                      <select
+                                        value={diagnosis}
+                                        onChange={(e) => {
+                                          const conditions = { 
+                                            ...form.toothConditions, 
+                                            [t]: { diagnosis: e.target.value, status } 
+                                          };
+                                          handleChange('toothConditions', conditions);
+                                        }}
+                                        className="text-[10.5px] font-medium text-slate-700 bg-white border border-slate-200 hover:border-slate-300 px-2 py-1 rounded-md outline-none cursor-pointer"
+                                      >
+                                        <option value="Decayed / Cavity">Decayed / Cavity</option>
+                                        <option value="Root Canal Needed">Root Canal Needed</option>
+                                        <option value="Crown / Bridge Needed">Crown / Bridge Needed</option>
+                                        <option value="Dental Implant Needed">Dental Implant Needed</option>
+                                        <option value="Missing Tooth">Missing Tooth</option>
+                                        <option value="Healthy / Normal">Healthy / Normal</option>
+                                      </select>
+
+                                      {/* Status select */}
+                                      <select
+                                        value={status}
+                                        onChange={(e) => {
+                                          const conditions = { 
+                                            ...form.toothConditions, 
+                                            [t]: { diagnosis, status: e.target.value } 
+                                          };
+                                          handleChange('toothConditions', conditions);
+                                        }}
+                                        className="text-[10.5px] font-medium text-slate-700 bg-white border border-slate-200 hover:border-slate-300 px-2 py-1 rounded-md outline-none cursor-pointer"
+                                      >
+                                        <option value="Required">Required</option>
+                                        <option value="Pending / In Progress">Pending / In Progress</option>
+                                        <option value="Completed / Done">Completed / Done</option>
+                                      </select>
+                                    </div>
                                   </div>
                                   
                                   {/* Note text input */}
