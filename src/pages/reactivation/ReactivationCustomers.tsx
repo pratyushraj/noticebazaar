@@ -1146,13 +1146,20 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Planned Treatment / Reason
                         </label>
-                        <input
-                          className={`${inputBase} ${inputFocusStyle}`}
+                        <select
+                          className={`${inputBase} ${inputFocusStyle} cursor-pointer`}
                           style={inputStyle}
-                          placeholder="e.g. Tooth pain, cleaning, RCT consultation"
                           value={form.service}
                           onChange={(e) => handleChange('service', e.target.value)}
-                        />
+                        >
+                          <option value="">Select Treatment...</option>
+                          <option value="Consultation / Check-up">Consultation / Check-up</option>
+                          <option value="Tooth Pain / Emergency">Tooth Pain / Emergency</option>
+                          {PROCEDURES_CATALOG.map((p) => (
+                            <option key={p.name} value={p.name}>{p.name}</option>
+                          ))}
+                          <option value="Other">Other / Not Listed</option>
+                        </select>
                       </div>
                     </div>
 
