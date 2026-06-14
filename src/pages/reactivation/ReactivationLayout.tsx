@@ -9,6 +9,7 @@ import {
   Star,
   Menu,
   X,
+  CalendarDays,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -34,6 +35,11 @@ const NAV_ITEMS: NavItem[] = [
     icon: Users,
   },
   {
+    label: 'Live Scheduler',
+    path: '/reactivation/scheduler',
+    icon: CalendarDays,
+  },
+  {
     label: 'AI Receptionist',
     path: '/reactivation/receptionist',
     icon: Bot,
@@ -51,6 +57,7 @@ const NAV_ITEMS: NavItem[] = [
 const PAGE_TITLES: Record<string, string> = {
   '/reactivation/receptionist': 'AI Receptionist',
   '/reactivation/customers': 'Patients',
+  '/reactivation/scheduler': 'Live Scheduler',
   '/reactivation/reviews': 'Google Reviews',
   '/reactivation': 'Patients',
 };

@@ -60,11 +60,14 @@ const Login = () => {
         path = '/lawyer-dashboard';
       } else if (role === 'chartered_accountant') {
         path = '/ca-dashboard';
+      } else if (role === 'dentist' || role === 'receptionist') {
+        path = '/reactivation';
       }
       
       console.log('[Login] Session detected, navigating to:', path);
       navigate(path, { replace: true });
     }
+
   }, [session, navigate, isLoading, profile?.role, profile?.onboarding_complete]);
 
   useEffect(() => {

@@ -116,3 +116,77 @@ We reviewed and removed all remaining non-dental mock datasets across the reacti
 4. **Automations Builder ([ReactivationAutomations.tsx](file:///Users/pratyushraj/Desktop/creatorarmour/src/pages/reactivation/ReactivationAutomations.tsx))**:
    - Swapped out the gym-specific "Trial Expiry Warning" trigger/action card with a custom dental-specific **"Aligner Compliance Check"** card, matching the clinical schema.
 
+## E2E Patient Flow & Before/After Slider Verification
+
+We implemented and successfully executed a comprehensive, multi-step Playwright integration test suite (`tests/e2e/dental-patient.spec.ts`) that verifies the end-to-end dentist clinic receptionist user flow.
+
+### Tested Flow Details
+1. **Clinic Authentication**: Logged in using verified receptionist credentials (`reception@yourdentist.in`).
+2. **Patient Addition**: Created a new patient record with intake details and successfully uploaded the initial **Before Photo**.
+3. **Table Row Verification**: Confirmed the patient appears in the dashboard patients table with a visible `Before Photo` status indicator.
+4. **AI Dental Scribe Integration**:
+   - Opened the patient record.
+   - Selected the "Tooth 14 Filling" voice preset and triggered the **Analyze & Tag Chart** action.
+   - Verified that the AI Scribe successfully analyzed the consultation and automatically updated the dental chart.
+5. **Treatment Estimates**:
+   - Navigated to the **Estimates** tab.
+   - Built a custom treatment estimate by logging a composite filling for Tooth 14.
+6. **After Photo & Slider Interaction**:
+   - Navigated back to the **After Consultation** tab.
+   - Uploaded the treatment's **After Photo**.
+   - Interacted with the dynamic before/after comparison slider, verifying slider visibility and movement.
+7. **Record Preservation**: Saved all consultation updates, returning to the patients list, and confirmed the status indicator correctly transitioned to `Before & After`.
+8. **Clean-up Flow**: Selected the newly created demo patient and executed a bulk deletion to clean up the backend Supabase database successfully.
+
+### Test Execution Results
+All test assertions passed successfully in **23.9s** with the following visual screenshots captured for inspection:
+- `test-results/01_patients_list.png`
+- `test-results/02_add_patient_modal.png`
+- `test-results/03_before_photo_uploaded.png`
+- `test-results/04_patient_added_list.png`
+- `test-results/05_after_consultation_tab.png`
+- `test-results/05a_ai_scribe_analyzed.png`
+- `test-results/05b_estimates_tab_initial.png`
+- `test-results/05c_estimate_added.png`
+- `test-results/06_after_photo_uploaded.png`
+- `test-results/07_slider_interacted.png`
+- `test-results/08_final_patients_list.png`
+- `test-results/09_patient_row_selected.png`
+- `test-results/10_after_deletion_list.png`
+
+## Prescriptions & Medications Management
+
+We added a dedicated **Prescriptions & Medications** panel to the patient records CRM.
+
+### Key Capabilities
+1. **Interactive UI Card**: Built a styled monospace textarea input with a stethoscope icon on the **After Consultation** tab.
+2. **AI Scribe Auto-Population**: Equipped the AI Scribe transcript analyzer to check for keyword phrases (such as `prescribe`, `medication`, `medicine`, `pain`, or `filling`). If a clinical voice preset or custom voice dictation mentions these terms, the AI automatically populates a relevant prescription recommendation (e.g. Amoxicillin, Paracetamol) directly in the Prescription input box.
+3. **Manual Editing & Preservation**: Receptionists and doctors can manually edit the prescription. The content binds to the `vitals.prescription` JSONB property and is successfully persisted to the database.
+4. **E2E Validation**: Added test steps in the E2E suite to verify that the AI Scribe populates the prescription automatically, manual edits are captured, and everything saves without issues.
+5. **Hinglish & Hindi Translation Support**:
+   - Added a dictation language selector (`English / Hinglish` vs `Hindi`) next to the Scribe mic buttons, utilizing `en-IN` (Indian English/Hinglish) and `hi-IN` (pure Hindi) speech-to-text models.
+   - Updated the Gemini prompt rules (Rule 4) to require the AI to translate all transcribed Hindi/Hinglish dialogue into standardized clinical English.
+   - Integrated basic Hindi keywords in the offline fallback regex parser (e.g. `कैविटी`, `रूट कैनाल`, `दवा`, `लिख`) to maintain translation compatibility when offline.
+   - Added a **Hinglish Prescribe** preset to mock presets to facilitate direct Hinglish transcription validation.
+
+## Manual WhatsApp Share & Indian-Style PDF Prescription Generator
+
+We built a complete offline sharing module under the **After Consultation** tab.
+
+### Features
+1. **Indian Doctor-Style PDF Prescription Generator**:
+   - Uses client-side `jsPDF` to generate a professional medical prescription layout on demand.
+   - Formatted with traditional elements: custom **Teal primary branding header**, **Doctor details**, **Clinic contact info**, classic **Rx logo**, and **Patient information bar**.
+   - Includes full billing/estimate items and calculations (inclusive of 18% GST for cosmetic procedures and 0% for therapeutic procedures) directly inside the PDF.
+   - Generates a signature line and stamp placeholder at the bottom.
+2. **Collapsible Clinic Customization settings**:
+   - Allows the clinic receptionist/doctor to customize Clinic Name, Contact Phone, and Clinic Address on the fly.
+   - Saves customized clinic branding properties directly inside the patient record's JSONB metadata (`vitals.clinic_name`, `vitals.clinic_phone`, `vitals.clinic_address`, `vitals.doctor_name`) so they persist securely.
+3. **Manual WhatsApp Redirection (Without API)**:
+   - Formats a prefilled rich-text WhatsApp message containing patient summary, doctor findings, prescribed medicines, billing statements, and next follow-up dates.
+   - Opens a direct WhatsApp chat window linking to `wa.me/${phone}` with the prefilled text, allowing doctors to share it instantly from their personal mobile device or WhatsApp Web without paying for automated API subscriptions.
+
+
+
+
+

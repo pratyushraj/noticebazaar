@@ -13,15 +13,26 @@ const ReactivationCampaigns = lazy(() => import('@/pages/reactivation/Reactivati
 const ReactivationAnalytics = lazy(() => import('@/pages/reactivation/ReactivationAnalytics'));
 const ReactivationAutomations = lazy(() => import('@/pages/reactivation/ReactivationAutomations'));
 const ReactivationReviews = lazy(() => import('@/pages/reactivation/ReactivationReviews'));
+const ReactivationLogin = lazy(() => import('@/pages/reactivation/ReactivationLogin'));
+const ReactivationScheduler = lazy(() => import('@/pages/reactivation/ReactivationScheduler'));
 
 // ─── Route definitions ────────────────────────────────────────────────────────
 
 export const ReactivationRoutes = () => (
   <>
     <Route
+      path="/reactivation/login"
+      element={
+        <LazyRoute>
+          <ReactivationLogin />
+        </LazyRoute>
+      }
+    />
+    <Route
       path="/reactivation"
       element={<Navigate to="/reactivation/customers" replace />}
     />
+
     <Route
       path="/reactivation/receptionist"
       element={
@@ -38,6 +49,16 @@ export const ReactivationRoutes = () => (
         <LazyRoute>
           <ReactivationLayout>
             <ReactivationCustomers />
+          </ReactivationLayout>
+        </LazyRoute>
+      }
+    />
+    <Route
+      path="/reactivation/scheduler"
+      element={
+        <LazyRoute>
+          <ReactivationLayout>
+            <ReactivationScheduler />
           </ReactivationLayout>
         </LazyRoute>
       }

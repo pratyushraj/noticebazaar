@@ -95,6 +95,8 @@ interface Customer {
   problemTeeth?: number[];
   xrays?: string[];
   beforeAfterPhotos?: string[];
+  beforePhoto?: string;
+  afterPhoto?: string;
   allergies?: string[];
   medicalConditions?: string[];
   toothNotes?: Record<number, string>;
@@ -450,6 +452,8 @@ const EMPTY_CUSTOMER: Customer = {
   problemTeeth: [],
   xrays: [],
   beforeAfterPhotos: [],
+  beforePhoto: '',
+  afterPhoto: '',
   allergies: [],
   medicalConditions: [],
   toothNotes: {},
@@ -464,6 +468,8 @@ const getInitialForm = (customer?: Customer): Customer => {
     problemTeeth: customer.problemTeeth || [],
     xrays: customer.xrays || [],
     beforeAfterPhotos: customer.beforeAfterPhotos || [],
+    beforePhoto: customer.beforePhoto || '',
+    afterPhoto: customer.afterPhoto || '',
     allergies: customer.allergies || [],
     medicalConditions: customer.medicalConditions || [],
     toothNotes: customer.toothNotes || {},
@@ -729,6 +735,38 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
   const handleRemoveTeethPhoto = (idxToRemove: number) => {
     handleChange('beforeAfterPhotos', (form.beforeAfterPhotos || []).filter((_, idx) => idx !== idxToRemove));
+  };
+
+  const handleBeforePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        handleChange('beforePhoto', reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveBeforePhoto = () => {
+    handleChange('beforePhoto', '');
+  };
+
+  const handleAfterPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        handleChange('afterPhoto', reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveAfterPhoto = () => {
+    handleChange('afterPhoto', '');
   };
 
   const handleSave = () => {
@@ -1948,53 +1986,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                     </div>
 
-                    {/* WhatsApp Estimate Proposal Generator */}
-                    {estimateItems.length > 0 && (
-                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="text-[11.5px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                              <Sparkles size={11} className="text-indigo-400" />
-                              WhatsApp Treatment Summary (Simulated)
-                            </h4>
-                            <p className="text-[10px] text-slate-500 mt-0.5">Copy message format to share treatment details after consultation</p>
-                          </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const clinicName = profile?.business_name || 'Dental Clinic';
-                              const summary = estimateItems.map((item) => `• ${item.procedure}${item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹${item.cost.toLocaleString('en-IN')}`).join('\n');
-                              const text = `*${clinicName} - Treatment Summary*\n\nHi ${form.name},\n\nHere is your treatment summary:\n\n${summary}\n\n*Subtotal:* ₹${calculatedSubtotal.toLocaleString('en-IN')}\n*Discount (${estimateDiscount}%):* -₹${calculatedDiscountAmount.toLocaleString('en-IN')}\n*GST (Cosmetic):* ₹${calculatedGST.toLocaleString('en-IN')}\n*Final Amount:* ₹${calculatedGrandTotal.toLocaleString('en-IN')}\n\nPlease let us know your preferred next date.`;
-                              navigator.clipboard.writeText(text);
-                              setCopiedEstimate(true);
-                              setTimeout(() => setCopiedEstimate(false), 2000);
-                            }}
-                            className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[10.5px] font-bold text-indigo-600 flex items-center gap-1 transition-all"
-                          >
-                            {copiedEstimate ? 'Copied! ✓' : 'Copy Message'}
-                          </button>
-                        </div>
-
-                        <div className="bg-white border border-slate-200 rounded-xl p-3 text-[12px] font-mono leading-relaxed text-slate-700">
-                          <span className="text-[10px] text-indigo-500 font-bold block">MESSAGE PREVIEW:</span>
-                          <div className="whitespace-pre-wrap select-all bg-slate-50 p-2.5 rounded border border-slate-100">
-                            <strong>{profile?.business_name || 'Dental Clinic'} - Treatment Summary</strong><br/><br/>
-                            Hi {form.name},<br/><br/>
-                            Here is your treatment summary:<br/>
-                            {estimateItems.map((item, idx) => (
-                              <span key={idx}>• {item.procedure}{item.tooth ? ` (Tooth ${item.tooth})` : ''}: ₹{item.cost.toLocaleString('en-IN')}<br/></span>
-                            ))}
-                            <br/>
-                            <strong>Subtotal:</strong> ₹{calculatedSubtotal.toLocaleString('en-IN')}<br/>
-                            <strong>Discount ({estimateDiscount}%):</strong> -₹{calculatedDiscountAmount.toLocaleString('en-IN')}<br/>
-                            <strong>GST (Cosmetic):</strong> ₹{calculatedGST.toLocaleString('en-IN')}<br/>
-                            <strong>Final Amount:</strong> ₹{calculatedGrandTotal.toLocaleString('en-IN')}<br/><br/>
-                            Please let us know your preferred next date.
-                          </div>
-                        </div>
-                      </div>
-                    )}
                       </>
                     )}
                   </div>
@@ -2088,6 +2080,8 @@ const ReactivationCustomers: React.FC = () => {
             problemTeeth: d.problem_teeth || [],
             xrays: d.xrays || [],
             beforeAfterPhotos: d.before_after_photos || [],
+            beforePhoto: d.before_photo,
+            afterPhoto: d.after_photo,
             allergies: d.allergies || [],
             medicalConditions: d.medical_conditions || [],
             toothNotes: d.tooth_notes || {},
@@ -2285,6 +2279,8 @@ const ReactivationCustomers: React.FC = () => {
       problem_teeth: c.problemTeeth || [],
       xrays: c.xrays || [],
       before_after_photos: c.beforeAfterPhotos || [],
+      before_photo: c.beforePhoto || null,
+      after_photo: c.afterPhoto || null,
       allergies: c.allergies || [],
       medical_conditions: c.medicalConditions || [],
       tooth_notes: c.toothNotes || {},
@@ -2323,6 +2319,8 @@ const ReactivationCustomers: React.FC = () => {
             problemTeeth: data.problem_teeth || [],
             xrays: data.xrays || [],
             beforeAfterPhotos: data.before_after_photos || [],
+            beforePhoto: data.before_photo,
+            afterPhoto: data.after_photo,
             allergies: data.allergies || [],
             medicalConditions: data.medical_conditions || [],
             toothNotes: data.tooth_notes || {},
@@ -2360,6 +2358,8 @@ const ReactivationCustomers: React.FC = () => {
             problemTeeth: data.problem_teeth || [],
             xrays: data.xrays || [],
             beforeAfterPhotos: data.before_after_photos || [],
+            beforePhoto: data.before_photo,
+            afterPhoto: data.after_photo,
             allergies: data.allergies || [],
             medicalConditions: data.medical_conditions || [],
             toothNotes: data.tooth_notes || {},

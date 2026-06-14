@@ -216,7 +216,7 @@ export default function ReactivationDashboard() {
   const activeFlows = patients.filter(c => c.programStatus === 'Active').length;
   const appointmentsRebooked = patients.filter(c => c.status === 'Active' || c.programStatus === 'Completed').reduce((sum, c) => sum + (c.totalSpend || 0), 0);
 
-  const eightMonthsAgo = new Date('2026-06-06');
+  const eightMonthsAgo = new Date();
   eightMonthsAgo.setMonth(eightMonthsAgo.getMonth() - 8);
   const overdueCount = patients.filter(c => new Date(c.lastVisit) < eightMonthsAgo).length;
   const consultNoBookCount = patients.filter(c => c.status === 'New Lead' || c.status === 'Follow Up Needed').length;

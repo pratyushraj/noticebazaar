@@ -221,6 +221,11 @@ export default function ReactivationReceptionist() {
   const [workingHours, setWorkingHours] = useState('Mon–Sat: 10:00 AM – 8:00 PM');
   const [timingsNote, setTimingsNote] = useState('Closed on Sundays & public holidays. Emergency contact: +91 99887 76655');
 
+  // ── WhatsApp API Config State
+  const [whatsappPhoneNumberId, setWhatsappPhoneNumberId] = useState('');
+  const [whatsappAccessToken, setWhatsappAccessToken] = useState('');
+  const [whatsappBusinessPhone, setWhatsappBusinessPhone] = useState('');
+
   // ── Staff State
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [newStaffName, setNewStaffName] = useState('');
@@ -281,6 +286,9 @@ export default function ReactivationReceptionist() {
           setPhone(clinic.phone || '');
           setWorkingHours(clinic.working_hours || '');
           setTimingsNote(clinic.timings_note || '');
+          setWhatsappPhoneNumberId(clinic.whatsapp_phone_number_id || '');
+          setWhatsappAccessToken(clinic.whatsapp_access_token || '');
+          setWhatsappBusinessPhone(clinic.whatsapp_business_phone || '');
         }
 
         // 2. Fetch staff
@@ -486,6 +494,9 @@ export default function ReactivationReceptionist() {
             phone: phone,
             working_hours: workingHours,
             timings_note: timingsNote,
+            whatsapp_phone_number_id: whatsappPhoneNumberId,
+            whatsapp_access_token: whatsappAccessToken,
+            whatsapp_business_phone: whatsappBusinessPhone,
           })
           .eq('id', clinicId);
         if (error) throw error;
@@ -649,6 +660,39 @@ export default function ReactivationReceptionist() {
                 <div>
                   <SectionLabel>Timings Note (Holidays, Exceptions)</SectionLabel>
                   <GlassTextarea rows={2} value={timingsNote} onChange={e => setTimingsNote(e.target.value)} placeholder="e.g. Closed on 2nd Saturday..." />
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-slate-700/40 space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+                    💬 WhatsApp Business API Configuration
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <SectionLabel>WhatsApp Phone Number ID</SectionLabel>
+                      <GlassInput 
+                        value={whatsappPhoneNumberId} 
+                        onChange={e => setWhatsappPhoneNumberId(e.target.value)} 
+                        placeholder="e.g. 1179722595225188" 
+                      />
+                    </div>
+                    <div>
+                      <SectionLabel>WhatsApp Business Phone (From)</SectionLabel>
+                      <GlassInput 
+                        value={whatsappBusinessPhone} 
+                        onChange={e => setWhatsappBusinessPhone(e.target.value)} 
+                        placeholder="e.g. +91 75448 60350" 
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <SectionLabel>WhatsApp Permanent Access Token</SectionLabel>
+                    <GlassInput 
+                      type="password"
+                      value={whatsappAccessToken} 
+                      onChange={e => setWhatsappAccessToken(e.target.value)} 
+                      placeholder="EAAG..." 
+                    />
+                  </div>
                 </div>
               </TabsContent>
 
