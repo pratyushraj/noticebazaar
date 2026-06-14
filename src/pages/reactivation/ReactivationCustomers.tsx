@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -33,6 +34,7 @@ import {
   Zap,
   Mic,
   Volume2,
+  Settings,
 } from 'lucide-react';
 import {
   Dialog,
@@ -97,6 +99,7 @@ interface Customer {
   beforeAfterPhotos?: string[];
   beforePhoto?: string;
   afterPhoto?: string;
+  prescription?: string;
   allergies?: string[];
   medicalConditions?: string[];
   toothNotes?: Record<number, string>;
@@ -454,6 +457,7 @@ const EMPTY_CUSTOMER: Customer = {
   beforeAfterPhotos: [],
   beforePhoto: '',
   afterPhoto: '',
+  prescription: '',
   allergies: [],
   medicalConditions: [],
   toothNotes: {},
@@ -470,6 +474,7 @@ const getInitialForm = (customer?: Customer): Customer => {
     beforeAfterPhotos: customer.beforeAfterPhotos || [],
     beforePhoto: customer.beforePhoto || '',
     afterPhoto: customer.afterPhoto || '',
+    prescription: customer.prescription || '',
     allergies: customer.allergies || [],
     medicalConditions: customer.medicalConditions || [],
     toothNotes: customer.toothNotes || {},
@@ -526,7 +531,11 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [scribeTranscript, setScribeTranscript] = useState('');
   const [scribeStatus, setScribeStatus] = useState<'idle' | 'listening' | 'analyzing' | 'done'>('idle');
   const recognitionRef = React.useRef<any>(null);
+  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+  const audioChunksRef = React.useRef<Blob[]>([]);
   const [showAdvancedClinical, setShowAdvancedClinical] = useState(false);
+  const [deepgramKey, setDeepgramKey] = useState(() => localStorage.getItem('deepgram_api_key') || import.meta.env.VITE_DEEPGRAM_API_KEY || '');
+  const [recordingMode, setRecordingMode] = useState<'native' | 'deepgram'>(() => (localStorage.getItem('deepgram_api_key') || import.meta.env.VITE_DEEPGRAM_API_KEY) ? 'deepgram' : 'native');
 
   // RVG slider state
   const [xraySliderPos, setXraySliderPos] = useState(50);
@@ -585,45 +594,111 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     return calculatedSubtotal - calculatedDiscountAmount + calculatedGST;
   }, [calculatedSubtotal, calculatedDiscountAmount, calculatedGST]);
 
-  const startScribeSpeech = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser. Please use Chrome or use the mock presets.");
-      return;
+  const startScribeSpeech = async () => {
+    if (recordingMode === 'deepgram') {
+      if (!deepgramKey) {
+        alert("Please enter your Deepgram API Key first using the settings icon.");
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setScribeStatus('listening');
+        setScribeTranscript('Recording consultation... Speak clearly in Hinglish or English now.');
+        
+        audioChunksRef.current = [];
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorderRef.current = mediaRecorder;
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = async () => {
+          setScribeStatus('analyzing');
+          setScribeTranscript('Processing voice recording via Deepgram...');
+          
+          try {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&language=en-IN&filler_words=true', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Token ${deepgramKey}`,
+                'Content-Type': 'audio/webm'
+              },
+              body: audioBlob
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Deepgram API returned status ${response.status}`);
+            }
+            
+            const result = await response.json();
+            const transcript = result.results?.channels?.[0]?.alternatives?.[0]?.transcript || '';
+            setScribeTranscript(transcript || '(No speech detected. Please speak closer to the microphone.)');
+            setScribeStatus('done');
+          } catch (err: any) {
+            console.error('Deepgram transcription error:', err);
+            setScribeTranscript(`Deepgram Transcription Error: ${err.message}. Please verify your API key.`);
+            setScribeStatus('done');
+          }
+          
+          // Stop all audio tracks to release microphone
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start(250); // Capture data every 250ms
+      } catch (err: any) {
+        console.error('Failed to start media recorder:', err);
+        alert('Could not access microphone: ' + err.message);
+      }
+    } else {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in this browser. Please use Chrome or use the mock presets.");
+        return;
+      }
+      setScribeStatus('listening');
+      setScribeTranscript('Listening to your consultation... Speak now.');
+      
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'en-IN'; // Indian accent focus
+      
+      rec.onresult = (event: any) => {
+        const resultText = event.results[0][0].transcript;
+        setScribeTranscript(resultText);
+        setScribeStatus('done');
+      };
+      
+      rec.onerror = (err: any) => {
+        console.error(err);
+        setScribeStatus('done');
+        setScribeTranscript('Speech recognition error. Please select a mock preset or type manual notes.');
+      };
+      
+      rec.onend = () => {
+        setScribeStatus((prev) => prev === 'listening' ? 'done' : prev);
+      };
+      
+      recognitionRef.current = rec;
+      rec.start();
     }
-    setScribeStatus('listening');
-    setScribeTranscript('Listening to your consultation... Speak now.');
-    
-    const rec = new SpeechRecognition();
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.lang = 'en-IN'; // Indian accent focus
-    
-    rec.onresult = (event: any) => {
-      const resultText = event.results[0][0].transcript;
-      setScribeTranscript(resultText);
-      setScribeStatus('done');
-    };
-    
-    rec.onerror = (err: any) => {
-      console.error(err);
-      setScribeStatus('done');
-      setScribeTranscript('Speech recognition error. Please select a mock preset or type manual notes.');
-    };
-    
-    rec.onend = () => {
-      setScribeStatus((prev) => prev === 'listening' ? 'done' : prev);
-    };
-    
-    recognitionRef.current = rec;
-    rec.start();
   };
 
   const stopScribeSpeech = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+    if (recordingMode === 'deepgram') {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+    } else {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setScribeStatus('done');
     }
-    setScribeStatus('done');
   };
 
   const preprocessHinglishTranscript = (text: string): string => {
@@ -1114,37 +1189,78 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     {/* AI Dental Scribe (Voice to Chart) */}
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3 relative">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center">
+                        <div className="flex items-start gap-2">
+                          <div className="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
                             <Mic size={12} className="text-indigo-600" />
                           </div>
-                          <div>
-                            <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">AI Dental Scribe</h4>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider font-sans">AI Dental Scribe</h4>
+                              <span className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase ${recordingMode === 'deepgram' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-650'}`}>
+                                {recordingMode === 'deepgram' ? 'Deepgram' : 'Web Speech'}
+                              </span>
+                            </div>
                             <p className="text-[10px] text-slate-500 mt-0.5">Use after consultation to capture treatment, next visit, and prescription quickly</p>
                           </div>
                         </div>
 
-                        {scribeStatus === 'listening' ? (
+                        <div className="flex items-center gap-2 shrink-0">
+                          {/* Mode Toggle Gear */}
                           <button
                             type="button"
-                            onClick={stopScribeSpeech}
-                            className="w-full sm:w-auto px-2.5 py-1.5 bg-rose-500 hover:bg-rose-600 rounded text-[11px] font-bold text-white flex items-center justify-center gap-1.5 animate-pulse"
+                            onClick={() => {
+                              const newMode = recordingMode === 'deepgram' ? 'native' : 'deepgram';
+                              setRecordingMode(newMode);
+                              localStorage.setItem('deepgram_api_key', deepgramKey);
+                              alert(`Speech mode switched to: ${newMode === 'deepgram' ? 'Deepgram (High-Accuracy Hinglish)' : 'Browser Speech Recognition'}`);
+                            }}
+                            title="Toggle Transcription Mode"
+                            className="p-1.5 hover:bg-slate-200 rounded text-slate-500 transition-colors"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                            Stop Recording
+                            <Settings size={14} />
                           </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={startScribeSpeech}
-                            disabled={scribeStatus === 'analyzing'}
-                            className="w-full sm:w-auto px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[11px] font-bold text-indigo-600 flex items-center justify-center gap-1.5 transition-all"
-                          >
-                            <Mic size={11} />
-                            Start AI Scribe
-                          </button>
-                        )}
+
+                          {scribeStatus === 'listening' ? (
+                            <button
+                              type="button"
+                              onClick={stopScribeSpeech}
+                              className="px-2.5 py-1.5 bg-rose-500 hover:bg-rose-600 rounded text-[11px] font-bold text-white flex items-center justify-center gap-1.5 animate-pulse"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                              Stop Recording
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={startScribeSpeech}
+                              disabled={scribeStatus === 'analyzing'}
+                              className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[11px] font-bold text-indigo-600 flex items-center justify-center gap-1.5 transition-all"
+                            >
+                              <Mic size={11} />
+                              Start AI Scribe
+                            </button>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Deepgram Key Input (if key is empty and mode is deepgram) */}
+                      {recordingMode === 'deepgram' && !deepgramKey && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 space-y-1.5">
+                          <label className="block text-[10px] font-bold text-amber-800 uppercase">Enter Deepgram API Key:</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="password"
+                              placeholder="Enter API key..."
+                              className="flex-1 px-2 py-1 bg-white border border-amber-300 rounded text-[11.5px] font-mono outline-none"
+                              onChange={(e) => {
+                                const key = e.target.value.trim();
+                                setDeepgramKey(key);
+                                localStorage.setItem('deepgram_api_key', key);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {/* Transcript Window */}
                       {(scribeTranscript || scribeStatus === 'listening') && (
@@ -1203,6 +1319,22 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                       </div>
                     </div>
+
+                    {/* Prescription (Rx) Editor */}
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider font-sans">Prescription (Rx)</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500">Describe the medicine details (prescriptions will be printed to PDF with full instructions):</p>
+                      <textarea
+                        rows={3}
+                        value={form.prescription || ''}
+                        onChange={(e) => handleChange('prescription', e.target.value)}
+                        placeholder="• Tab. Amoxicillin 500mg - 1 cap thrice daily for 5 days&#10;• Tab. Paracetamol 650mg - 1 tab SOS for pain"
+                        className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-[12.5px] font-mono leading-relaxed text-slate-700 outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500"
+                      />
+                    </div>
+
                     {/* Medical Alerts (if any are active) */}
                     {((form.allergies && form.allergies.length > 0) || (form.medicalConditions && form.medicalConditions.length > 0)) && (
                       <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3.5 flex gap-3 items-start">
@@ -2145,6 +2277,7 @@ const ReactivationCustomers: React.FC = () => {
             beforeAfterPhotos: d.before_after_photos || [],
             beforePhoto: d.before_photo,
             afterPhoto: d.after_photo,
+            prescription: d.prescription,
             allergies: d.allergies || [],
             medicalConditions: d.medical_conditions || [],
             toothNotes: d.tooth_notes || {},
@@ -2344,6 +2477,7 @@ const ReactivationCustomers: React.FC = () => {
       before_after_photos: c.beforeAfterPhotos || [],
       before_photo: c.beforePhoto || null,
       after_photo: c.afterPhoto || null,
+      prescription: c.prescription || null,
       allergies: c.allergies || [],
       medical_conditions: c.medicalConditions || [],
       tooth_notes: c.toothNotes || {},
@@ -2384,6 +2518,7 @@ const ReactivationCustomers: React.FC = () => {
             beforeAfterPhotos: data.before_after_photos || [],
             beforePhoto: data.before_photo,
             afterPhoto: data.after_photo,
+            prescription: data.prescription,
             allergies: data.allergies || [],
             medicalConditions: data.medical_conditions || [],
             toothNotes: data.tooth_notes || {},
@@ -2423,6 +2558,7 @@ const ReactivationCustomers: React.FC = () => {
             beforeAfterPhotos: data.before_after_photos || [],
             beforePhoto: data.before_photo,
             afterPhoto: data.after_photo,
+            prescription: data.prescription,
             allergies: data.allergies || [],
             medicalConditions: data.medical_conditions || [],
             toothNotes: data.tooth_notes || {},
