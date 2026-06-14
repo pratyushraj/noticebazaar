@@ -1123,7 +1123,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           {[
                             { label: 'Tooth 14 Filling', text: 'Tooth 14 deep cavity, filling done today, prescribe medicines, review after one week.' },
                             { label: 'Tooth 15 RCT', text: 'Tooth 15 RCT completed, advise soft food and pain medicine, next appointment after 7 days.' },
-                            { label: 'Tooth 46 Implant', text: 'Tooth 46 implant discussed, schedule next visit, share estimate and pre-op instructions.' }
+                            { label: 'Tooth 46 Implant', text: 'Tooth 46 implant discussed, schedule next visit, share estimate and pre-op instructions.' },
+                            { label: 'Hinglish RCT (46)', text: 'Tooth 46 me root canal (rct) karna padega because deep cavity hai.' },
+                            { label: 'Hinglish Implant (24)', text: 'Tooth 24 missing hai, isme dental implant lagana hai next month.' }
                           ].map((preset, idx) => (
                             <button
                               key={idx}

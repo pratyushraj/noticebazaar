@@ -1,4 +1,0 @@
-# Render SPA Routing Configuration
-# This file ensures all routes redirect to index.html for React Router
-
-/*    /index.html   200
