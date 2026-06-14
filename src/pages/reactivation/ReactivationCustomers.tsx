@@ -1253,7 +1253,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               : 'text-slate-500 hover:text-slate-700'
                           }`}
                         >
-                          Before Treatment
+                          <span className="hidden sm:inline">Before Treatment</span>
+                          <span className="inline sm:hidden">Before Tx</span>
                         </button>
                         <button
                           type="button"
@@ -1265,7 +1266,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           }`}
                         >
                           <Stethoscope size={10} />
-                          After Consultation
+                          <span className="hidden sm:inline">After Consultation</span>
+                          <span className="inline sm:hidden">Consultation</span>
                         </button>
                         <button
                           type="button"
@@ -1277,7 +1279,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           }`}
                         >
                           <StickyNote size={10} />
-                          Billing & Estimates
+                          <span className="hidden sm:inline">Billing & Estimates</span>
+                          <span className="inline sm:hidden">Billing</span>
                         </button>
                       </div>
                       <button
@@ -1579,7 +1582,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                       {/* Tooth Chart Layout Grid */}
                       <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
-                        <div className="min-w-0 w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
+                        <div className="min-w-[500px] sm:min-w-0 w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
                           {/* Midline guides */}
                           <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
                           <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
@@ -1596,7 +1599,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
@@ -1626,7 +1629,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
@@ -1656,7 +1659,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
@@ -1686,7 +1689,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                                     <button
                                       type="button"
                                       onClick={() => handleToothToggle(num)}
-                                      className={`w-[18px] h-[18px] sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center text-[8px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
                                         isProblem
                                           ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
                                           : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
