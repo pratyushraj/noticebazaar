@@ -256,6 +256,9 @@ function addDays(dateStr: string, days: number): string {
 }
 
 function getNextVisitDate(customer: Customer): string | null {
+  if (customer.vitals?.nextVisitDate) {
+    return customer.vitals.nextVisitDate;
+  }
   if (customer.programStatus === 'Active' && customer.programEnrollmentDate) {
     const step = Math.max(1, Number(customer.programCurrentStep || 1));
     const baseRule = FOLLOW_UP_RULES.find((rule) => rule.match(customer));
@@ -762,90 +765,133 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     return cleaned;
   };
 
-  const parseScribeTranscript = (text: string) => {
+  const parseScribeTranscript = (text: string, parseMode: 'teeth' | 'prescription' | 'nextVisit') => {
     if (!text.trim()) return;
     setScribeStatus('analyzing');
     
     setTimeout(() => {
-      const lower = preprocessHinglishTranscript(text);
-      // Match FDI numbers (11 to 48)
-      const toothMatches = lower.match(/\b(11|12|13|14|15|16|17|18|21|22|23|24|25|26|27|28|31|32|33|34|35|36|37|38|41|42|43|44|45|46|47|48)\b/g);
-      
-      const newProblemTeeth = [...(form.problemTeeth || [])];
-      const newConditions = { ...form.toothConditions };
-      const newNotes = { ...form.toothNotes };
-      
-      let taggedCount = 0;
-      
-      if (toothMatches) {
-        toothMatches.forEach((toothStr) => {
-          const t = parseInt(toothStr, 10);
-          if (!newProblemTeeth.includes(t)) {
-            newProblemTeeth.push(t);
-          }
-          
-          // Determine pathology/treatment
-          let condition = 'Decayed / Cavity';
-          let noteText = 'Diagnosed via AI Scribe';
-          
-          if (lower.includes('root canal') || lower.includes('rct') || lower.includes('root-canal')) {
-            condition = 'Root Canal Needed';
-            noteText = 'Root canal therapy required';
-          } else if (lower.includes('implant')) {
-            condition = 'Dental Implant';
-            noteText = 'Implant replacement planned';
-          } else if (lower.includes('crown') || lower.includes('bridge')) {
-            condition = 'Crown / Bridge';
-            noteText = 'Restoration crown required';
-          } else if (lower.includes('missing') || lower.includes('extract')) {
-            condition = 'Missing Tooth';
-            noteText = 'Missing tooth area';
-          } else if (lower.includes('healthy') || lower.includes('clean')) {
-            condition = 'Healthy / Treated';
-            noteText = 'Checked & clean';
-          }
-          
-          newConditions[t] = condition;
-          newNotes[t] = noteText;
-          taggedCount++;
-        });
-      }
-      
-      // Extract prescription sentences
-      const sentences = text.split(/[.।\n]/);
-      const rxKeywords = [
-        'prescribe', 'prescription', 'tab', 'cap', 'mg', 'mouthwash', 'gel', 
-        'capsule', 'tablet', 'daily', 'sos', 'days', 'medicine', 'dawa', 
-        'paracetamol', 'amoxicillin', 'ibuprofen', 'pain', 'twice', 'thrice', 'once'
-      ];
-      const rxLines: string[] = [];
-      
-      sentences.forEach((sentence) => {
-        const trimmed = sentence.trim();
-        if (!trimmed) return;
-        const hasRxKeyword = rxKeywords.some(keyword => trimmed.toLowerCase().includes(keyword));
-        if (hasRxKeyword) {
-          // Clean up common connector prefixes
-          let cleaned = trimmed.replace(/^(and|then|please|also|advise)\s+/i, '');
-          cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-          rxLines.push(`• ${cleaned}`);
+      if (parseMode === 'teeth') {
+        const lower = preprocessHinglishTranscript(text);
+        // Match FDI numbers (11 to 48)
+        const toothMatches = lower.match(/\b(11|12|13|14|15|16|17|18|21|22|23|24|25|26|27|28|31|32|33|34|35|36|37|38|41|42|43|44|45|46|47|48)\b/g);
+        
+        const newProblemTeeth = [...(form.problemTeeth || [])];
+        const newConditions = { ...form.toothConditions };
+        const newNotes = { ...form.toothNotes };
+        
+        let taggedCount = 0;
+        
+        if (toothMatches) {
+          toothMatches.forEach((toothStr) => {
+            const t = parseInt(toothStr, 10);
+            if (!newProblemTeeth.includes(t)) {
+              newProblemTeeth.push(t);
+            }
+            
+            // Determine pathology/treatment
+            let condition = 'Decayed / Cavity';
+            let noteText = 'Diagnosed via AI Scribe';
+            
+            if (lower.includes('root canal') || lower.includes('rct') || lower.includes('root-canal')) {
+              condition = 'Root Canal Needed';
+              noteText = 'Root canal therapy required';
+            } else if (lower.includes('implant')) {
+              condition = 'Dental Implant';
+              noteText = 'Implant replacement planned';
+            } else if (lower.includes('crown') || lower.includes('bridge')) {
+              condition = 'Crown / Bridge';
+              noteText = 'Restoration crown required';
+            } else if (lower.includes('missing') || lower.includes('extract')) {
+              condition = 'Missing Tooth';
+              noteText = 'Missing tooth area';
+            } else if (lower.includes('healthy') || lower.includes('clean')) {
+              condition = 'Healthy / Treated';
+              noteText = 'Checked & clean';
+            }
+            
+            newConditions[t] = condition;
+            newNotes[t] = noteText;
+            taggedCount++;
+          });
         }
-      });
-      
-      if (rxLines.length > 0) {
-        handleChange('prescription', rxLines.join('\n'));
+        
+        handleChange('problemTeeth', newProblemTeeth.sort((a, b) => a - b));
+        handleChange('toothConditions', newConditions);
+        handleChange('toothNotes', newNotes);
+        
+        if (taggedCount > 0) {
+          alert(`AI Scribe analyzed chart: successfully tagged ${taggedCount} teeth in the chart.`);
+        } else {
+          alert("AI Scribe did not detect any FDI tooth numbers (11-48) in the voice note.");
+        }
       }
       
-      handleChange('problemTeeth', newProblemTeeth.sort((a, b) => a - b));
-      handleChange('toothConditions', newConditions);
-      handleChange('toothNotes', newNotes);
+      if (parseMode === 'prescription') {
+        const sentences = text.split(/[.।\n]/);
+        const rxKeywords = [
+          'prescribe', 'prescription', 'tab', 'cap', 'mg', 'mouthwash', 'gel', 
+          'capsule', 'tablet', 'daily', 'sos', 'days', 'medicine', 'dawa', 
+          'paracetamol', 'amoxicillin', 'ibuprofen', 'pain', 'twice', 'thrice', 'once'
+        ];
+        const rxLines: string[] = [];
+        
+        sentences.forEach((sentence) => {
+          const trimmed = sentence.trim();
+          if (!trimmed) return;
+          const hasRxKeyword = rxKeywords.some(keyword => trimmed.toLowerCase().includes(keyword));
+          if (hasRxKeyword) {
+            let cleaned = trimmed.replace(/^(and|then|please|also|advise)\s+/i, '');
+            cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+            rxLines.push(`• ${cleaned}`);
+          }
+        });
+        
+        if (rxLines.length > 0) {
+          handleChange('prescription', rxLines.join('\n'));
+          alert(`AI Scribe extracted prescription: successfully filled Rx box.`);
+        } else {
+          alert("AI Scribe did not detect any prescription instructions in the voice note.");
+        }
+      }
+      
+      if (parseMode === 'nextVisit') {
+        const lower = text.toLowerCase();
+        let daysToAdd = 0;
+        if (lower.includes('one week') || lower.includes('1 week') || lower.includes('7 days') || lower.includes('7 day') || lower.includes('seven days')) {
+          daysToAdd = 7;
+        } else if (lower.includes('two weeks') || lower.includes('2 weeks') || lower.includes('14 days') || lower.includes('fourteen days')) {
+          daysToAdd = 14;
+        } else if (lower.includes('three weeks') || lower.includes('3 weeks') || lower.includes('21 days')) {
+          daysToAdd = 21;
+        } else if (lower.includes('one month') || lower.includes('1 month') || lower.includes('30 days') || lower.includes('thirty days')) {
+          daysToAdd = 30;
+        } else if (lower.includes('ten days') || lower.includes('10 days') || lower.includes('ten day')) {
+          daysToAdd = 10;
+        } else if (lower.includes('next month')) {
+          daysToAdd = 30;
+        } else if (lower.includes('next week')) {
+          daysToAdd = 7;
+        } else if (lower.includes('tomorrow')) {
+          daysToAdd = 1;
+        } else {
+          const match = lower.match(/(\d+)\s*day/);
+          if (match) {
+            daysToAdd = parseInt(match[1], 10);
+          }
+        }
+
+        if (daysToAdd > 0) {
+          const baseDate = new Date();
+          baseDate.setDate(baseDate.getDate() + daysToAdd);
+          const isoString = baseDate.toISOString().split('T')[0];
+          handleChange('vitals', { ...form.vitals, nextVisitDate: isoString });
+          alert(`AI Scribe extracted next visit: scheduled in ${daysToAdd} days (${isoString}).`);
+        } else {
+          alert("AI Scribe did not detect a next visit duration (e.g. 'one week', '10 days').");
+        }
+      }
+      
       setScribeStatus('done');
-      
-      if (taggedCount > 0 || rxLines.length > 0) {
-        alert(`AI Scribe analyzed consultation: successfully updated patient record.`);
-      } else {
-        alert("AI Scribe did not detect any FDI tooth numbers or prescription instructions in the voice note. Please try a preset!");
-      }
     }, 1200);
   };
 
@@ -1501,6 +1547,23 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             </div>
                           </div>
                         </div>
+
+                        {/* Next Appointment */}
+                        <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Next Appointment / Follow-up</h4>
+                          <div>
+                            <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Next Visit Date</label>
+                            <input
+                              type="date"
+                              value={form.vitals?.nextVisitDate || ''}
+                              onChange={(e) => {
+                                handleChange('vitals', { ...form.vitals, nextVisitDate: e.target.value });
+                              }}
+                              className="w-full px-3 py-2 rounded-lg text-[12.5px] text-slate-700 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500"
+                            />
+                            <p className="text-[9.5px] text-slate-400 mt-1">Leave blank to use care program defaults, or set manually to override them.</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -1658,7 +1721,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                             <span className="text-[9.5px] text-slate-450 font-medium">({form.problemTeeth.length} flagged teeth)</span>
                           </div>
                           
-                          <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
+                          <div className="space-y-3">
                             {form.problemTeeth.map((t) => {
                               const condition = form.toothConditions?.[t] || 'Decayed / Cavity';
                               const note = form.toothNotes?.[t] || '';
@@ -1837,49 +1900,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <p className="text-[10px] text-slate-500 mt-0.5">Attach clinical photographs showing teeth condition before and after treatment</p>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Before Photo */}
-                        <div className="space-y-2">
-                          <label className="block text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Before Photo</label>
-                          {form.beforePhoto ? (
-                            <div className="relative aspect-[16/11] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
-                              <img src={form.beforePhoto} alt="Teeth Before Treatment" className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
-                                <button
-                                  type="button"
-                                  onClick={() => setLightboxImg(form.beforePhoto!)}
-                                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
-                                >
-                                  <Eye size={13} />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={handleRemoveBeforePhoto}
-                                  className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </div>
-                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-rose-300">
-                                Before / Pre-Op
-                              </span>
-                            </div>
-                          ) : (
-                            <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group aspect-[16/11]">
-                              <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                              <span className="text-[11px] font-semibold text-slate-650 group-hover:text-slate-800 transition-colors">Upload Before Photo</span>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleBeforePhotoUpload}
-                                className="hidden"
-                              />
-                            </label>
-                          )}
-                        </div>
-
+                      <div>
                         {/* After Photo */}
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-w-md mx-auto">
                           <label className="block text-[11px] text-slate-500 font-semibold uppercase tracking-wider">After Photo (Optional)</label>
                           {form.afterPhoto ? (
                             <div className="relative aspect-[16/11] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
