@@ -65,6 +65,8 @@ import {
 } from '@/components/ui/tooltip';
 import { useSession } from '@/contexts/SessionContext';
 import { supabase } from '@/lib/supabase';
+import { refineTranscriptWithLLM } from '@/lib/ai/gemini';
+
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -108,6 +110,7 @@ interface Customer {
     bp?: string;
     pulse?: string;
     temp?: string;
+    nextVisitDate?: string;
   };
   activeProgramId?: string;
   programEnrollmentDate?: string;
@@ -218,7 +221,7 @@ const FOLLOW_UP_RULES: Array<{
   label: string;
 }> = [
   {
-    match: (customer) => /root canal|rct/i.test(customer.service) || (customer.toothNotes && Object.values(customer.toothNotes).some((note) => /rct/i.test(note))),
+    match: (customer) => /root canal|rct/i.test(customer.service) || !!(customer.toothNotes && Object.values(customer.toothNotes).some((note) => /rct/i.test(note))),
     days: 7,
     label: 'RCT review',
   },
@@ -529,17 +532,22 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [form, setForm] = useState<Customer>(() => getInitialForm(customer));
   const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'estimates'>('general');
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [showVoiceSettingsModal, setShowVoiceSettingsModal] = useState(false);
 
   // AI Scribe states
-  const [scribeTranscript, setScribeTranscript] = useState('');
-  const [scribeStatus, setScribeStatus] = useState<'idle' | 'listening' | 'analyzing' | 'done'>('idle');
+  const [activeFieldRecording, setActiveFieldRecording] = useState<'teeth' | 'prescription' | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState<'teeth' | 'prescription' | null>(null);
+  const [notesTranscribing, setNotesTranscribing] = useState(false);
   const [notesRecording, setNotesRecording] = useState(false);
   const recognitionRef = React.useRef<any>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
+  const initialNotesRef = React.useRef<string>('');
+  const sessionTranscriptRef = React.useRef<string>('');
+
   const [showAdvancedClinical, setShowAdvancedClinical] = useState(false);
   const [deepgramKey, setDeepgramKey] = useState(() => localStorage.getItem('deepgram_api_key') || import.meta.env.VITE_DEEPGRAM_API_KEY || '');
-  const [recordingMode, setRecordingMode] = useState<'native' | 'deepgram'>(() => (localStorage.getItem('deepgram_api_key') || import.meta.env.VITE_DEEPGRAM_API_KEY) ? 'deepgram' : 'native');
+  const [recordingMode, setRecordingMode] = useState<'native' | 'deepgram'>('native');
 
   // RVG slider state
   const [xraySliderPos, setXraySliderPos] = useState(50);
@@ -560,8 +568,6 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   React.useEffect(() => {
     setForm(getInitialForm(customer));
     setActiveTab('general');
-    setScribeTranscript('');
-    setScribeStatus('idle');
     setShowAdvancedClinical(false);
     setCopiedEstimate(false);
     setShowEstimateBuilder(false);
@@ -598,65 +604,37 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     return calculatedSubtotal - calculatedDiscountAmount + calculatedGST;
   }, [calculatedSubtotal, calculatedDiscountAmount, calculatedGST]);
 
-  const toggleNotesVoice = () => {
+  const toggleNotesVoice = async () => {
     if (notesRecording) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setNotesRecording(false);
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser. Please use Chrome.");
-      return;
-    }
-
-    setNotesRecording(true);
-    const rec = new SpeechRecognition();
-    rec.continuous = true;
-    rec.interimResults = true;
-    rec.lang = 'en-IN';
-
-    rec.onresult = (event: any) => {
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + ' ';
+      if (recordingMode === 'deepgram') {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } else {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
         }
       }
-      if (finalTranscript) {
-        handleChange('notes', (form.notes || '') + finalTranscript);
-      }
-    };
-
-    rec.onerror = (err: any) => {
-      console.error('Notes Speech Error:', err);
       setNotesRecording(false);
-    };
+      return;
+    }
 
-    rec.onend = () => {
-      setNotesRecording(false);
-    };
-
-    recognitionRef.current = rec;
-    rec.start();
-  };
-
-  const startScribeSpeech = async () => {
     if (recordingMode === 'deepgram') {
       if (!deepgramKey) {
-        alert("Please enter your Deepgram API Key first using the settings icon.");
+        alert("Please enter your Deepgram API Key first using the settings icon under After Consultation tab.");
         return;
       }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        setScribeStatus('listening');
-        setScribeTranscript('Recording consultation... Speak clearly in Hinglish or English now.');
+        setNotesRecording(true);
         
         audioChunksRef.current = [];
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        const mimeOptions = MediaRecorder.isTypeSupported('audio/webm')
+          ? { mimeType: 'audio/webm' }
+          : MediaRecorder.isTypeSupported('audio/mp4')
+            ? { mimeType: 'audio/mp4' }
+            : undefined;
+        const mediaRecorder = new MediaRecorder(stream, mimeOptions);
         mediaRecorderRef.current = mediaRecorder;
         
         mediaRecorder.ondataavailable = (event) => {
@@ -666,16 +644,16 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
         };
         
         mediaRecorder.onstop = async () => {
-          setScribeStatus('analyzing');
-          setScribeTranscript('Processing voice recording via Deepgram...');
-          
+          setNotesRecording(false);
+          setNotesTranscribing(true);
           try {
-            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            const mimeType = mediaRecorder.mimeType || 'audio/webm';
+            const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
             const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&language=en-IN&filler_words=true', {
               method: 'POST',
               headers: {
                 'Authorization': `Token ${deepgramKey}`,
-                'Content-Type': 'audio/webm'
+                'Content-Type': mimeType
               },
               body: audioBlob
             });
@@ -686,19 +664,21 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
             
             const result = await response.json();
             const transcript = result.results?.channels?.[0]?.alternatives?.[0]?.transcript || '';
-            setScribeTranscript(transcript || '(No speech detected. Please speak closer to the microphone.)');
-            setScribeStatus('done');
+            if (transcript) {
+              const refined = await refineTranscriptWithLLM(transcript, 'notes');
+              handleChange('notes', (form.notes ? form.notes + ' ' : '') + refined);
+            }
           } catch (err: any) {
             console.error('Deepgram transcription error:', err);
-            setScribeTranscript(`Deepgram Transcription Error: ${err.message}. Please verify your API key.`);
-            setScribeStatus('done');
+            alert(`Deepgram Transcription Error: ${err.message}`);
+          } finally {
+            setNotesTranscribing(false);
           }
           
-          // Stop all audio tracks to release microphone
           stream.getTracks().forEach(track => track.stop());
         };
         
-        mediaRecorder.start(250); // Capture data every 250ms
+        mediaRecorder.start(250);
       } catch (err: any) {
         console.error('Failed to start media recorder:', err);
         alert('Could not access microphone: ' + err.message);
@@ -706,48 +686,186 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     } else {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech recognition is not supported in this browser. Please use Chrome or use the mock presets.");
+        alert("Speech recognition is not supported in this browser. Please use Chrome.");
         return;
       }
-      setScribeStatus('listening');
-      setScribeTranscript('Listening to your consultation... Speak now.');
-      
+
+      initialNotesRef.current = form.notes || '';
+      sessionTranscriptRef.current = '';
+      setNotesRecording(true);
       const rec = new SpeechRecognition();
-      rec.continuous = false;
-      rec.interimResults = false;
-      rec.lang = 'en-IN'; // Indian accent focus
-      
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-IN';
+
       rec.onresult = (event: any) => {
-        const resultText = event.results[0][0].transcript;
-        setScribeTranscript(resultText);
-        setScribeStatus('done');
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript + ' ';
+          }
+        }
+        if (finalTranscript) {
+          sessionTranscriptRef.current = sessionTranscriptRef.current + finalTranscript;
+          handleChange('notes', (initialNotesRef.current ? initialNotesRef.current + ' ' : '') + sessionTranscriptRef.current);
+        }
       };
-      
+
       rec.onerror = (err: any) => {
-        console.error(err);
-        setScribeStatus('done');
-        setScribeTranscript('Speech recognition error. Please select a mock preset or type manual notes.');
+        console.error('Notes Speech Error:', err);
+        setNotesRecording(false);
       };
-      
-      rec.onend = () => {
-        setScribeStatus((prev) => prev === 'listening' ? 'done' : prev);
+
+      rec.onend = async () => {
+        setNotesRecording(false);
+        if (sessionTranscriptRef.current.trim()) {
+          setNotesTranscribing(true);
+          try {
+            const refined = await refineTranscriptWithLLM(sessionTranscriptRef.current, 'notes');
+            handleChange('notes', (initialNotesRef.current ? initialNotesRef.current + ' ' : '') + refined);
+          } catch (err) {
+            console.error('Failed to refine notes transcript:', err);
+          } finally {
+            setNotesTranscribing(false);
+          }
+        }
       };
-      
+
       recognitionRef.current = rec;
       rec.start();
     }
   };
 
-  const stopScribeSpeech = () => {
+  const toggleFieldScribe = async (target: 'teeth' | 'prescription') => {
+    if (activeFieldRecording === target) {
+      if (recordingMode === 'deepgram') {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } else {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      }
+      setActiveFieldRecording(null);
+      return;
+    }
+
+    if (activeFieldRecording) {
+      if (recordingMode === 'deepgram') {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } else {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      }
+    }
+
     if (recordingMode === 'deepgram') {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
+      if (!deepgramKey) {
+        alert("Please enter your Deepgram API Key first in the voice settings at the bottom.");
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        setActiveFieldRecording(target);
+        
+        const mimeOptions = MediaRecorder.isTypeSupported('audio/webm')
+          ? { mimeType: 'audio/webm' }
+          : MediaRecorder.isTypeSupported('audio/mp4')
+            ? { mimeType: 'audio/mp4' }
+            : undefined;
+        const mediaRecorder = new MediaRecorder(stream, mimeOptions);
+        mediaRecorderRef.current = mediaRecorder;
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        
+        mediaRecorder.onstop = async () => {
+          setActiveFieldRecording(null);
+          setIsTranscribing(target);
+          try {
+            const mimeType = mediaRecorder.mimeType || 'audio/webm';
+            const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+            const response = await fetch('https://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&language=en-IN&filler_words=true', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Token ${deepgramKey}`,
+                'Content-Type': mimeType
+              },
+              body: audioBlob
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Deepgram API returned status ${response.status}`);
+            }
+            
+            const result = await response.json();
+            const transcript = result.results?.channels?.[0]?.alternatives?.[0]?.transcript || '';
+            if (transcript) {
+              const refined = await refineTranscriptWithLLM(transcript, target);
+              parseScribeTranscript(refined, target);
+            }
+          } catch (err: any) {
+            console.error('Deepgram transcription error:', err);
+            alert(`Deepgram Transcription Error: ${err.message}`);
+          } finally {
+            setIsTranscribing(null);
+          }
+          
+          stream.getTracks().forEach(track => track.stop());
+        };
+        
+        mediaRecorder.start(250);
+      } catch (err: any) {
+        console.error('Failed to start media recorder:', err);
+        alert('Could not access microphone: ' + err.message);
       }
     } else {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert("Speech recognition is not supported in this browser. Please use Chrome.");
+        return;
       }
-      setScribeStatus('done');
+
+      setActiveFieldRecording(target);
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'en-IN';
+
+      rec.onresult = async (event: any) => {
+        const resultText = event.results[0][0].transcript;
+        if (resultText) {
+          setIsTranscribing(target);
+          try {
+            const refined = await refineTranscriptWithLLM(resultText, target);
+            parseScribeTranscript(refined, target);
+          } catch (err) {
+            console.error('Failed to refine field transcript:', err);
+            parseScribeTranscript(resultText, target);
+          } finally {
+            setIsTranscribing(null);
+          }
+        }
+      };
+
+      rec.onerror = (err: any) => {
+        console.error('Scribe Speech Error:', err);
+        setActiveFieldRecording(null);
+      };
+
+      rec.onend = () => {
+        setActiveFieldRecording(null);
+      };
+
+      recognitionRef.current = rec;
+      rec.start();
     }
   };
 
@@ -812,9 +930,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     return cleaned;
   };
 
-  const parseScribeTranscript = (text: string, parseMode: 'teeth' | 'prescription' | 'nextVisit') => {
+  const parseScribeTranscript = (text: string, parseMode: 'teeth' | 'prescription' | 'nextVisit' | 'notes') => {
     if (!text.trim()) return;
-    setScribeStatus('analyzing');
     
     setTimeout(() => {
       if (parseMode === 'teeth') {
@@ -865,12 +982,6 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
         handleChange('problemTeeth', newProblemTeeth.sort((a, b) => a - b));
         handleChange('toothConditions', newConditions);
         handleChange('toothNotes', newNotes);
-        
-        if (taggedCount > 0) {
-          alert(`AI Scribe analyzed chart: successfully tagged ${taggedCount} teeth in the chart.`);
-        } else {
-          alert("AI Scribe did not detect any FDI tooth numbers (11-48) in the voice note.");
-        }
       }
       
       if (parseMode === 'prescription') {
@@ -887,7 +998,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
           if (!trimmed) return;
           const hasRxKeyword = rxKeywords.some(keyword => trimmed.toLowerCase().includes(keyword));
           if (hasRxKeyword) {
-            let cleaned = trimmed.replace(/^(and|then|please|also|advise)\s+/i, '');
+            let cleaned = trimmed.replace(/^(and|then|please|also|advise|•|\*|-)\s+/i, '');
+            cleaned = cleaned.replace(/^[•\*\-\s]+/, '');
             cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
             rxLines.push(`• ${cleaned}`);
           }
@@ -895,9 +1007,6 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
         
         if (rxLines.length > 0) {
           handleChange('prescription', rxLines.join('\n'));
-          alert(`AI Scribe extracted prescription: successfully filled Rx box.`);
-        } else {
-          alert("AI Scribe did not detect any prescription instructions in the voice note.");
         }
       }
       
@@ -932,13 +1041,40 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
           baseDate.setDate(baseDate.getDate() + daysToAdd);
           const isoString = baseDate.toISOString().split('T')[0];
           handleChange('vitals', { ...form.vitals, nextVisitDate: isoString });
-          alert(`AI Scribe extracted next visit: scheduled in ${daysToAdd} days (${isoString}).`);
+        }
+      }
+
+      if (parseMode === 'notes') {
+        const sentences = text.split(/[.।\n]/);
+        const notesKeywords = [
+          'pain', 'complaining', 'complaint', 'hurt', 'sensitive', 'bleeding', 'swelling', 'cavity', 'decay',
+          'cleaning', 'whitening', 'checkup', 'broken', 'chipped', 'dard', 'sujan', 'khoon', 'safai', 'saaf',
+          'bridge', 'missing', 'consultation'
+        ];
+        const notesLines: string[] = [];
+        
+        sentences.forEach((sentence) => {
+          const trimmed = sentence.trim();
+          if (!trimmed) return;
+          const hasNotesKeyword = notesKeywords.some(keyword => trimmed.toLowerCase().includes(keyword));
+          if (hasNotesKeyword) {
+            let cleaned = trimmed.replace(/^(and|then|please|also|advise)\s+/i, '');
+            cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+            notesLines.push(cleaned);
+          }
+        });
+        
+        if (notesLines.length > 0) {
+          handleChange('notes', notesLines.join('. ') + '.');
         } else {
-          alert("AI Scribe did not detect a next visit duration (e.g. 'one week', '10 days').");
+          const backupLines = sentences.slice(0, 2).map(s => s.trim()).filter(Boolean);
+          if (backupLines.length > 0) {
+            handleChange('notes', backupLines.join('. ') + '.');
+          }
         }
       }
       
-      setScribeStatus('done');
+      setNotesRecording(false);
     }, 1200);
   };
 
@@ -1099,47 +1235,57 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </p>
                     </div>
 
-                    {/* Tab Selector */}
-                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 gap-0.5 overflow-x-auto scrollbar-none flex-nowrap shrink-0 self-start sm:self-auto w-full sm:w-auto sm:mr-6">
+                    {/* Tab Selector & Settings Gear */}
+                    <div className="flex items-center gap-2 self-start sm:self-auto w-full sm:w-auto">
+                      <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 gap-0.5 overflow-x-auto scrollbar-none flex-nowrap shrink-0 w-full sm:w-auto">
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('general')}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 shrink-0 ${
+                            activeTab === 'general'
+                              ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          Before Treatment
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('medical')}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
+                            activeTab === 'medical'
+                              ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          <Stethoscope size={10} />
+                          After Consultation
+                        </button>
+                        {isEdit && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('estimates')}
+                              className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
+                                activeTab === 'estimates'
+                                  ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                                  : 'text-slate-500 hover:text-slate-700'
+                              }`}
+                            >
+                              <StickyNote size={10} />
+                              Billing & Estimates
+                            </button>
+                          </>
+                        )}
+                      </div>
                       <button
                         type="button"
-                        onClick={() => setActiveTab('general')}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 shrink-0 ${
-                          activeTab === 'general'
-                            ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
+                        onClick={() => setShowVoiceSettingsModal(true)}
+                        className="p-1.5 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-500 hover:text-slate-700 transition-colors shrink-0"
+                        title="AI Scribe Settings"
                       >
-                        Before Treatment
+                        <Settings size={14} />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('medical')}
-                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
-                          activeTab === 'medical'
-                            ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
-                            : 'text-slate-500 hover:text-slate-700'
-                        }`}
-                      >
-                        <Stethoscope size={10} />
-                        After Consultation
-                      </button>
-                      {isEdit && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab('estimates')}
-                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
-                              activeTab === 'estimates'
-                                ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
-                                : 'text-slate-500 hover:text-slate-700'
-                            }`}
-                          >
-                            <StickyNote size={10} />
-                            Billing & Estimates
-                          </button>
-                        </>
-                      )}
                     </div>
                   </DialogHeader>
                 </div>
@@ -1253,14 +1399,17 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <button
                           type="button"
                           onClick={toggleNotesVoice}
+                          disabled={notesTranscribing}
                           className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border transition-all ${
                             notesRecording
                               ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
-                              : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+                              : notesTranscribing
+                                ? 'bg-amber-100 border-amber-300 text-amber-600 cursor-not-allowed'
+                                : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
                           }`}
                         >
-                          <Mic size={9} />
-                          {notesRecording ? 'Listening...' : 'Scribe Notes'}
+                          <Mic size={9} className={notesTranscribing ? 'animate-spin' : ''} />
+                          {notesRecording ? 'Listening...' : notesTranscribing ? 'Transcribing...' : 'Scribe Notes'}
                         </button>
                       </div>
                       <textarea
@@ -1325,144 +1474,43 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {/* Body - Medical tab */}
                 {activeTab === 'medical' && (
                   <div className="px-4 sm:px-6 py-5 space-y-5 max-h-[72vh] sm:max-h-[60vh] overflow-y-auto">
-                    {/* AI Dental Scribe (Voice to Chart) */}
-                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3 relative">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div className="flex items-start gap-2">
-                          <div className="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-                            <Mic size={12} className="text-indigo-600" />
-                          </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider font-sans">AI Dental Scribe</h4>
-                              <span className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase ${recordingMode === 'deepgram' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-650'}`}>
-                                {recordingMode === 'deepgram' ? 'Deepgram' : 'Web Speech'}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-slate-500 mt-0.5">Use after consultation to capture treatment, next visit, and prescription quickly</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          {/* Mode Toggle Gear */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newMode = recordingMode === 'deepgram' ? 'native' : 'deepgram';
-                              setRecordingMode(newMode);
-                              localStorage.setItem('deepgram_api_key', deepgramKey);
-                              alert(`Speech mode switched to: ${newMode === 'deepgram' ? 'Deepgram (High-Accuracy Hinglish)' : 'Browser Speech Recognition'}`);
-                            }}
-                            title="Toggle Transcription Mode"
-                            className="p-1.5 hover:bg-slate-200 rounded text-slate-500 transition-colors"
-                          >
-                            <Settings size={14} />
-                          </button>
-
-                          {scribeStatus === 'listening' ? (
-                            <button
-                              type="button"
-                              onClick={stopScribeSpeech}
-                              className="px-2.5 py-1.5 bg-rose-500 hover:bg-rose-600 rounded text-[11px] font-bold text-white flex items-center justify-center gap-1.5 animate-pulse"
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                              Stop Recording
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={startScribeSpeech}
-                              disabled={scribeStatus === 'analyzing'}
-                              className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded text-[11px] font-bold text-indigo-600 flex items-center justify-center gap-1.5 transition-all"
-                            >
-                              <Mic size={11} />
-                              Start AI Scribe
-                            </button>
-                          )}
-                        </div>
+                    {/* Next Appointment */}
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider font-sans">Next Appointment / Follow-up</span>
                       </div>
-
-                      {/* Deepgram Key Input (if key is empty and mode is deepgram) */}
-                      {recordingMode === 'deepgram' && !deepgramKey && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 space-y-1.5">
-                          <label className="block text-[10px] font-bold text-amber-800 uppercase">Enter Deepgram API Key:</label>
-                          <div className="flex gap-2">
-                            <input
-                              type="password"
-                              placeholder="Enter API key..."
-                              className="flex-1 px-2 py-1 bg-white border border-amber-300 rounded text-[11.5px] font-mono outline-none"
-                              onChange={(e) => {
-                                const key = e.target.value.trim();
-                                setDeepgramKey(key);
-                                localStorage.setItem('deepgram_api_key', key);
-                              }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Transcript Window */}
-                      {(scribeTranscript || scribeStatus === 'listening') && (
-                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-3">
-                          <p className="text-[11.5px] font-mono text-slate-700 leading-relaxed whitespace-pre-wrap">
-                            {scribeTranscript}
-                          </p>
-
-                          {scribeStatus === 'done' && (
-                            <div className="flex justify-end">
-                              <button
-                                type="button"
-                                onClick={() => parseScribeTranscript(scribeTranscript)}
-                                className="px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded text-[11px] font-bold transition-all shadow-md shadow-indigo-500/20"
-                              >
-                                Analyze & Tag Chart
-                              </button>
-                            </div>
-                          )}
-
-                          {scribeStatus === 'analyzing' && (
-                            <div className="flex items-center gap-2 text-[11px] text-indigo-400 font-medium font-mono">
-                              <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                              </svg>
-                              Analyzing EMR symptoms & extracting teeth...
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Mock consult presets */}
-                      <div className="space-y-1.5 pt-1">
-                        <span className="text-[9.5px] text-slate-400 uppercase font-bold tracking-wider">Voice Dictation Presets</span>
-                        <div className="flex flex-wrap gap-2">
-                          {[
-                            { label: 'Tooth 14 Filling', text: 'Tooth 14 deep cavity, filling done today, prescribe medicines, review after one week.' },
-                            { label: 'Tooth 15 RCT', text: 'Tooth 15 RCT completed, advise soft food and pain medicine, next appointment after 7 days.' },
-                            { label: 'Tooth 46 Implant', text: 'Tooth 46 implant discussed, schedule next visit, share estimate and pre-op instructions.' },
-                            { label: 'Hinglish RCT (46)', text: 'Tooth 46 me root canal (rct) karna padega because deep cavity hai.' },
-                            { label: 'Hinglish Implant (24)', text: 'Tooth 24 missing hai, isme dental implant lagana hai next month.' }
-                          ].map((preset, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => {
-                                setScribeTranscript(preset.text);
-                                setScribeStatus('done');
-                              }}
-                              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 hover:border-slate-300 rounded text-[10.5px] text-slate-600 hover:text-slate-900 transition-all text-left"
-                            >
-                              🎤 {preset.label}
-                            </button>
-                          ))}
-                        </div>
+                      <div>
+                        <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Next Visit Date</label>
+                        <input
+                          type="date"
+                          value={form.vitals?.nextVisitDate || ''}
+                          onChange={(e) => {
+                            handleChange('vitals', { ...form.vitals, nextVisitDate: e.target.value });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg text-[12.5px] text-slate-700 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500"
+                        />
+                        <p className="text-[9.5px] text-slate-400 mt-1">Leave blank to use care program defaults, or set manually to override them.</p>
                       </div>
                     </div>
 
+
                     {/* Prescription (Rx) Editor */}
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider font-sans">Prescription (Rx)</span>
+                        <button
+                          type="button"
+                          onClick={() => toggleFieldScribe('prescription')}
+                          disabled={isTranscribing === 'prescription'}
+                          className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border transition-all ${
+                            activeFieldRecording === 'prescription'
+                              ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
+                              : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+                          }`}
+                        >
+                          <Mic size={9} />
+                          {activeFieldRecording === 'prescription' ? 'Listening...' : 'Scribe Rx'}
+                        </button>
                       </div>
                       <p className="text-[10px] text-slate-500">Describe the medicine details (prescriptions will be printed to PDF with full instructions):</p>
                       <textarea
@@ -1494,153 +1542,28 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                     )}
 
-                    {/* Advanced Clinical Details */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Advanced Clinical Details</h4>
-                          <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden">Collapsed on phones to keep the consultation flow fast.</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setShowAdvancedClinical((prev) => !prev)}
-                          className="sm:hidden text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg"
-                        >
-                          {showAdvancedClinical ? 'Hide' : 'Show'}
-                        </button>
-                      </div>
 
-                      <div className={`${showAdvancedClinical ? 'block' : 'hidden'} sm:block space-y-4`}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {/* Allergies Checklist */}
-                          <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
-                            <div className="grid grid-cols-1 gap-2.5">
-                              {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
-                                const hasAllergy = (form.allergies || []).includes(allergy);
-                                return (
-                                  <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const current = form.allergies || [];
-                                        const next = current.includes(allergy)
-                                          ? current.filter((a) => a !== allergy)
-                                          : [...current, allergy];
-                                        handleChange('allergies', next);
-                                      }}
-                                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
-                                        hasAllergy
-                                          ? 'bg-rose-50 border-rose-300 text-rose-600'
-                                          : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
-                                      }`}
-                                    >
-                                      {hasAllergy && <span className="text-[9px] leading-none">✓</span>}
-                                    </button>
-                                    <span className="truncate">{allergy}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-
-                          {/* Medical Conditions Checklist */}
-                          <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Medical Conditions</h4>
-                            <div className="grid grid-cols-1 gap-2.5">
-                              {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
-                                const hasCond = (form.medicalConditions || []).includes(cond);
-                                return (
-                                  <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const current = form.medicalConditions || [];
-                                        const next = current.includes(cond)
-                                          ? current.filter((c) => c !== cond)
-                                          : [...current, cond];
-                                        handleChange('medicalConditions', next);
-                                      }}
-                                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
-                                        hasCond
-                                          ? 'bg-rose-50 border-rose-300 text-rose-600'
-                                          : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
-                                      }`}
-                                    >
-                                      {hasCond && <span className="text-[9px] leading-none">✓</span>}
-                                    </button>
-                                    <span className="truncate">{cond}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Vitals</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
-                              <input
-                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="e.g. 120/80 mmHg"
-                                value={form.vitals?.bp || ''}
-                                onChange={(e) => {
-                                  handleChange('vitals', { ...form.vitals, bp: e.target.value });
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
-                              <input
-                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="e.g. 72 bpm"
-                                value={form.vitals?.pulse || ''}
-                                onChange={(e) => {
-                                  handleChange('vitals', { ...form.vitals, pulse: e.target.value });
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
-                              <input
-                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="e.g. 98.6 °F"
-                                value={form.vitals?.temp || ''}
-                                onChange={(e) => {
-                                  handleChange('vitals', { ...form.vitals, temp: e.target.value });
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Next Appointment */}
-                        <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
-                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Next Appointment / Follow-up</h4>
-                          <div>
-                            <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Next Visit Date</label>
-                            <input
-                              type="date"
-                              value={form.vitals?.nextVisitDate || ''}
-                              onChange={(e) => {
-                                handleChange('vitals', { ...form.vitals, nextVisitDate: e.target.value });
-                              }}
-                              className="w-full px-3 py-2 rounded-lg text-[12.5px] text-slate-700 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500"
-                            />
-                            <p className="text-[9.5px] text-slate-400 mt-1">Leave blank to use care program defaults, or set manually to override them.</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
                     {/* Tooth Chart Section */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex items-center gap-2">
                           <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Interactive Dental Chart</h4>
-                          <p className="text-[10px] text-slate-500 mt-0.5">Click teeth to toggle decay, crowns, or extraction problem areas (FDI numbering)</p>
+                          <button
+                            type="button"
+                            onClick={() => toggleFieldScribe('teeth')}
+                            disabled={isTranscribing === 'teeth'}
+                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border transition-all ${
+                              activeFieldRecording === 'teeth'
+                                ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
+                                : isTranscribing === 'teeth'
+                                  ? 'bg-amber-100 border-amber-300 text-amber-600 cursor-not-allowed'
+                                  : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+                            }`}
+                          >
+                            <Mic size={9} className={isTranscribing === 'teeth' ? 'animate-spin' : ''} />
+                            {activeFieldRecording === 'teeth' ? 'Listening...' : isTranscribing === 'teeth' ? 'Transcribing...' : 'Scribe Chart'}
+                          </button>
                         </div>
                         {form.problemTeeth && form.problemTeeth.length > 0 && (
                           <button
@@ -2069,6 +1992,131 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                       )}
                     </div>
+
+                    {/* Advanced Clinical Details */}
+                    <div className="space-y-3 mt-5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Advanced Clinical Details</h4>
+                          <p className="text-[10px] text-slate-400 mt-0.5 sm:hidden">Collapsed on phones to keep the consultation flow fast.</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAdvancedClinical((prev) => !prev)}
+                          className="sm:hidden text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-lg"
+                        >
+                          {showAdvancedClinical ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+
+                      <div className={`${showAdvancedClinical ? 'block' : 'hidden'} sm:block space-y-4`}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Allergies Checklist */}
+                          <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Allergies</h4>
+                            <div className="grid grid-cols-1 gap-2.5">
+                              {['Penicillin', 'Latex', 'Local Anesthetics', 'Sulfa'].map((allergy) => {
+                                const hasAllergy = (form.allergies || []).includes(allergy);
+                                return (
+                                  <label key={allergy} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const current = form.allergies || [];
+                                        const next = current.includes(allergy)
+                                          ? current.filter((a) => a !== allergy)
+                                          : [...current, allergy];
+                                        handleChange('allergies', next);
+                                      }}
+                                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                                        hasAllergy
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600'
+                                          : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
+                                      }`}
+                                    >
+                                      {hasAllergy && <span className="text-[9px] leading-none">✓</span>}
+                                    </button>
+                                    <span className="truncate">{allergy}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Medical Conditions Checklist */}
+                          <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                            <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Medical Conditions</h4>
+                            <div className="grid grid-cols-1 gap-2.5">
+                              {['Hypertension', 'Diabetes', 'Bleeding Disorders', 'Cardiac Pacemaker', 'Asthma'].map((cond) => {
+                                const hasCond = (form.medicalConditions || []).includes(cond);
+                                return (
+                                  <label key={cond} className="flex items-center gap-2.5 cursor-pointer select-none text-[12px] text-slate-600 hover:text-slate-800 transition-colors">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const current = form.medicalConditions || [];
+                                        const next = current.includes(cond)
+                                          ? current.filter((c) => c !== cond)
+                                          : [...current, cond];
+                                        handleChange('medicalConditions', next);
+                                      }}
+                                      className={`w-4 h-4 rounded flex items-center justify-center border transition-colors shrink-0 ${
+                                        hasCond
+                                          ? 'bg-rose-50 border-rose-300 text-rose-600'
+                                          : 'bg-white border-slate-200 text-transparent hover:bg-slate-50'
+                                      }`}
+                                    >
+                                      {hasCond && <span className="text-[9px] leading-none">✓</span>}
+                                    </button>
+                                    <span className="truncate">{cond}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-slate-50 border border-slate-200/85 rounded-xl p-4 space-y-3">
+                          <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Vitals</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Blood Pressure</label>
+                              <input
+                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. 120/80 mmHg"
+                                value={form.vitals?.bp || ''}
+                                onChange={(e) => {
+                                  handleChange('vitals', { ...form.vitals, bp: e.target.value });
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Pulse / Heart Rate</label>
+                              <input
+                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. 72 bpm"
+                                value={form.vitals?.pulse || ''}
+                                onChange={(e) => {
+                                  handleChange('vitals', { ...form.vitals, pulse: e.target.value });
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Body Temp (°F)</label>
+                              <input
+                                className="w-full px-2.5 py-2 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 bg-white border border-slate-200 outline-none transition-all duration-150 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="e.g. 98.6 °F"
+                                value={form.vitals?.temp || ''}
+                                onChange={(e) => {
+                                  handleChange('vitals', { ...form.vitals, temp: e.target.value });
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -2345,6 +2393,93 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
               >
                 <X size={16} />
               </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Voice Settings Dialog */}
+      {showVoiceSettingsModal && (
+        <Dialog open={showVoiceSettingsModal} onOpenChange={(v) => !v && setShowVoiceSettingsModal(false)}>
+          <DialogContent
+            className="max-w-md border-0 p-5 overflow-hidden"
+            style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
+            aria-describedby={undefined}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <Settings size={14} className="text-indigo-500" />
+                  AI Scribe Configuration
+                </h4>
+                <button
+                  onClick={() => setShowVoiceSettingsModal(false)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-3 py-1">
+                <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                  <div className="flex gap-2">
+                    <span className="text-emerald-500 font-bold text-xs">✓</span>
+                    <div>
+                      <h5 className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Web Speech + AI Active</h5>
+                      <p className="text-[10.5px] text-emerald-700 leading-normal mt-0.5">
+                        Your voice is transcribed locally using Chrome's Speech Recognition, then automatically corrected for Indian accent and medical terms using NVIDIA Llama 3.1.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Fill presets inside the settings box */}
+              <div className="pt-3 border-t border-slate-100 space-y-1.5">
+                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Quick Fill Presets</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleChange('prescription', "• Tab. Amoxicillin 500mg - 1 cap thrice daily for 5 days\n• Tab. Paracetamol 650mg - 1 tab SOS for pain");
+                      alert("Prescription text auto-filled.");
+                      setShowVoiceSettingsModal(false);
+                    }}
+                    className="px-2.5 py-1 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 rounded-lg text-[10.5px] text-slate-600 transition-colors"
+                  >
+                    💊 Load Mock Rx
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleChange('problemTeeth', [14, 15]);
+                      handleChange('toothConditions', {
+                        14: 'Decayed / Cavity',
+                        15: 'Root Canal Needed'
+                      });
+                      handleChange('toothNotes', {
+                        14: 'Deep distal cavity',
+                        15: 'Sensitivity to cold and hot water'
+                      });
+                      alert("Dental chart tagged for teeth 14 & 15.");
+                      setShowVoiceSettingsModal(false);
+                    }}
+                    className="px-2.5 py-1 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 rounded-lg text-[10.5px] text-slate-600 transition-colors"
+                  >
+                    🦷 Tag Teeth 14 & 15
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowVoiceSettingsModal(false)}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all shadow-md shadow-indigo-500/10"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
