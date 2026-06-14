@@ -811,15 +811,40 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
         });
       }
       
+      // Extract prescription sentences
+      const sentences = text.split(/[.।\n]/);
+      const rxKeywords = [
+        'prescribe', 'prescription', 'tab', 'cap', 'mg', 'mouthwash', 'gel', 
+        'capsule', 'tablet', 'daily', 'sos', 'days', 'medicine', 'dawa', 
+        'paracetamol', 'amoxicillin', 'ibuprofen', 'pain', 'twice', 'thrice', 'once'
+      ];
+      const rxLines: string[] = [];
+      
+      sentences.forEach((sentence) => {
+        const trimmed = sentence.trim();
+        if (!trimmed) return;
+        const hasRxKeyword = rxKeywords.some(keyword => trimmed.toLowerCase().includes(keyword));
+        if (hasRxKeyword) {
+          // Clean up common connector prefixes
+          let cleaned = trimmed.replace(/^(and|then|please|also|advise)\s+/i, '');
+          cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+          rxLines.push(`• ${cleaned}`);
+        }
+      });
+      
+      if (rxLines.length > 0) {
+        handleChange('prescription', rxLines.join('\n'));
+      }
+      
       handleChange('problemTeeth', newProblemTeeth.sort((a, b) => a - b));
       handleChange('toothConditions', newConditions);
       handleChange('toothNotes', newNotes);
       setScribeStatus('done');
       
-      if (taggedCount > 0) {
-        alert(`AI Scribe analyzed consultation: successfully tagged ${taggedCount} teeth in the chart.`);
+      if (taggedCount > 0 || rxLines.length > 0) {
+        alert(`AI Scribe analyzed consultation: successfully updated patient record.`);
       } else {
-        alert("AI Scribe did not detect any FDI tooth numbers (11-48) in the voice note. Please try a preset!");
+        alert("AI Scribe did not detect any FDI tooth numbers or prescription instructions in the voice note. Please try a preset!");
       }
     }, 1200);
   };
