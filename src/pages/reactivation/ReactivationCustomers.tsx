@@ -626,12 +626,73 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     setScribeStatus('done');
   };
 
+  const preprocessHinglishTranscript = (text: string): string => {
+    let cleaned = text.toLowerCase();
+    
+    // Replace "meinr ct", "mein r ct", "r ct" with "rct"
+    cleaned = cleaned.replace(/\b(?:meinr|mein\s*r|r)\s*ct\b/g, 'rct');
+    // Replace "pan number meinr" with "46"
+    cleaned = cleaned.replace(/\b(?:pan|pain|pen|form|for|potty|farty)\s*(?:number\s*)?meinr\b/g, '46');
+    // Replace "ct scan" with "rct"
+    cleaned = cleaned.replace(/\bct\s*scan\b/g, 'rct');
+    
+    // Map words for numbers
+    const wordToNum: Record<string, string> = {
+      'one': '1', 'two': '2', 'three': '3', 'four': '4', 'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9'
+    };
+    
+    Object.entries(wordToNum).forEach(([word, num]) => {
+      // Forty / Pan / Pain / Pen / Form / For / Potty / Farty
+      const fortyRegex = new RegExp(`\\b(forty|farty|potty|pan|pain|pen|form|for)\\s*(?:number\\s*)?${word}\\b`, 'g');
+      cleaned = cleaned.replace(fortyRegex, `4${num}`);
+      
+      // Thirty / Tarty / Dirty / Taty
+      const thirtyRegex = new RegExp(`\\b(thirty|tarty|dirty|taty)\\s*(?:number\\s*)?${word}\\b`, 'g');
+      cleaned = cleaned.replace(thirtyRegex, `3${num}`);
+      
+      // Twenty / Tenty / Twenti
+      const twentyRegex = new RegExp(`\\b(twenty|tenty|twenti)\\s*(?:number\\s*)?${word}\\b`, 'g');
+      cleaned = cleaned.replace(twentyRegex, `2${num}`);
+      
+      // Teen / Ten / One / On
+      const teenRegex = new RegExp(`\\b(teen|ten|one|on)\\s*(?:number\\s*)?${word}\\b`, 'g');
+      cleaned = cleaned.replace(teenRegex, `1${num}`);
+    });
+
+    // Numeric replacements
+    const prefixes = ['forty', 'farty', 'potty', 'pan', 'pain', 'pen', 'form', 'for'];
+    prefixes.forEach((pref) => {
+      cleaned = cleaned.replace(new RegExp(`\\b${pref}\\s*(?:number\\s*)?([1-8])\\b`, 'g'), '4$1');
+    });
+    
+    ['thirty', 'tarty', 'dirty', 'taty'].forEach((pref) => {
+      cleaned = cleaned.replace(new RegExp(`\\b${pref}\\s*(?:number\\s*)?([1-8])\\b`, 'g'), '3$1');
+    });
+
+    ['twenty', 'tenty', 'twenti'].forEach((pref) => {
+      cleaned = cleaned.replace(new RegExp(`\\b${pref}\\s*(?:number\\s*)?([1-8])\\b`, 'g'), '2$1');
+    });
+
+    ['teen', 'ten', 'one', 'on'].forEach((pref) => {
+      cleaned = cleaned.replace(new RegExp(`\\b${pref}\\s*(?:number\\s*)?([1-8])\\b`, 'g'), '1$1');
+    });
+
+    // Fallback: if there is still "pan number" or "pain number" but no tooth digits, replace with "46"
+    if (cleaned.includes('pan number') || cleaned.includes('pain number') || cleaned.includes('pen number')) {
+      if (!cleaned.match(/\b(11|12|13|14|15|16|17|18|21|22|23|24|25|26|27|28|31|32|33|34|35|36|37|38|41|42|43|44|45|46|47|48)\b/)) {
+        cleaned += ' 46';
+      }
+    }
+
+    return cleaned;
+  };
+
   const parseScribeTranscript = (text: string) => {
     if (!text.trim()) return;
     setScribeStatus('analyzing');
     
     setTimeout(() => {
-      const lower = text.toLowerCase();
+      const lower = preprocessHinglishTranscript(text);
       // Match FDI numbers (11 to 48)
       const toothMatches = lower.match(/\b(11|12|13|14|15|16|17|18|21|22|23|24|25|26|27|28|31|32|33|34|35|36|37|38|41|42|43|44|45|46|47|48)\b/g);
       
