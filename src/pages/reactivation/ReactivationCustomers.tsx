@@ -1267,22 +1267,18 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <Stethoscope size={10} />
                           After Consultation
                         </button>
-                        {isEdit && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => setActiveTab('estimates')}
-                              className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
-                                activeTab === 'estimates'
-                                  ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
-                                  : 'text-slate-500 hover:text-slate-700'
-                              }`}
-                            >
-                              <StickyNote size={10} />
-                              Billing & Estimates
-                            </button>
-                          </>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab('estimates')}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 flex items-center gap-1 shrink-0 ${
+                            activeTab === 'estimates'
+                              ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                              : 'text-slate-500 hover:text-slate-700'
+                          }`}
+                        >
+                          <StickyNote size={10} />
+                          Billing & Estimates
+                        </button>
                       </div>
                       <button
                         type="button"
