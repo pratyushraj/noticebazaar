@@ -533,6 +533,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   // AI Scribe states
   const [scribeTranscript, setScribeTranscript] = useState('');
   const [scribeStatus, setScribeStatus] = useState<'idle' | 'listening' | 'analyzing' | 'done'>('idle');
+  const [notesRecording, setNotesRecording] = useState(false);
   const recognitionRef = React.useRef<any>(null);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const audioChunksRef = React.useRef<Blob[]>([]);
@@ -596,6 +597,52 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const calculatedGrandTotal = useMemo(() => {
     return calculatedSubtotal - calculatedDiscountAmount + calculatedGST;
   }, [calculatedSubtotal, calculatedDiscountAmount, calculatedGST]);
+
+  const toggleNotesVoice = () => {
+    if (notesRecording) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setNotesRecording(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Chrome.");
+      return;
+    }
+
+    setNotesRecording(true);
+    const rec = new SpeechRecognition();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = 'en-IN';
+
+    rec.onresult = (event: any) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' ';
+        }
+      }
+      if (finalTranscript) {
+        handleChange('notes', (form.notes || '') + finalTranscript);
+      }
+    };
+
+    rec.onerror = (err: any) => {
+      console.error('Notes Speech Error:', err);
+      setNotesRecording(false);
+    };
+
+    rec.onend = () => {
+      setNotesRecording(false);
+    };
+
+    recognitionRef.current = rec;
+    rec.start();
+  };
 
   const startScribeSpeech = async () => {
     if (recordingMode === 'deepgram') {
@@ -1199,9 +1246,23 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                     {/* Notes */}
                     <div>
-                      <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                        Complaint / Notes
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[11px] text-slate-500 font-medium uppercase tracking-wider">
+                          Complaint / Notes
+                        </label>
+                        <button
+                          type="button"
+                          onClick={toggleNotesVoice}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border transition-all ${
+                            notesRecording
+                              ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
+                              : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+                          }`}
+                        >
+                          <Mic size={9} />
+                          {notesRecording ? 'Listening...' : 'Scribe Notes'}
+                        </button>
+                      </div>
                       <textarea
                         className={`${inputBase} ${inputFocusStyle} resize-none`}
                         style={inputStyle}
