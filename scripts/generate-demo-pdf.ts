@@ -133,8 +133,44 @@ doc.setFont('Helvetica', 'normal');
 doc.setFontSize(10);
 doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
 
-const prescriptionText = '1. Tab. Amoxicillin 500mg - 1 capsule twice daily for 5 days (After meals)\n2. Tab. Paracetamol 650mg - 1 tablet twice daily as needed for pain (SOS)\n3. Chlorhexidine Mouthwash - Rinse twice daily with 10ml for 1 minute';
-const rxLines = doc.splitTextToSize(prescriptionText, 175);
+const prescriptionText = '[{"name":"Amoxicillin 500mg","dosage":"1 capsule","frequency":"Three times a day","duration":"5 days","instructions":"Take after meals"},{"name":"Paracetamol 650mg","dosage":"1 tablet","frequency":"As needed for pain","duration":"3 days","instructions":"Max 4 tablets per day"},{"name":"Chlorhexidine 0.2% Mouthwash","dosage":"10ml","frequency":"Twice a day","duration":"7 days","instructions":"Rinse for 1 minute, do not swallow"}]';
+
+// Parse structured JSON arrays if they exist
+let rxLinesFormatted: string[] = [];
+try {
+  const trimmedRx = prescriptionText.trim();
+  if (trimmedRx.startsWith('[') && trimmedRx.endsWith(']')) {
+    const meds = JSON.parse(trimmedRx);
+    if (Array.isArray(meds)) {
+      meds.forEach((med, idx) => {
+        const parts = [];
+        if (med.name) parts.push(med.name);
+        
+        const details = [];
+        if (med.dosage) details.push(med.dosage);
+        if (med.frequency) details.push(med.frequency);
+        if (med.duration) details.push(med.duration);
+        
+        let medStr = `${idx + 1}. ${parts.join(' ')}`;
+        if (details.length > 0) {
+          medStr += ` - ${details.join(', ')}`;
+        }
+        if (med.instructions) {
+          medStr += ` (${med.instructions})`;
+        }
+        rxLinesFormatted.push(medStr);
+      });
+    }
+  }
+} catch (e) {
+  // Fallback to normal text
+}
+
+if (rxLinesFormatted.length === 0) {
+  rxLinesFormatted = prescriptionText.split('\n');
+}
+
+const rxLines = doc.splitTextToSize(rxLinesFormatted.join('\n'), 175);
 doc.text(rxLines, 15, 111, { baseline: 'top', lineLeading: 6 });
 
 // 7. Treatment plan & Billing (Modern card layout)
@@ -200,12 +236,12 @@ currentY += 6;
 doc.setFont('Helvetica', 'normal');
 doc.setFontSize(9);
 doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
-doc.text(`Subtotal:`, 140, currentY);
+doc.text(`Subtotal:`, 125, currentY);
 doc.text(`Rs. ${calculatedSubtotal.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
 
 currentY += 5;
 if (calculatedDiscountAmount > 0) {
-  doc.text(`Concession (${estimateDiscount}%):`, 140, currentY);
+  doc.text(`Concession (${estimateDiscount}%):`, 125, currentY);
   doc.setTextColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
   doc.text(`- Rs. ${calculatedDiscountAmount.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
   currentY += 5;
@@ -214,7 +250,7 @@ if (calculatedDiscountAmount > 0) {
 doc.setFont('Helvetica', 'bold');
 doc.setFontSize(10.5);
 doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
-doc.text(`Final Amount (Paid):`, 140, currentY);
+doc.text(`Final Amount (Paid):`, 125, currentY);
 doc.text(`Rs. ${calculatedGrandTotal.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
 
 // 8. Footer (Elegant Signature Block)

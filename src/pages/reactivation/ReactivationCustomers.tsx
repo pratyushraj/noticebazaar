@@ -102,8 +102,10 @@ interface Customer {
   xrays?: string[];
   beforeAfterPhotos?: string[];
   beforePhoto?: string;
+  beforePhotos?: string[];
   profilePhoto?: string;
   afterPhoto?: string;
+  afterPhotos?: string[];
   prescription?: string;
   allergies?: string[];
   medicalConditions?: string[];
@@ -412,7 +414,7 @@ const Avatar: React.FC<{ name: string; color: string; size?: 'sm' | 'md'; profil
   size = 'md',
   profilePhoto,
 }) => {
-  const dim = size === 'sm' ? 'w-7 h-7 text-[10px]' : 'w-8 h-8 text-[11px]';
+  const dim = size === 'sm' ? 'w-10 h-10 text-[12px]' : 'w-12 h-12 text-[14px]';
   if (profilePhoto) {
     return (
       <div className={`${dim} rounded-full overflow-hidden flex-shrink-0 border border-slate-200 bg-neutral-900`}>
@@ -490,8 +492,10 @@ const EMPTY_CUSTOMER: Customer = {
   xrays: [],
   beforeAfterPhotos: [],
   beforePhoto: '',
+  beforePhotos: [],
   profilePhoto: '',
   afterPhoto: '',
+  afterPhotos: [],
   prescription: '',
   allergies: [],
   medicalConditions: [],
@@ -508,8 +512,10 @@ const getInitialForm = (customer?: Customer): Customer => {
     xrays: customer.xrays || [],
     beforeAfterPhotos: customer.beforeAfterPhotos || [],
     beforePhoto: customer.beforePhoto || '',
+    beforePhotos: customer.beforePhotos || (customer.beforePhoto ? [customer.beforePhoto] : []),
     profilePhoto: customer.profilePhoto || '',
     afterPhoto: customer.afterPhoto || '',
+    afterPhotos: customer.afterPhotos || (customer.afterPhoto ? [customer.afterPhoto] : []),
     prescription: customer.prescription || '',
     allergies: customer.allergies || [],
     medicalConditions: customer.medicalConditions || [],
@@ -573,7 +579,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   // Clinic branding (loaded from localStorage, used for PDF generation)
   const { organizationId } = useSession();
   const _orgId = organizationId || 'default';
-  const [clinicBranding] = useState(() => {
+  const [clinicBranding, setClinicBranding] = useState(() => {
     try {
       const raw = localStorage.getItem(`clinic_branding_${_orgId}`);
       if (raw) return JSON.parse(raw);
@@ -587,6 +593,47 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
       email: '',
     };
   });
+
+  React.useEffect(() => {
+    if (!_orgId || _orgId === 'default') return;
+    async function loadClinicBranding() {
+      try {
+        const { data: clinic } = await supabase
+          .from('dental_clinics')
+          .select('*')
+          .eq('id', _orgId)
+          .single();
+
+        if (clinic) {
+          let doctorName = '';
+          let doctorEmail = '';
+          if (clinic.owner_id) {
+            const { data: ownerProfile } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', clinic.owner_id)
+              .single();
+            if (ownerProfile) {
+              doctorName = ownerProfile.full_name || '';
+              doctorEmail = ownerProfile.email || '';
+            }
+          }
+
+          setClinicBranding({
+            clinicName: clinic.name || 'Dental Clinic',
+            doctorName: doctorName || 'Doctor',
+            qualifications: clinic.timings_note || 'B.D.S., M.D.S. | Dental Specialist',
+            address: clinic.address || '',
+            phone: clinic.phone || '',
+            email: doctorEmail || clinic.email || '',
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching clinic details for PDF:', err);
+      }
+    }
+    loadClinicBranding();
+  }, [_orgId]);
 
   // AI Scribe states
   const [activeFieldRecording, setActiveFieldRecording] = useState<'teeth' | 'prescription' | null>(null);
@@ -1242,27 +1289,322 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   };
 
   const handleBeforePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    compressImage(file, (compressedBase64) => {
-      handleChange('beforePhoto', compressedBase64);
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      compressImage(file, (compressedBase64) => {
+        setForm((prev) => ({
+          ...prev,
+          beforePhotos: [...(prev.beforePhotos || []), compressedBase64]
+        }));
+      });
     });
   };
 
-  const handleRemoveBeforePhoto = () => {
-    handleChange('beforePhoto', '');
+  const handleRemoveBeforePhoto = (idxToRemove: number) => {
+    setForm((prev) => ({
+      ...prev,
+      beforePhotos: (prev.beforePhotos || []).filter((_, idx) => idx !== idxToRemove)
+    }));
   };
 
   const handleAfterPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    compressImage(file, (compressedBase64) => {
-      handleChange('afterPhoto', compressedBase64);
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      compressImage(file, (compressedBase64) => {
+        setForm((prev) => ({
+          ...prev,
+          afterPhotos: [...(prev.afterPhotos || []), compressedBase64]
+        }));
+      });
     });
   };
 
-  const handleRemoveAfterPhoto = () => {
-    handleChange('afterPhoto', '');
+  const handleRemoveAfterPhoto = (idxToRemove: number) => {
+    setForm((prev) => ({
+      ...prev,
+      afterPhotos: (prev.afterPhotos || []).filter((_, idx) => idx !== idxToRemove)
+    }));
+  };
+
+  const generateDefaultPDF = () => {
+    const patientName = form.name || 'Patient';
+    const patientPhone = form.phone || '';
+    const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const nextFollowUp = getNextVisitDate(form as Customer);
+
+    // Create A4 document
+    const doc = new jsPDF('p', 'mm', 'a4'); // A4 size: 210mm x 297mm
+    const W = doc.internal.pageSize.getWidth();
+
+    // ── COLOR PALETTE (Premium Teal / Gold Accent) ────────────────────────
+    const PRIMARY_TEAL = [15, 118, 110]; // #0F766E
+    const TEXT_DARK = [30, 41, 59];    // #1E293B
+    const TEXT_MUTED = [100, 116, 139]; // #64748B
+    const ACCENT_GOLD = [217, 119, 6];  // #D97706
+    const BG_LIGHT = [248, 250, 252];   // #F8FAFC
+    const BORDER_LIGHT = [226, 232, 240]; // #E2E8F0
+
+    // 1. Top Branded Bar
+    doc.setFillColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+    doc.rect(0, 0, W, 12, 'F');
+
+    // 2. Gold Accent Line
+    doc.setFillColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
+    doc.rect(0, 12, W, 1.5, 'F');
+
+    // 3. Clinic Info & Logo Placeholder/Icon
+    doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text(clinicBranding.clinicName || 'Dental Clinic', 15, 28);
+
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text(clinicBranding.doctorName || 'Doctor', 15, 34);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    const drQualifications = clinicBranding.qualifications || '';
+    if (drQualifications) {
+      doc.text(drQualifications, 15, 38);
+    }
+    doc.text('Dental Surgeon & Specialist', 15, drQualifications ? 42 : 38);
+
+    // Right Side Contact Info
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    if (clinicBranding.phone) {
+      doc.text(clinicBranding.phone, W - 15, 28, { align: 'right' });
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    doc.setFontSize(9);
+    if (clinicBranding.email) {
+      doc.text(clinicBranding.email, W - 15, 33, { align: 'right' });
+    }
+
+    if (clinicBranding.address) {
+      const addrLines = doc.splitTextToSize(clinicBranding.address, 70);
+      doc.text(addrLines, W - 15, 38, { align: 'right' });
+    }
+
+    // 4. Header Separator
+    doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+    doc.setLineWidth(0.5);
+    doc.line(15, 50, W - 15, 50);
+
+    // 5. Patient Details Card
+    doc.setFillColor(BG_LIGHT[0], BG_LIGHT[1], BG_LIGHT[2]);
+    doc.rect(15, 55, W - 30, 24, 'F');
+    doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+    doc.rect(15, 55, W - 30, 24, 'S');
+
+    // Left Column: Patient Info
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    doc.text('PATIENT INFO', 20, 61);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text(patientName, 20, 67);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    doc.text(`Mobile: ${patientPhone || '-'}`, 20, 72);
+
+    // Right Column: Date & Follow Up
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    doc.text('CONSULTATION DATE', 130, 61);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text(today, 130, 67);
+
+    if (nextFollowUp) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.text('FOLLOW UP DATE', 130, 72);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
+      const nextFollowUpFormatted = new Date(nextFollowUp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      doc.text(nextFollowUpFormatted, 162, 72);
+    }
+
+    // 6. Prescription section
+    doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+    doc.setFontSize(26);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Rx', 15, 95);
+
+    // Accent line next to Rx
+    doc.setDrawColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+    doc.setLineWidth(0.8);
+    doc.line(30, 93, W - 15, 93);
+
+    // Medications Title
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PRESCRIBED MEDICATIONS & INSTRUCTIONS', 15, 103);
+
+    // List Medications
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+
+    const rxText = form.prescription || 'No prescription entered.';
+    
+    // Parse structured JSON arrays from the AI scribe if they exist
+    let rxLinesFormatted: string[] = [];
+    try {
+      const trimmedRx = rxText.trim();
+      if (trimmedRx.startsWith('[') && trimmedRx.endsWith(']')) {
+        const meds = JSON.parse(trimmedRx);
+        if (Array.isArray(meds)) {
+          meds.forEach((med, idx) => {
+            const parts = [];
+            if (med.name) parts.push(med.name);
+            
+            const details = [];
+            if (med.dosage) details.push(med.dosage);
+            if (med.frequency) details.push(med.frequency);
+            if (med.duration) details.push(med.duration);
+            
+            let medStr = `${idx + 1}. ${parts.join(' ')}`;
+            if (details.length > 0) {
+              medStr += ` - ${details.join(', ')}`;
+            }
+            if (med.instructions) {
+              medStr += ` (${med.instructions})`;
+            }
+            rxLinesFormatted.push(medStr);
+          });
+        }
+      }
+    } catch (e) {
+      // JSON parse failed, treat as raw text
+    }
+
+    if (rxLinesFormatted.length === 0) {
+      rxLinesFormatted = rxText.split('\n');
+    }
+
+    const rxLines = doc.splitTextToSize(rxLinesFormatted.join('\n'), W - 30);
+    doc.text(rxLines, 15, 111, { baseline: 'top', lineLeading: 6 });
+
+    // Calculate approximate height of Rx text
+    const rxHeight = rxLines.length * 6;
+    let currentY = 111 + rxHeight + 10;
+
+    // 7. Treatment plan & Billing (Modern card layout) - only render if treatment items exist
+    if (estimateItems && estimateItems.length > 0) {
+      doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+      doc.setLineWidth(0.5);
+      doc.line(15, currentY - 5, W - 15, currentY - 5);
+
+      doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.text('Treatment Summary & Care Receipt', 15, currentY);
+
+      currentY += 6;
+
+      // Table Header
+      doc.setFillColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.rect(15, currentY, W - 30, 8, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PROCEDURE / TREATMENT DONE', 20, currentY + 5.5);
+      doc.text('TOOTH', 120, currentY + 5.5);
+      doc.text('AMOUNT (INR)', 160, currentY + 5.5);
+
+      currentY += 8;
+
+      // Table Rows
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+
+      estimateItems.forEach((item, idx) => {
+        // Alternating row background for modern look
+        if (idx % 2 === 1) {
+          doc.setFillColor(BG_LIGHT[0], BG_LIGHT[1], BG_LIGHT[2]);
+          doc.rect(15, currentY, W - 30, 8, 'F');
+        }
+        
+        doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+        doc.text(item.procedure, 20, currentY + 5.5);
+        doc.text(item.tooth ? `Tooth ${item.tooth}` : '-', 120, currentY + 5.5);
+        doc.text(`Rs. ${item.cost.toLocaleString('en-IN')}`, 160, currentY + 5.5);
+        currentY += 8;
+      });
+
+      // Separator
+      doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+      doc.line(15, currentY, W - 15, currentY);
+      currentY += 6;
+
+      // Totals block aligned right
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.text(`Subtotal:`, 125, currentY);
+      doc.text(`Rs. ${calculatedSubtotal.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
+
+      currentY += 5;
+      if (calculatedDiscountAmount > 0) {
+        doc.text(`Concession (${estimateDiscount}%):`, 125, currentY);
+        doc.setTextColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
+        doc.text(`- Rs. ${calculatedDiscountAmount.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
+        currentY += 5;
+      }
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10.5);
+      doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.text(`Final Amount (Paid):`, 125, currentY);
+      doc.text(`Rs. ${calculatedGrandTotal.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
+    }
+
+    // 8. Footer (Elegant Signature Block)
+    const footerY = 270;
+    doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+    doc.setLineWidth(0.5);
+    doc.line(15, footerY - 15, W - 15, footerY - 15);
+
+    // Disclaimer
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    doc.text('This is a digitally generated prescription/receipt. No physical signature is required.', 15, footerY - 5);
+    doc.text(`${clinicBranding.clinicName || 'Clinic'} · Thank you for letting us care for your smile.`, 15, footerY);
+
+    // Signature Line
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+    doc.text("Doctor's Signature", 150, footerY - 5);
+    doc.setDrawColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+    doc.line(150, footerY - 1, 195, footerY - 1);
+
+    doc.save(`Rx_Estimate_${patientName.replace(/\s+/g, '_')}_${today.replace(/\s+/g, '-')}.pdf`);
   };
 
   const handleSave = () => {
@@ -1588,52 +1930,57 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                     </div>
 
-                    {/* Before Photo Section (Optional) */}
+                    {/* Before Photos (Optional) */}
                     <div className="space-y-3 pt-2">
                       <div>
-                        <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Before Photo (Optional)</h4>
-                        <p className="text-[10px] text-slate-500 mt-0.5">Attach clinical photograph showing teeth condition before treatment</p>
+                        <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Before Photos (Optional)</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Attach clinical photographs showing teeth condition before treatment</p>
                       </div>
 
-                      {form.beforePhoto ? (
-                        <div className="relative aspect-[16/11] max-w-sm rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
-                          <img src={form.beforePhoto} alt="Teeth Before Treatment" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
-                            <button
-                              type="button"
-                              onClick={() => setLightboxImg(form.beforePhoto!)}
-                              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
-                            >
-                              <Eye size={13} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleRemoveBeforePhoto}
-                              className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-rose-300">
-                            Before / Pre-Op
-                          </span>
-                        </div>
-                      ) : (
-                        /* Uploader dropzone */
-                        <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
-                          <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                          <span className="text-[12px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Upload Before Photo</span>
-                          <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB)</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={handleBeforePhotoUpload}
-                            className="hidden"
-                          />
-                        </label>
-                      )}
+                      {/* Uploader dropzone */}
+                      <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
+                        <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                        <span className="text-[12px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Upload Before Photos</span>
+                        <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB, upload multiple)</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleBeforePhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
 
+                      {/* Photo Grid */}
+                      {form.beforePhotos && form.beforePhotos.length > 0 && (
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          {form.beforePhotos.map((photo, index) => (
+                            <div key={index} className="relative aspect-[16/11] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
+                              <img src={photo} alt={`Before treatment ${index + 1}`} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxImg(photo)}
+                                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBeforePhoto(index)}
+                                  className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-rose-300">
+                                Before / Pre-Op #{index + 1}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -1660,6 +2007,118 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       </div>
                     </div>
 
+                    {/* After Photos Section (Optional) */}
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3 font-sans">
+                      <div>
+                        <h4 className="text-[11px] font-bold text-slate-800 uppercase tracking-wider font-sans">After Photos (Optional)</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Attach clinical photographs showing teeth condition after consultation/treatment</p>
+                      </div>
+
+                      {/* Uploader dropzone */}
+                      <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-white hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
+                        <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                        <span className="text-[12px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Upload After Photos</span>
+                        <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB, upload multiple)</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleAfterPhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Photo Grid */}
+                      {form.afterPhotos && form.afterPhotos.length > 0 && (
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          {form.afterPhotos.map((photo, index) => (
+                            <div key={index} className="relative aspect-[16/11] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
+                              <img src={photo} alt={`After treatment ${index + 1}`} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
+                                <button
+                                  type="button"
+                                  onClick={() => setLightboxImg(photo)}
+                                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
+                                >
+                                  <Eye size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveAfterPhoto(index)}
+                                  className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 border border-white/10 text-[9px] font-bold text-emerald-300">
+                                After / Post-Op #{index + 1}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Slider Compare sandbox for Teeth Photos */}
+                      {form.beforePhotos && form.beforePhotos.length > 0 && form.afterPhotos && form.afterPhotos.length > 0 && (
+                        <div className="bg-white border border-slate-200 rounded-xl p-3 space-y-2.5 mt-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10.5px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                              <Sparkles size={11} className="text-indigo-400" />
+                              Before vs After Teeth Comparison
+                            </span>
+                          </div>
+                          
+                          <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 select-none">
+                            {/* Before Image */}
+                            <img src={form.beforePhotos[0]} alt="Before treatment" className="absolute inset-0 w-full h-full object-cover" />
+                            
+                            {/* After Image */}
+                            <div 
+                              className="absolute inset-y-0 left-0 overflow-hidden" 
+                              style={{ width: `${teethPhotoSliderPos}%` }}
+                            >
+                              <img 
+                                src={form.afterPhotos[0]} 
+                                alt="After treatment" 
+                                className="absolute inset-y-0 left-0 w-full h-full object-cover"
+                                style={{ width: '100%', maxWidth: 'none' }} 
+                              />
+                            </div>
+                            
+                            {/* Slider Handle */}
+                            <div 
+                              className="absolute inset-y-0 w-1 bg-indigo-500 cursor-ew-resize flex items-center justify-center"
+                              style={{ left: `${teethPhotoSliderPos}%` }}
+                            >
+                              <div className="w-5 h-5 rounded-full bg-indigo-500 border border-white/25 flex items-center justify-center text-white text-[9px] shadow-lg">
+                                ↔
+                              </div>
+                            </div>
+                            
+                            {/* Invisible range inputs overlay */}
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={teethPhotoSliderPos} 
+                              onChange={(e) => setTeethPhotoSliderPos(Number(e.target.value))}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize"
+                            />
+                            
+                            {/* Labels */}
+                            <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/70 border border-white/10 text-[8.5px] font-bold text-rose-300">
+                              Before / Pre-Op
+                            </span>
+                            <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/70 border border-white/10 text-[8.5px] font-bold text-emerald-300">
+                              After / Post-Op
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+
 
                     {/* Prescription (Rx) Editor */}
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5">
@@ -1683,98 +2142,8 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           {/* Print Rx PDF */}
                           <button
                             type="button"
-                            onClick={() => {
-                              const rxText = form.prescription || '';
-                              const patientName = form.name || 'Patient';
-                              const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-
-                              const doc = new jsPDF({ unit: 'mm', format: 'a5', orientation: 'portrait' });
-                              const W = doc.internal.pageSize.getWidth();
-
-                              // ── Header gradient band ──────────────────────
-                              doc.setFillColor(238, 242, 255); // indigo-50
-                              doc.rect(0, 0, W, 38, 'F');
-
-                              // Border accent line
-                              doc.setDrawColor(79, 70, 229); // indigo-600
-                              doc.setLineWidth(0.8);
-                              doc.line(0, 38, W, 38);
-
-                              // Clinic name
-                              doc.setFont('helvetica', 'bold');
-                              doc.setFontSize(15);
-                              doc.setTextColor(49, 46, 129); // indigo-900
-                              doc.text(clinicBranding.clinicName || 'Dental Clinic', 8, 12);
-
-                              // Doctor name + qualifications
-                              doc.setFont('helvetica', 'normal');
-                              doc.setFontSize(9);
-                              doc.setTextColor(67, 56, 202); // indigo-700
-                              const drLine = [clinicBranding.doctorName, clinicBranding.qualifications].filter(Boolean).join(' · ');
-                              if (drLine) doc.text(drLine, 8, 20);
-
-                              // Address
-                              if (clinicBranding.address) {
-                                doc.setFontSize(8);
-                                doc.setTextColor(100, 116, 139); // slate-500
-                                doc.text(`📍 ${clinicBranding.address}`, 8, 27, { maxWidth: W - 50 });
-                              }
-
-                              // Phone / Email (right-aligned)
-                              doc.setFontSize(8);
-                              doc.setTextColor(100, 116, 139);
-                              let rightY = 14;
-                              if (clinicBranding.phone) { doc.text(`📞 ${clinicBranding.phone}`, W - 8, rightY, { align: 'right' }); rightY += 7; }
-                              if (clinicBranding.email) { doc.text(`✉ ${clinicBranding.email}`, W - 8, rightY, { align: 'right' }); }
-
-                              // ── Patient strip ──────────────────────────────
-                              doc.setFillColor(255, 255, 255);
-                              doc.rect(0, 38, W, 16, 'F');
-                              doc.setDrawColor(226, 232, 240);
-                              doc.setLineWidth(0.3);
-                              doc.line(0, 54, W, 54);
-
-                              doc.setFont('helvetica', 'bold');
-                              doc.setFontSize(7);
-                              doc.setTextColor(148, 163, 184);
-                              doc.text('PATIENT', 8, 44);
-                              doc.text('DATE', 80, 44);
-
-                              doc.setFont('helvetica', 'normal');
-                              doc.setFontSize(9);
-                              doc.setTextColor(30, 41, 59);
-                              doc.text(patientName, 8, 51);
-                              doc.text(today, 80, 51);
-
-                              // ── Rx symbol + body ──────────────────────────
-                              doc.setFont('helvetica', 'bold');
-                              doc.setFontSize(22);
-                              doc.setTextColor(129, 140, 248); // indigo-400
-                              doc.text('\u211E', 8, 70);
-
-                              doc.setFont('helvetica', 'normal');
-                              doc.setFontSize(10);
-                              doc.setTextColor(30, 41, 59);
-                              const lines = rxText
-                                ? doc.splitTextToSize(rxText, W - 28)
-                                : ['No prescription entered.'];
-                              doc.text(lines, 20, 65);
-
-                              // ── Footer ────────────────────────────────────
-                              const footerY = doc.internal.pageSize.getHeight() - 12;
-                              doc.setFillColor(248, 250, 252);
-                              doc.rect(0, footerY - 4, W, 16, 'F');
-                              doc.setDrawColor(226, 232, 240);
-                              doc.line(0, footerY - 4, W, footerY - 4);
-
-                              doc.setFontSize(7);
-                              doc.setTextColor(148, 163, 184);
-                              doc.text('Valid for 30 days · Not valid without signature', 8, footerY + 2);
-                              doc.text('Signature ___________', W - 8, footerY + 2, { align: 'right' });
-
-                              doc.save(`Rx_${patientName.replace(/\s+/g, '_')}_${today.replace(/\s+/g, '-')}.pdf`);
-                            }}
-                            className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border bg-white border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all"
+                            onClick={generateDefaultPDF}
+                            className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border bg-white border-slate-200 text-slate-600 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-600 transition-all"
                           >
                             <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                             Print Rx PDF
@@ -2369,15 +2738,26 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                       <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                         <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider">Current Treatment Summary</span>
-                        <select
-                          value={estimateStatus}
-                          onChange={(e) => setEstimateStatus(e.target.value as any)}
-                          className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md outline-none cursor-pointer"
-                        >
-                          <option value="Draft" style={{ background: '#fff', color: '#334155' }}>Draft</option>
-                          <option value="Sent" style={{ background: '#fff', color: '#334155' }}>Shared</option>
-                          <option value="Approved" style={{ background: '#fff', color: '#334155' }}>Approved</option>
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={generateDefaultPDF}
+                            disabled={estimateItems.length === 0}
+                            className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border bg-white border-slate-200 text-slate-600 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Print Invoice PDF
+                          </button>
+                          <select
+                            value={estimateStatus}
+                            onChange={(e) => setEstimateStatus(e.target.value as any)}
+                            className="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md outline-none cursor-pointer"
+                          >
+                            <option value="Draft" style={{ background: '#fff', color: '#334155' }}>Draft</option>
+                            <option value="Sent" style={{ background: '#fff', color: '#334155' }}>Shared</option>
+                            <option value="Approved" style={{ background: '#fff', color: '#334155' }}>Approved</option>
+                          </select>
+                        </div>
                       </div>
 
                       {estimateItems.length > 0 ? (
@@ -2682,8 +3062,10 @@ const ReactivationCustomers: React.FC = () => {
             xrays: d.xrays || [],
             beforeAfterPhotos: d.before_after_photos || [],
             beforePhoto: d.before_photo,
+            beforePhotos: d.before_photos || (d.before_photo ? [d.before_photo] : []),
             profilePhoto: d.profile_photo,
             afterPhoto: d.after_photo,
+            afterPhotos: d.after_photos || (d.after_photo ? [d.after_photo] : []),
             prescription: d.prescription,
             allergies: d.allergies || [],
             medicalConditions: d.medical_conditions || [],
@@ -2866,6 +3248,370 @@ const ReactivationCustomers: React.FC = () => {
     });
   };
 
+  const sendWhatsAppPrescriptionPDF = async (c: Customer) => {
+    try {
+      if (!clinicId) return;
+
+      // 1. Fetch clinic configuration
+      const { data: clinic } = await supabase
+        .from('dental_clinics')
+        .select('*')
+        .eq('id', clinicId)
+        .single();
+
+      if (!clinic || !clinic.whatsapp_phone_number_id || !clinic.whatsapp_access_token) {
+        console.warn('WhatsApp API not configured for this clinic, skipping automated PDF.');
+        return;
+      }
+
+      const wabaPhoneId = clinic.whatsapp_phone_number_id;
+      const wabaToken = clinic.whatsapp_access_token;
+      const cleanPhone = c.phone.replace(/[^0-9]/g, '');
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
+      // Fetch doctor full name
+      let doctorName = 'Doctor';
+      let doctorEmail = '';
+      if (clinic.owner_id) {
+        const { data: ownerProfile } = await supabase
+          .from('profiles')
+          .select('full_name, email')
+          .eq('id', clinic.owner_id)
+          .single();
+        if (ownerProfile) {
+          doctorName = ownerProfile.full_name || 'Doctor';
+          doctorEmail = ownerProfile.email || '';
+        }
+      }
+
+      const clinicInfo = {
+        clinicName: clinic.name || 'Dental Clinic',
+        doctorName: doctorName,
+        qualifications: clinic.timings_note || 'B.D.S., M.D.S. | Dental Specialist',
+        address: clinic.address || '',
+        phone: clinic.phone || '',
+        email: doctorEmail || clinic.email || '',
+      };
+
+      // 2. Generate PDF
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const W = doc.internal.pageSize.getWidth();
+      const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      const nextFollowUp = getNextVisitDate(c);
+
+      // Colors
+      const PRIMARY_TEAL = [15, 118, 110];
+      const TEXT_DARK = [30, 41, 59];
+      const TEXT_MUTED = [100, 116, 139];
+      const ACCENT_GOLD = [217, 119, 6];
+      const BG_LIGHT = [248, 250, 252];
+      const BORDER_LIGHT = [226, 232, 240];
+
+      // Draw Top Branded Bar
+      doc.setFillColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.rect(0, 0, W, 12, 'F');
+
+      // Gold Accent Line
+      doc.setFillColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
+      doc.rect(0, 12, W, 1.5, 'F');
+
+      // Clinic Info & Logo
+      doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.text(clinicInfo.clinicName, 15, 28);
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text(clinicInfo.doctorName, 15, 34);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      if (clinicInfo.qualifications) {
+        doc.text(clinicInfo.qualifications, 15, 38);
+      }
+      doc.text('Dental Surgeon & Specialist', 15, clinicInfo.qualifications ? 42 : 38);
+
+      // Contact info
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      if (clinicInfo.phone) doc.text(clinicInfo.phone, W - 15, 28, { align: 'right' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.setFontSize(9);
+      if (clinicInfo.email) doc.text(clinicInfo.email, W - 15, 33, { align: 'right' });
+
+      if (clinicInfo.address) {
+        const addrLines = doc.splitTextToSize(clinicInfo.address, 70);
+        doc.text(addrLines, W - 15, 38, { align: 'right' });
+      }
+
+      // Separator
+      doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+      doc.setLineWidth(0.5);
+      doc.line(15, 50, W - 15, 50);
+
+      // Patient Details Card
+      doc.setFillColor(BG_LIGHT[0], BG_LIGHT[1], BG_LIGHT[2]);
+      doc.rect(15, 55, W - 30, 24, 'F');
+      doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+      doc.rect(15, 55, W - 30, 24, 'S');
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.text('PATIENT INFO', 20, 61);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text(c.name || 'Patient', 20, 67);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.text(`Mobile: ${c.phone || '-'}`, 20, 72);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.text('CONSULTATION DATE', 130, 61);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text(today, 130, 67);
+
+      if (nextFollowUp) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+        doc.text('FOLLOW UP DATE', 130, 72);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
+        const nextFollowUpFormatted = new Date(nextFollowUp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        doc.text(nextFollowUpFormatted, 162, 72);
+      }
+
+      // Rx Section
+      doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.setFontSize(26);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Rx', 15, 95);
+
+      doc.setDrawColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+      doc.setLineWidth(0.8);
+      doc.line(30, 93, W - 15, 93);
+
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('PRESCRIBED MEDICATIONS & INSTRUCTIONS', 15, 103);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+
+      const rxText = c.prescription || 'No prescription entered.';
+      let rxLinesFormatted: string[] = [];
+      try {
+        const trimmedRx = rxText.trim();
+        if (trimmedRx.startsWith('[') && trimmedRx.endsWith(']')) {
+          const meds = JSON.parse(trimmedRx);
+          if (Array.isArray(meds)) {
+            meds.forEach((med, idx) => {
+              const parts = [];
+              if (med.name) parts.push(med.name);
+              const details = [];
+              if (med.dosage) details.push(med.dosage);
+              if (med.frequency) details.push(med.frequency);
+              if (med.duration) details.push(med.duration);
+              let medStr = `${idx + 1}. ${parts.join(' ')}`;
+              if (details.length > 0) medStr += ` - ${details.join(', ')}`;
+              if (med.instructions) medStr += ` (${med.instructions})`;
+              rxLinesFormatted.push(medStr);
+            });
+          }
+        }
+      } catch (e) {}
+
+      if (rxLinesFormatted.length === 0) {
+        rxLinesFormatted = rxText.split('\n');
+      }
+
+      const rxLines = doc.splitTextToSize(rxLinesFormatted.join('\n'), W - 30);
+      doc.text(rxLines, 15, 111, { baseline: 'top', lineLeading: 6 });
+
+      const rxHeight = rxLines.length * 6;
+      let currentY = 111 + rxHeight + 10;
+
+      // Treatment Plan / Estimates
+      const estimate = c.estimates?.[0];
+      const estimateItems = estimate?.items || [];
+      const calculatedSubtotal = estimate?.items?.reduce((sum, item) => sum + Number(item.cost || 0), 0) || 0;
+      const estimateDiscount = estimate?.discount || 0;
+      const calculatedDiscountAmount = (calculatedSubtotal * estimateDiscount) / 100;
+      const calculatedGrandTotal = calculatedSubtotal - calculatedDiscountAmount;
+
+      if (estimateItems.length > 0) {
+        doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+        doc.setLineWidth(0.5);
+        doc.line(15, currentY - 5, W - 15, currentY - 5);
+
+        doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('Treatment Summary & Care Receipt', 15, currentY);
+
+        currentY += 6;
+
+        doc.setFillColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+        doc.rect(15, currentY, W - 30, 8, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PROCEDURE / TREATMENT DONE', 20, currentY + 5.5);
+        doc.text('TOOTH', 120, currentY + 5.5);
+        doc.text('AMOUNT (INR)', 160, currentY + 5.5);
+
+        currentY += 8;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+
+        estimateItems.forEach((item, idx) => {
+          if (idx % 2 === 1) {
+            doc.setFillColor(BG_LIGHT[0], BG_LIGHT[1], BG_LIGHT[2]);
+            doc.rect(15, currentY, W - 30, 8, 'F');
+          }
+          doc.text(item.procedure, 20, currentY + 5.5);
+          doc.text(item.tooth ? `Tooth ${item.tooth}` : '-', 120, currentY + 5.5);
+          doc.text(`Rs. ${(item.cost || 0).toLocaleString('en-IN')}`, 160, currentY + 5.5);
+          currentY += 8;
+        });
+
+        doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+        doc.line(15, currentY, W - 15, currentY);
+        currentY += 6;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+        doc.text(`Subtotal:`, 125, currentY);
+        doc.text(`Rs. ${calculatedSubtotal.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
+
+        currentY += 5;
+        if (calculatedDiscountAmount > 0) {
+          doc.text(`Concession (${estimateDiscount}%):`, 125, currentY);
+          doc.setTextColor(ACCENT_GOLD[0], ACCENT_GOLD[1], ACCENT_GOLD[2]);
+          doc.text(`- Rs. ${calculatedDiscountAmount.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
+          currentY += 5;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.setTextColor(PRIMARY_TEAL[0], PRIMARY_TEAL[1], PRIMARY_TEAL[2]);
+        doc.text(`Final Amount (Paid):`, 125, currentY);
+        doc.text(`Rs. ${calculatedGrandTotal.toLocaleString('en-IN')}`, 190, currentY, { align: 'right' });
+      }
+
+      // Footer
+      const footerY = 270;
+      doc.setDrawColor(BORDER_LIGHT[0], BORDER_LIGHT[1], BORDER_LIGHT[2]);
+      doc.setLineWidth(0.5);
+      doc.line(15, footerY - 15, W - 15, footerY - 15);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.text('This is a digitally generated prescription/receipt. No physical signature is required.', 15, footerY - 5);
+      doc.text(`${clinicInfo.clinicName} · Thank you for letting us care for your smile.`, 15, footerY);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(TEXT_DARK[0], TEXT_DARK[1], TEXT_DARK[2]);
+      doc.text("Doctor's Signature", 150, footerY - 5);
+      doc.setDrawColor(TEXT_MUTED[0], TEXT_MUTED[1], TEXT_MUTED[2]);
+      doc.line(150, footerY - 1, 195, footerY - 1);
+
+      // Upload to Supabase
+      const pdfBuffer = doc.output('arraybuffer');
+      const uniqueFileName = `prescriptions/Rx_Estimate_${c.id || Date.now()}_${Date.now()}.pdf`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('creator-assets')
+        .upload(uniqueFileName, pdfBuffer, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('creator-assets')
+        .getPublicUrl(uniqueFileName);
+
+      // Send payload
+      const payload = {
+        messaging_product: 'whatsapp',
+        to: formattedPhone,
+        type: 'template',
+        template: {
+          name: 'prescription_pdf_share',
+          language: { code: 'en' },
+          components: [
+            {
+              type: 'header',
+              parameters: [
+                {
+                  type: 'document',
+                  document: {
+                    link: publicUrl,
+                    filename: `Rx_Estimate_${c.name?.replace(/\s+/g, '_') || 'Patient'}.pdf`
+                  }
+                }
+              ]
+            },
+            {
+              type: 'body',
+              parameters: [
+                { type: 'text', text: c.name || 'Patient' }
+              ]
+            }
+          ]
+        }
+      };
+
+      const apiRes = await fetch(`https://graph.facebook.com/v17.0/${wabaPhoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${wabaToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const apiData = await apiRes.json();
+      if (!apiRes.ok) {
+        throw new Error(apiData.error?.message || 'Meta API returned error');
+      }
+
+      console.log('Automated PDF dispatch succeeded via Meta Graph API:', apiData);
+      toast.success('WhatsApp prescription PDF shared automatically!');
+    } catch (err: any) {
+      console.error('Automated WhatsApp PDF dispatch failed:', err);
+    }
+  };
+
   const handleSave = useCallback(async (c: Customer) => {
     if (!clinicId) return;
 
@@ -2882,9 +3628,11 @@ const ReactivationCustomers: React.FC = () => {
       problem_teeth: c.problemTeeth || [],
       xrays: c.xrays || [],
       before_after_photos: c.beforeAfterPhotos || [],
-      before_photo: c.beforePhoto || null,
+      before_photos: c.beforePhotos || [],
+      before_photo: (c.beforePhotos && c.beforePhotos.length > 0) ? c.beforePhotos[0] : null,
       profile_photo: c.profilePhoto || null,
-      after_photo: c.afterPhoto || null,
+      after_photos: c.afterPhotos || [],
+      after_photo: (c.afterPhotos && c.afterPhotos.length > 0) ? c.afterPhotos[0] : null,
       prescription: c.prescription || null,
       allergies: c.allergies || [],
       medical_conditions: c.medicalConditions || [],
@@ -2900,6 +3648,7 @@ const ReactivationCustomers: React.FC = () => {
 
     try {
       const isNew = !c.id || c.id.startsWith('sim-') || c.id === '';
+      let savedCustomer = c;
       
       if (isNew) {
         // Insert patient into Supabase
@@ -2925,8 +3674,10 @@ const ReactivationCustomers: React.FC = () => {
             xrays: data.xrays || [],
             beforeAfterPhotos: data.before_after_photos || [],
             beforePhoto: data.before_photo,
+            beforePhotos: data.before_photos || (data.before_photo ? [data.before_photo] : []),
             profilePhoto: data.profile_photo,
             afterPhoto: data.after_photo,
+            afterPhotos: data.after_photos || (data.after_photo ? [data.after_photo] : []),
             prescription: data.prescription,
             allergies: data.allergies || [],
             medicalConditions: data.medical_conditions || [],
@@ -2939,6 +3690,7 @@ const ReactivationCustomers: React.FC = () => {
             programStatus: data.program_status,
             estimates: data.estimates || []
           };
+          savedCustomer = mapped;
           setCustomers((prev) => [mapped, ...prev]);
         }
       } else {
@@ -2966,8 +3718,10 @@ const ReactivationCustomers: React.FC = () => {
             xrays: data.xrays || [],
             beforeAfterPhotos: data.before_after_photos || [],
             beforePhoto: data.before_photo,
+            beforePhotos: data.before_photos || (data.before_photo ? [data.before_photo] : []),
             profilePhoto: data.profile_photo,
             afterPhoto: data.after_photo,
+            afterPhotos: data.after_photos || (data.after_photo ? [data.after_photo] : []),
             prescription: data.prescription,
             allergies: data.allergies || [],
             medicalConditions: data.medical_conditions || [],
@@ -2980,8 +3734,14 @@ const ReactivationCustomers: React.FC = () => {
             programStatus: data.program_status,
             estimates: data.estimates || []
           };
+          savedCustomer = mapped;
           setCustomers((prev) => prev.map((x) => x.id === mapped.id ? mapped : x));
         }
+      }
+
+      // Automatically send PDF on save if there is a prescription or billing estimate
+      if ((savedCustomer.prescription && savedCustomer.prescription.trim() !== '') || (savedCustomer.estimates && savedCustomer.estimates.length > 0)) {
+        sendWhatsAppPrescriptionPDF(savedCustomer).catch(err => console.error('Automated WhatsApp dispatch failed:', err));
       }
     } catch (err) {
       console.error('Error saving patient to database:', err);
