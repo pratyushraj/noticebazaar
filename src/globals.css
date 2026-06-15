@@ -1339,3 +1339,20 @@ textarea:focus-visible,
 .sonner-toast {
   z-index: 20100 !important;
 }
+
+/* ============================================ */
+/* DENTAL CRM RESPONSIVE MODAL CUSTOM UTILITIES */
+/* ============================================ */
+@media (min-width: 450px) {
+  .responsive-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+@media (min-width: 500px) {
+  .responsive-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .responsive-col-span-1 {
+    grid-column: span 1 / span 1 !important;
+  }
+}

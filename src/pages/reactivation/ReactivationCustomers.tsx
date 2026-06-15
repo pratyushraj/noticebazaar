@@ -1219,7 +1219,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
         <DialogContent
-          className="max-w-2xl border-0 p-0 overflow-hidden"
+          className="max-w-2xl border-0 p-0 overflow-hidden max-sm:fixed max-sm:bottom-0 max-sm:top-auto max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:w-full max-sm:max-w-full max-sm:rounded-t-2xl max-sm:rounded-b-none max-sm:max-h-[92vh] max-sm:flex max-sm:flex-col"
           style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
           aria-describedby={undefined}
         >
@@ -1230,10 +1230,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.97, y: 8 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="max-sm:flex max-sm:flex-col max-sm:h-full max-sm:max-h-[92vh] overflow-hidden"
               >
+                {/* Drag Handle for mobile bottom sheet */}
+                <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto mt-3 mb-1 shrink-0 hidden max-sm:block" style={{ backgroundColor: '#CBD5E1' }} />
                 {/* Header */}
                 <div
-                  className="px-4 sm:px-6 pt-5 pb-3"
+                  className="px-4 sm:px-6 pt-4 sm:pt-5 pb-3 shrink-0"
                   style={{ borderBottom: '1px solid #E2E8F0' }}
                 >
                   <DialogHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 text-left">
@@ -1304,9 +1307,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - General Tab */}
                 {activeTab === 'general' && (
-                  <div className="px-4 sm:px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                  <div className="px-4 sm:px-6 py-4 space-y-4 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1">
                     {/* Name + Phone row */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 responsive-grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Full Name <span className="text-red-400">*</span>
@@ -1334,7 +1337,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Last Visit + Service */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 responsive-grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Visit Date
@@ -1369,7 +1372,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Spend + Status */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 responsive-grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Advance / Paid (₹)
@@ -1485,7 +1488,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - Medical tab */}
                 {activeTab === 'medical' && (
-                  <div className="px-4 sm:px-6 py-5 space-y-5 max-h-[72vh] sm:max-h-[60vh] overflow-y-auto">
+                  <div className="px-4 sm:px-6 py-4 space-y-5 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1">
                     {/* Next Appointment */}
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-3">
                       <div className="flex items-center justify-between">
@@ -2177,7 +2180,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - Post Consultation tab */}
                 {activeTab === 'estimates' && (
-                  <div className="px-6 py-5 space-y-5 max-h-[60vh] overflow-y-auto">
+                  <div className="px-4 sm:px-6 py-4 space-y-5 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1">
                     {!showEstimateBuilder ? (
                       <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
                         <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-3">
@@ -2231,7 +2234,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                      <div className="grid grid-cols-1 responsive-grid-cols-3 md:grid-cols-4 gap-3 items-end">
                         {/* Tooth selector */}
                         <div>
                           <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Tooth / Area</label>
@@ -2248,7 +2251,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
 
                         {/* Procedure selector */}
-                        <div className="md:col-span-2">
+                        <div className="responsive-col-span-1 md:col-span-2">
                           <label className="block text-[10px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">Procedure Done</label>
                           <select
                             value={builderProcedureIdx}
@@ -2410,7 +2413,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Footer */}
                 <div
-                  className="px-6 py-4 flex items-center justify-end gap-3"
+                  className="px-6 py-4 flex items-center justify-end gap-3 shrink-0 bg-white"
                   style={{ borderTop: '1px solid #E2E8F0' }}
                 >
                   <button
