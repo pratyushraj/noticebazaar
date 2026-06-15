@@ -2917,12 +2917,22 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
           >
             <div className="relative w-full h-[70vh] flex items-center justify-center p-4">
               <img src={lightboxImg} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt="Patient X-Ray Radiograph scan Zoom" />
-              <button
-                onClick={() => setLightboxImg(null)}
-                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 border border-white/10 text-white flex items-center justify-center hover:bg-black/85 transition-colors"
-              >
-                <X size={16} />
-              </button>
+              <div className="absolute top-4 right-4 flex items-center gap-2">
+                <a
+                  href={lightboxImg}
+                  download={`patient_photo_${Date.now()}.png`}
+                  className="w-9 h-9 rounded-full bg-indigo-600 border border-indigo-500 text-white flex items-center justify-center hover:bg-indigo-700 transition-colors shadow-lg cursor-pointer"
+                  title="Download Image"
+                >
+                  <Download size={15} />
+                </a>
+                <button
+                  onClick={() => setLightboxImg(null)}
+                  className="w-9 h-9 rounded-full bg-black/60 border border-white/10 text-white flex items-center justify-center hover:bg-black/85 transition-colors shadow-lg"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
