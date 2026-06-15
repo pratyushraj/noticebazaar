@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   CalendarDays,
+  Settings,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -50,6 +51,11 @@ const NAV_ITEMS: NavItem[] = [
     path: '/reactivation/reviews',
     icon: Star,
   },
+  {
+    label: 'Clinic Settings',
+    path: '/reactivation/settings',
+    icon: Settings,
+  },
 ];
 
 // ─── Page title map ───────────────────────────────────────────────────────────
@@ -59,6 +65,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/reactivation/customers': 'Patients',
   '/reactivation/scheduler': 'Live Scheduler',
   '/reactivation/reviews': 'Google Reviews',
+  '/reactivation/settings': 'Clinic Settings',
   '/reactivation': 'Patients',
 };
 
@@ -145,6 +152,35 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
   const { profile } = useSession();
   const activeClinic = profile?.business_name || 'Dental Clinic';
 
+  // Read clinic name from localStorage for sidebar display
+  const { organizationId } = useSession();
+  const orgId = organizationId || 'default';
+  const [sidebarClinicName, setSidebarClinicName] = React.useState(() => {
+    try {
+      const raw = localStorage.getItem(`clinic_branding_${orgId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return parsed.clinicName || profile?.business_name || 'Dental Clinic';
+      }
+    } catch {}
+    return profile?.business_name || 'Dental Clinic';
+  });
+
+  // Refresh clinic name on every route change (user may have just saved settings)
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`clinic_branding_${orgId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setSidebarClinicName(parsed.clinicName || profile?.business_name || 'Dental Clinic');
+      } else {
+        setSidebarClinicName(profile?.business_name || 'Dental Clinic');
+      }
+    } catch {
+      setSidebarClinicName(profile?.business_name || 'Dental Clinic');
+    }
+  }, [location.pathname, orgId, profile?.business_name]);
+
   React.useEffect(() => {
     document.title = `${pageTitle} | Dental CRM`;
   }, [pageTitle]);
@@ -181,25 +217,29 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
         }}
       >
         {/* Logo area */}
-        <div className="px-5 pt-6 pb-5 flex items-center justify-between lg:block">
-          <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              {/* Lightning bolt logo mark */}
-              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
-                <ZapIcon size={14} className="text-indigo-400" />
+        <div className="px-5 pt-5 pb-4 flex items-start justify-between lg:block">
+          <div className="flex-1 min-w-0">
+            {/* App label */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-md bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+                <ZapIcon size={12} className="text-indigo-400" />
               </div>
-              <span className="text-[15px] font-bold text-slate-800 tracking-tight leading-none">
+              <span className="text-[11px] font-semibold text-slate-400 tracking-widest uppercase leading-none">
                 Dental CRM
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 tracking-wider pl-[38px] font-medium">
-              Patient records, follow-ups, and chairside notes
-            </p>
+            {/* Clinic name — prominent */}
+            <div className="pl-0.5">
+              <p className="text-[15px] font-bold text-slate-800 tracking-tight leading-snug truncate">
+                {sidebarClinicName}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Patient records &amp; chairside notes</p>
+            </div>
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
             aria-label="Close Sidebar"
-            className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden"
+            className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden mt-1 ml-2 flex-shrink-0"
           >
             <X size={18} />
           </button>

@@ -541,6 +541,24 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const [showVoiceSettingsModal, setShowVoiceSettingsModal] = useState(false);
 
+  // Clinic branding (loaded from localStorage, used for PDF generation)
+  const { organizationId } = useSession();
+  const _orgId = organizationId || 'default';
+  const [clinicBranding] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`clinic_branding_${_orgId}`);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return {
+      clinicName: profile?.business_name || 'Dental Clinic',
+      doctorName: '',
+      qualifications: '',
+      address: '',
+      phone: '',
+      email: '',
+    };
+  });
+
   // AI Scribe states
   const [activeFieldRecording, setActiveFieldRecording] = useState<'teeth' | 'prescription' | null>(null);
   const [isTranscribing, setIsTranscribing] = useState<'teeth' | 'prescription' | null>(null);
@@ -1574,21 +1592,123 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                     {/* Prescription (Rx) Editor */}
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 space-y-2.5">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
                         <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider font-sans">Prescription (Rx)</span>
-                        <button
-                          type="button"
-                          onClick={() => toggleFieldScribe('prescription')}
-                          disabled={isTranscribing === 'prescription'}
-                          className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border transition-all ${
-                            activeFieldRecording === 'prescription'
-                              ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
-                              : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
-                          }`}
-                        >
-                          <Mic size={9} />
-                          {activeFieldRecording === 'prescription' ? 'Listening...' : 'Scribe Rx'}
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          {/* Scribe Rx */}
+                          <button
+                            type="button"
+                            onClick={() => toggleFieldScribe('prescription')}
+                            disabled={isTranscribing === 'prescription'}
+                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border transition-all ${
+                              activeFieldRecording === 'prescription'
+                                ? 'bg-rose-500 border-rose-600 text-white animate-pulse'
+                                : 'bg-indigo-50 border-indigo-200 text-indigo-600 hover:bg-indigo-100'
+                            }`}
+                          >
+                            <Mic size={9} />
+                            {activeFieldRecording === 'prescription' ? 'Listening...' : 'Scribe Rx'}
+                          </button>
+                          {/* Print Rx PDF */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const rxText = form.prescription || '';
+                              const patientName = form.name || 'Patient';
+                              const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+                              const doc = new jsPDF({ unit: 'mm', format: 'a5', orientation: 'portrait' });
+                              const W = doc.internal.pageSize.getWidth();
+
+                              // ── Header gradient band ──────────────────────
+                              doc.setFillColor(238, 242, 255); // indigo-50
+                              doc.rect(0, 0, W, 38, 'F');
+
+                              // Border accent line
+                              doc.setDrawColor(79, 70, 229); // indigo-600
+                              doc.setLineWidth(0.8);
+                              doc.line(0, 38, W, 38);
+
+                              // Clinic name
+                              doc.setFont('helvetica', 'bold');
+                              doc.setFontSize(15);
+                              doc.setTextColor(49, 46, 129); // indigo-900
+                              doc.text(clinicBranding.clinicName || 'Dental Clinic', 8, 12);
+
+                              // Doctor name + qualifications
+                              doc.setFont('helvetica', 'normal');
+                              doc.setFontSize(9);
+                              doc.setTextColor(67, 56, 202); // indigo-700
+                              const drLine = [clinicBranding.doctorName, clinicBranding.qualifications].filter(Boolean).join(' · ');
+                              if (drLine) doc.text(drLine, 8, 20);
+
+                              // Address
+                              if (clinicBranding.address) {
+                                doc.setFontSize(8);
+                                doc.setTextColor(100, 116, 139); // slate-500
+                                doc.text(`📍 ${clinicBranding.address}`, 8, 27, { maxWidth: W - 50 });
+                              }
+
+                              // Phone / Email (right-aligned)
+                              doc.setFontSize(8);
+                              doc.setTextColor(100, 116, 139);
+                              let rightY = 14;
+                              if (clinicBranding.phone) { doc.text(`📞 ${clinicBranding.phone}`, W - 8, rightY, { align: 'right' }); rightY += 7; }
+                              if (clinicBranding.email) { doc.text(`✉ ${clinicBranding.email}`, W - 8, rightY, { align: 'right' }); }
+
+                              // ── Patient strip ──────────────────────────────
+                              doc.setFillColor(255, 255, 255);
+                              doc.rect(0, 38, W, 16, 'F');
+                              doc.setDrawColor(226, 232, 240);
+                              doc.setLineWidth(0.3);
+                              doc.line(0, 54, W, 54);
+
+                              doc.setFont('helvetica', 'bold');
+                              doc.setFontSize(7);
+                              doc.setTextColor(148, 163, 184);
+                              doc.text('PATIENT', 8, 44);
+                              doc.text('DATE', 80, 44);
+
+                              doc.setFont('helvetica', 'normal');
+                              doc.setFontSize(9);
+                              doc.setTextColor(30, 41, 59);
+                              doc.text(patientName, 8, 51);
+                              doc.text(today, 80, 51);
+
+                              // ── Rx symbol + body ──────────────────────────
+                              doc.setFont('helvetica', 'bold');
+                              doc.setFontSize(22);
+                              doc.setTextColor(129, 140, 248); // indigo-400
+                              doc.text('\u211E', 8, 70);
+
+                              doc.setFont('helvetica', 'normal');
+                              doc.setFontSize(10);
+                              doc.setTextColor(30, 41, 59);
+                              const lines = rxText
+                                ? doc.splitTextToSize(rxText, W - 28)
+                                : ['No prescription entered.'];
+                              doc.text(lines, 20, 65);
+
+                              // ── Footer ────────────────────────────────────
+                              const footerY = doc.internal.pageSize.getHeight() - 12;
+                              doc.setFillColor(248, 250, 252);
+                              doc.rect(0, footerY - 4, W, 16, 'F');
+                              doc.setDrawColor(226, 232, 240);
+                              doc.line(0, footerY - 4, W, footerY - 4);
+
+                              doc.setFontSize(7);
+                              doc.setTextColor(148, 163, 184);
+                              doc.text('Valid for 30 days · Not valid without signature', 8, footerY + 2);
+                              doc.text('Signature ___________', W - 8, footerY + 2, { align: 'right' });
+
+                              doc.save(`Rx_${patientName.replace(/\s+/g, '_')}_${today.replace(/\s+/g, '-')}.pdf`);
+                            }}
+                            className="flex items-center gap-1.5 px-2 py-0.5 rounded text-[9.5px] font-bold uppercase border bg-white border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 transition-all"
+                          >
+                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Print Rx PDF
+                          </button>
+                        </div>
                       </div>
                       <p className="text-[10px] text-slate-500">Describe the medicine details (prescriptions will be printed to PDF with full instructions):</p>
                       <textarea
@@ -2307,7 +2427,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                 {/* Body - Post Consultation tab */}
                 {activeTab === 'estimates' && (
-                  <div className="px-4 sm:px-6 py-4 space-y-5 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1">
+                  <div className="px-4 sm:px-6 py-4 space-y-5 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1 pb-6">
                     <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-indigo-500" />
@@ -2451,7 +2571,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       )}
 
                       {/* Calculations summary panel */}
-                      <div className="bg-slate-50 p-4.5 space-y-2.5">
+                      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
                         <div className="flex justify-between text-[11px] text-slate-500">
                           <span>Subtotal</span>
                           <span className="font-mono">₹{calculatedSubtotal.toLocaleString('en-IN')}</span>

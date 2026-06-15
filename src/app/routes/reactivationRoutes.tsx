@@ -15,6 +15,7 @@ const ReactivationAutomations = lazy(() => import('@/pages/reactivation/Reactiva
 const ReactivationReviews = lazy(() => import('@/pages/reactivation/ReactivationReviews'));
 const ReactivationLogin = lazy(() => import('@/pages/reactivation/ReactivationLogin'));
 const ReactivationScheduler = lazy(() => import('@/pages/reactivation/ReactivationScheduler'));
+const ReactivationClinicSettings = lazy(() => import('@/pages/reactivation/ReactivationClinicSettings'));
 
 // ─── Route definitions ────────────────────────────────────────────────────────
 
@@ -109,6 +110,16 @@ export const ReactivationRoutes = () => (
         <LazyRoute>
           <ReactivationLayout>
             <ReactivationReviews />
+          </ReactivationLayout>
+        </LazyRoute>
+      }
+    />
+    <Route
+      path="/reactivation/settings"
+      element={
+        <LazyRoute>
+          <ReactivationLayout>
+            <ReactivationClinicSettings />
           </ReactivationLayout>
         </LazyRoute>
       }
