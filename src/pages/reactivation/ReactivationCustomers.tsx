@@ -627,7 +627,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     
     if (customer?.estimates && customer.estimates.length > 0) {
       const activeEst = customer.estimates[0];
-      setEstimateItems(activeEst.items || []);
+      const itemsMapped = (activeEst.items || []).map((it: any) => ({
+        tooth: it.tooth,
+        procedure: it.procedure || it.name || '',
+        cost: Number(it.cost !== undefined ? it.cost : (it.price !== undefined ? it.price : 0)),
+        isCosmetic: !!(it.isCosmetic || it.category === 'Cosmetic')
+      }));
+      setEstimateItems(itemsMapped);
       setEstimateDiscount(activeEst.discount || 0);
       setEstimateStatus(activeEst.status || 'Draft');
     } else {
@@ -2667,7 +2673,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               </div>
 
                               <div className="flex items-center gap-3">
-                                <span className="text-slate-800 font-bold font-mono">₹{item.cost.toLocaleString('en-IN')}</span>
+                                <span className="text-slate-800 font-bold font-mono">₹{(item.cost || 0).toLocaleString('en-IN')}</span>
                                 <button
                                   type="button"
                                   onClick={() => setEstimateItems((prev) => prev.filter((_, i) => i !== idx))}
