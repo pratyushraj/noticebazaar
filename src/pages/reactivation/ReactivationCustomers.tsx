@@ -323,6 +323,23 @@ function timeAgo(isoDate: string): string {
   return `${Math.floor(days / 365)} year${Math.floor(days / 365) !== 1 ? 's' : ''} ago`;
 }
 
+function formatFollowUpTime(isoDate: string): string {
+  const now = new Date('2026-06-06');
+  const then = new Date(isoDate);
+  const diffMs = then.getTime() - now.getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (days < 0) {
+    const absDays = Math.abs(days);
+    return `Overdue by ${absDays} day${absDays !== 1 ? 's' : ''}`;
+  }
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Tomorrow';
+  if (days < 7) return `In ${days} day${days !== 1 ? 's' : ''}`;
+  if (days < 30) return `In ${Math.floor(days / 7)} week${Math.floor(days / 7) !== 1 ? 's' : ''}`;
+  return `In ${Math.floor(days / 30)} month${Math.floor(days / 30) !== 1 ? 's' : ''}`;
+}
+
 function formatSpend(amount: number): string {
   if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
   if (amount >= 1000) return `₹${(amount / 1000).toFixed(1)}K`;
@@ -2298,6 +2315,56 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       )}
                     </div>
 
+                    {/* Teeth Photos Gallery */}
+                    <div className="space-y-4 pt-2">
+                      <div>
+                        <h4 className="text-[12px] font-bold text-slate-800 uppercase tracking-wider">Teeth Gallery</h4>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Upload and manage multiple clinical photographs of the patient's teeth</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {/* Existing Images */}
+                        {(form.beforeAfterPhotos || []).map((photo, idx) => (
+                          <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 bg-neutral-900 group">
+                            <img src={photo} alt={`Clinical image ${idx + 1}`} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-150">
+                              <button
+                                type="button"
+                                onClick={() => setLightboxImg(photo)}
+                                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center transition-colors"
+                              >
+                                <Eye size={13} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTeethPhoto(idx)}
+                                className="w-8 h-8 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/30 text-rose-400 flex items-center justify-center transition-colors"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                            <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/70 border border-white/10 text-[8.5px] font-bold text-indigo-300">
+                              Image #{idx + 1}
+                            </span>
+                          </div>
+                        ))}
+
+                        {/* Upload Dropzone */}
+                        <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-all duration-150 group aspect-[4/3] p-4 text-center">
+                          <Upload size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                          <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Add Photo</span>
+                          <span className="text-[9px] text-slate-400 leading-tight">PNG, JPG (Max 5MB)</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleTeethPhotoUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+
                     {/* Advanced Clinical Details */}
                     <div className="space-y-3 mt-5">
                       <div className="flex items-center justify-between">
@@ -3478,15 +3545,32 @@ const ReactivationCustomers: React.FC = () => {
                       <StatusBadge status={customer.status} />
                     </div>
 
-                    <div className="mt-4 grid grid-cols-2 gap-2 text-[12px]">
-                      <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
-                        <div className="text-slate-400 text-[10px] uppercase tracking-wider">Last visit</div>
-                        <div className="text-slate-700 font-medium mt-0.5">{formatDate(customer.lastVisit)}</div>
-                        <div className="text-slate-400 text-[11px] mt-0.5">{timeAgo(customer.lastVisit)}</div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 text-[12px]">
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 px-2 py-2">
+                        <div className="text-slate-400 text-[9px] uppercase tracking-wider">Last visit</div>
+                        <div className="text-slate-700 font-medium mt-0.5 text-[11px] leading-tight truncate">{formatDate(customer.lastVisit)}</div>
+                        <div className="text-slate-400 text-[10px] mt-0.5 truncate">{timeAgo(customer.lastVisit)}</div>
                       </div>
-                      <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
-                        <div className="text-slate-400 text-[10px] uppercase tracking-wider">Paid so far</div>
-                        <div className="text-emerald-500 font-semibold mt-0.5">{formatSpend(customer.totalSpend)}</div>
+                      <div className="rounded-xl bg-indigo-50/40 border border-indigo-100/60 px-2 py-2">
+                        <div className="text-indigo-400 text-[9px] uppercase tracking-wider">Follow-Up</div>
+                        {(() => {
+                          const nextDate = getNextVisitDate(customer);
+                          if (nextDate) {
+                            return (
+                              <>
+                                <div className="text-indigo-600 font-semibold mt-0.5 text-[11px] leading-tight truncate">{formatDate(nextDate)}</div>
+                                <div className="text-indigo-400 text-[10px] mt-0.5 truncate">{formatFollowUpTime(nextDate)}</div>
+                              </>
+                            );
+                          }
+                          return (
+                            <div className="text-slate-400 font-medium mt-0.5 text-[11px] leading-tight italic truncate">Not Set</div>
+                          );
+                        })()}
+                      </div>
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 px-2 py-2">
+                        <div className="text-slate-400 text-[9px] uppercase tracking-wider">Paid so far</div>
+                        <div className="text-emerald-500 font-semibold mt-0.5 text-[11px] leading-tight truncate">{formatSpend(customer.totalSpend)}</div>
                       </div>
                     </div>
 
@@ -3549,6 +3633,7 @@ const ReactivationCustomers: React.FC = () => {
                     { label: 'Patient', w: 'min-w-[160px]', sortKey: null },
                     { label: 'Phone', w: 'min-w-[140px]', sortKey: null },
                     { label: 'Last Visit', w: 'min-w-[160px]', sortKey: 'lastVisit' as SortField },
+                    { label: 'Next Follow-Up', w: 'min-w-[160px]', sortKey: null },
                     { label: 'Service', w: 'min-w-[160px]', sortKey: null },
                     { label: 'Total Spend', w: 'min-w-[120px]', sortKey: 'totalSpend' as SortField },
                     { label: 'Status', w: 'min-w-[150px]', sortKey: null },
@@ -3685,6 +3770,28 @@ const ReactivationCustomers: React.FC = () => {
                                 {timeAgo(customer.lastVisit)}
                               </span>
                             </div>
+                          </td>
+
+                          {/* Next Follow-Up */}
+                          <td className="px-3 py-3.5">
+                            {(() => {
+                              const nextDate = getNextVisitDate(customer);
+                              if (nextDate) {
+                                return (
+                                  <div className="flex flex-col gap-0.5">
+                                    <span className="text-[12px] text-indigo-600 font-medium">
+                                      {formatDate(nextDate)}
+                                    </span>
+                                    <span className="text-[11px] text-indigo-400 font-semibold">
+                                      {formatFollowUpTime(nextDate)}
+                                    </span>
+                                  </div>
+                                );
+                              }
+                              return (
+                                <span className="text-[12px] text-slate-400 italic">Not Set</span>
+                              );
+                            })()}
                           </td>
 
                           {/* Service */}
