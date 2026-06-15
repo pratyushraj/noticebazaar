@@ -36,6 +36,7 @@ import {
   Mic,
   Volume2,
   Settings,
+  Camera,
 } from 'lucide-react';
 import {
   Dialog,
@@ -101,6 +102,7 @@ interface Customer {
   xrays?: string[];
   beforeAfterPhotos?: string[];
   beforePhoto?: string;
+  profilePhoto?: string;
   afterPhoto?: string;
   prescription?: string;
   allergies?: string[];
@@ -404,12 +406,20 @@ const StatusBadge: React.FC<{ status: CustomerStatus }> = ({ status }) => {
   );
 };
 
-const Avatar: React.FC<{ name: string; color: string; size?: 'sm' | 'md' }> = ({
+const Avatar: React.FC<{ name: string; color: string; size?: 'sm' | 'md'; profilePhoto?: string }> = ({
   name,
   color,
   size = 'md',
+  profilePhoto,
 }) => {
   const dim = size === 'sm' ? 'w-7 h-7 text-[10px]' : 'w-8 h-8 text-[11px]';
+  if (profilePhoto) {
+    return (
+      <div className={`${dim} rounded-full overflow-hidden flex-shrink-0 border border-slate-200 bg-neutral-900`}>
+        <img src={profilePhoto} alt={name} className="w-full h-full object-cover" />
+      </div>
+    );
+  }
   return (
     <div
       className={`${dim} rounded-full flex items-center justify-center font-bold flex-shrink-0`}
@@ -480,6 +490,7 @@ const EMPTY_CUSTOMER: Customer = {
   xrays: [],
   beforeAfterPhotos: [],
   beforePhoto: '',
+  profilePhoto: '',
   afterPhoto: '',
   prescription: '',
   allergies: [],
@@ -497,6 +508,7 @@ const getInitialForm = (customer?: Customer): Customer => {
     xrays: customer.xrays || [],
     beforeAfterPhotos: customer.beforeAfterPhotos || [],
     beforePhoto: customer.beforePhoto || '',
+    profilePhoto: customer.profilePhoto || '',
     afterPhoto: customer.afterPhoto || '',
     prescription: customer.prescription || '',
     allergies: customer.allergies || [],
@@ -1383,31 +1395,67 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {/* Body - General Tab */}
                 {activeTab === 'general' && (
                   <div className="px-4 sm:px-6 py-4 space-y-4 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1">
-                    {/* Name + Phone row */}
-                    <div className="grid grid-cols-1 responsive-grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                          Full Name <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          className={`${inputBase} ${inputFocusStyle}`}
-                          style={inputStyle}
-                          placeholder="e.g. Rahul Sharma"
-                          value={form.name}
-                          onChange={(e) => handleChange('name', e.target.value)}
-                        />
+                    {/* Profile Photo Uploader + Basic Details */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/50 border border-slate-200/60 p-4 rounded-xl">
+                      {/* Avatar/Profile Photo selector */}
+                      <div className="relative group shrink-0">
+                        {form.profilePhoto ? (
+                          <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-200 bg-neutral-900 relative">
+                            <img src={form.profilePhoto} alt="Patient Face" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleChange('profilePhoto', '')}
+                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-[10px] font-bold uppercase transition-opacity duration-150 rounded-full"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="w-16 h-16 rounded-full border border-dashed border-slate-300 hover:border-indigo-500 bg-white hover:bg-indigo-50/[0.04] flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all duration-150 group text-center shrink-0">
+                            <Camera size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                            <span className="text-[9px] font-semibold text-slate-500 leading-tight">Add Photo</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              capture="user"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  compressImage(file, (base64) => handleChange('profilePhoto', base64));
+                                }
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
                       </div>
-                      <div>
-                        <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
-                          Phone <span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          className={`${inputBase} ${inputFocusStyle}`}
-                          style={inputStyle}
-                          placeholder="+91 98765 43210"
-                          value={form.phone}
-                          onChange={(e) => handleChange('phone', e.target.value)}
-                        />
+
+                      {/* Name & Phone */}
+                      <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">
+                            Full Name <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            className={`${inputBase} ${inputFocusStyle}`}
+                            style={inputStyle}
+                            placeholder="e.g. Rahul Sharma"
+                            value={form.name}
+                            onChange={(e) => handleChange('name', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-slate-500 font-medium mb-1 uppercase tracking-wider">
+                            Phone <span className="text-red-400">*</span>
+                          </label>
+                          <input
+                            className={`${inputBase} ${inputFocusStyle}`}
+                            style={inputStyle}
+                            placeholder="+91 98765 43210"
+                            value={form.phone}
+                            onChange={(e) => handleChange('phone', e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -2902,6 +2950,7 @@ const ReactivationCustomers: React.FC = () => {
             xrays: d.xrays || [],
             beforeAfterPhotos: d.before_after_photos || [],
             beforePhoto: d.before_photo,
+            profilePhoto: d.profile_photo,
             afterPhoto: d.after_photo,
             prescription: d.prescription,
             allergies: d.allergies || [],
@@ -3102,6 +3151,7 @@ const ReactivationCustomers: React.FC = () => {
       xrays: c.xrays || [],
       before_after_photos: c.beforeAfterPhotos || [],
       before_photo: c.beforePhoto || null,
+      profile_photo: c.profilePhoto || null,
       after_photo: c.afterPhoto || null,
       prescription: c.prescription || null,
       allergies: c.allergies || [],
@@ -3143,6 +3193,7 @@ const ReactivationCustomers: React.FC = () => {
             xrays: data.xrays || [],
             beforeAfterPhotos: data.before_after_photos || [],
             beforePhoto: data.before_photo,
+            profilePhoto: data.profile_photo,
             afterPhoto: data.after_photo,
             prescription: data.prescription,
             allergies: data.allergies || [],
@@ -3183,6 +3234,7 @@ const ReactivationCustomers: React.FC = () => {
             xrays: data.xrays || [],
             beforeAfterPhotos: data.before_after_photos || [],
             beforePhoto: data.before_photo,
+            profilePhoto: data.profile_photo,
             afterPhoto: data.after_photo,
             prescription: data.prescription,
             allergies: data.allergies || [],
@@ -3524,7 +3576,7 @@ const ReactivationCustomers: React.FC = () => {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-start gap-3 min-w-0">
-                        <Avatar name={customer.name} color={customer.avatarColor} size="sm" />
+                        <Avatar name={customer.name} color={customer.avatarColor} size="sm" profilePhoto={customer.profilePhoto} />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 min-w-0">
                             <span className="text-[14px] font-semibold text-slate-800 truncate">
@@ -3715,7 +3767,7 @@ const ReactivationCustomers: React.FC = () => {
                           {/* Name + Avatar */}
                           <td className="px-3 py-3.5">
                             <div className="flex items-center gap-2.5">
-                              <Avatar name={customer.name} color={customer.avatarColor} />
+                              <Avatar name={customer.name} color={customer.avatarColor} profilePhoto={customer.profilePhoto} />
                               <div className="flex flex-col gap-0.5">
                                 <div className="flex items-center gap-1.5">
                                   <span className="text-[13px] font-semibold text-slate-800 leading-tight">
