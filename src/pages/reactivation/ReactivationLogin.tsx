@@ -23,12 +23,19 @@ const ReactivationLogin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // If session exists, redirect straight to patients list
+  // If session exists, redirect to appropriate page based on role
   useEffect(() => {
-    if (session && !isLoading) {
-      navigate('/reactivation/customers', { replace: true });
+    if (session && !loading && !isLoading) {
+      const userRole = profile?.role;
+      if (userRole === 'dentist' || userRole === 'receptionist') {
+        navigate('/reactivation/customers', { replace: true });
+      } else if (userRole) {
+        // If logged in as non-dentist (e.g. creator, brand), redirect to their own dashboard
+        const target = userRole === 'brand' ? '/brand-dashboard' : '/creator-dashboard';
+        navigate(target, { replace: true });
+      }
     }
-  }, [session, navigate, isLoading]);
+  }, [session, loading, profile, navigate, isLoading]);
 
   useEffect(() => {
     document.title = 'Dentist Portal Login | Reactivation';

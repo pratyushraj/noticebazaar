@@ -1,7 +1,9 @@
-import React, { type ReactNode, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import React, { type ReactNode, useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession } from '@/contexts/SessionContext';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
+import { toast } from 'sonner';
 import {
   Bot,
   Users,
@@ -11,6 +13,7 @@ import {
   X,
   CalendarDays,
   Settings,
+  Download,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -149,11 +152,52 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
   const pageTitle = PAGE_TITLES[location.pathname] ?? 'AI Reactivation';
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { profile } = useSession();
+  const { session, profile, loading, organizationId } = useSession();
+  const navigate = useNavigate();
+
+  // Role Protection: Ensure only dentist/receptionist can access these pages
+  useEffect(() => {
+    if (!loading) {
+      if (!session) {
+        navigate('/reactivation/login', { replace: true });
+      } else if (profile && profile.role !== 'dentist' && profile.role !== 'receptionist') {
+        const target = profile.role === 'brand' ? '/brand-dashboard' : '/creator-dashboard';
+        navigate(target, { replace: true });
+      }
+    }
+  }, [session, profile, loading, navigate]);
+
+  const { canInstall, promptInstall } = usePwaInstall();
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const checkStandalone = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+    setIsStandalone(checkStandalone);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (canInstall) {
+      const outcome = await promptInstall();
+      if (outcome) {
+        toast.success('Dental CRM web app installed successfully!');
+      }
+    } else {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        toast('To install: Tap the Share button in Safari and select "Add to Home Screen".', {
+          duration: 6000,
+        });
+      } else {
+        toast('To install: Tap the browser menu (three dots) and select "Install" or "Add to Home Screen".', {
+          duration: 6000,
+        });
+      }
+    }
+  };
+
   const activeClinic = profile?.business_name || 'Dental Clinic';
 
   // Read clinic name from localStorage for sidebar display
-  const { organizationId } = useSession();
   const orgId = organizationId || 'default';
   const [sidebarClinicName, setSidebarClinicName] = React.useState(() => {
     try {
@@ -189,6 +233,15 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
   React.useEffect(() => {
     setIsSidebarOpen(false);
   }, [location.pathname]);
+
+  if (loading || (session && !profile)) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+        <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+        <p className="mt-4 text-xs font-semibold text-slate-400 uppercase tracking-widest animate-pulse">Securing clinic session...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC]">
@@ -249,12 +302,26 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
         <div className="mx-4 mb-3 h-px bg-slate-200" />
 
         {/* Navigation */}
-        <nav className="flex-1 py-1 overflow-y-auto scrollbar-none">
+        <nav className="flex-1 py-1 overflow-y-auto scrollbar-none flex flex-col justify-between">
           <div className="flex flex-col gap-0.5">
             {NAV_ITEMS.map((item) => (
               <SidebarNavItem key={item.path} item={item} />
             ))}
           </div>
+
+          {/* Add Webapp Button (if not already running standalone) */}
+          {!isStandalone && (
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 mt-auto">
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-indigo-200 bg-white hover:bg-indigo-50 text-[12.5px] font-bold text-indigo-600 shadow-sm transition-all duration-150 active:scale-95 cursor-pointer"
+              >
+                <Download size={15} />
+                Add Webapp (App)
+              </button>
+            </div>
+          )}
         </nav>
 
 
