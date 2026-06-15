@@ -1471,7 +1471,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         /* Uploader dropzone */
                         <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
                           <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                          <span className="text-[12px] font-semibold text-slate-650 group-hover:text-slate-800 transition-colors">Upload Before Photo</span>
+                          <span className="text-[12px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Upload Before Photo</span>
                           <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB)</span>
                           <input
                             type="file"
@@ -1838,7 +1838,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                       {/* Uploader dropzone */}
                       <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group">
                         <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                        <span className="text-[12px] font-semibold text-slate-650 group-hover:text-slate-800 transition-colors">Upload X-Ray Image</span>
+                        <span className="text-[12px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Upload X-Ray Image</span>
                         <span className="text-[10px] text-slate-400">Supports PNG, JPG (Max 5MB)</span>
                         <input
                           type="file"
@@ -1979,7 +1979,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           ) : (
                             <label className="border border-dashed border-slate-200 hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/[0.04] rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-150 group aspect-[16/11]">
                               <Upload size={18} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                              <span className="text-[11px] font-semibold text-slate-650 group-hover:text-slate-800 transition-colors">Upload After Photo</span>
+                              <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-800 transition-colors">Upload After Photo</span>
                               <input
                                 type="file"
                                 accept="image/*"
@@ -2978,16 +2978,12 @@ const ReactivationCustomers: React.FC = () => {
                 Patient Database
               </h1>
               <span
-                className="px-2.5 py-1 rounded-full text-[11px] font-bold text-indigo-300 tracking-wide shrink-0"
-                style={{
-                  background: 'rgba(99,102,241,0.12)',
-                  border: '1px solid rgba(99,102,241,0.25)',
-                }}
+                className="px-2.5 py-1 rounded-full text-[11px] font-bold text-indigo-700 tracking-wide shrink-0 border border-indigo-200/60 bg-indigo-50"
               >
                 {stats.total.toLocaleString('en-IN')} patients
               </span>
             </div>
-            <p className="text-slate-500 text-[12px] sm:text-[13px] mt-1">
+            <p className="text-slate-600 text-[12px] sm:text-[13px] mt-1">
               Manage and track your patient relationships
             </p>
           </div>
@@ -3041,10 +3037,10 @@ const ReactivationCustomers: React.FC = () => {
         >
           <div className="flex items-center justify-between gap-3 mb-3">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-slate-400">Doctor Queue</p>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-slate-600 font-semibold">Doctor Queue</p>
               <h2 className="text-sm sm:text-base font-bold text-slate-800">Today&apos;s Appointments</h2>
             </div>
-            <div className="text-[11px] text-slate-500">
+            <div className="text-[11px] text-slate-600 font-medium">
               Based on patient follow-up and treatment history
             </div>
           </div>
@@ -3068,22 +3064,22 @@ const ReactivationCustomers: React.FC = () => {
                     <span
                       className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         item.overdue
-                          ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                          ? 'bg-rose-50 border border-rose-200 text-rose-800'
                           : item.appointmentWindow === 'today'
-                          ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
-                          : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                          ? 'bg-emerald-50 border border-emerald-250 text-emerald-800'
+                          : 'bg-amber-50 border border-amber-200/70 text-amber-800'
                       }`}
                     >
                       {item.overdue ? 'Overdue' : item.appointmentWindow}
                     </span>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3 text-[12px]">
-                    <span className="text-slate-500">{item.service}</span>
-                    <span className="font-semibold text-slate-700">
+                    <span className="text-slate-600 font-medium">{item.service}</span>
+                    <span className="font-semibold text-slate-800">
                       {formatDate(item.nextVisitDate)}
                     </span>
                   </div>
-                  <div className="mt-2 text-[11px] text-slate-400">
+                  <div className="mt-2 text-[11.5px] font-medium text-slate-600">
                     {item.dueLabel}
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">

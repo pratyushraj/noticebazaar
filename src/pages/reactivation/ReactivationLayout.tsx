@@ -198,6 +198,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
           </div>
           <button
             onClick={() => setIsSidebarOpen(false)}
+            aria-label="Close Sidebar"
             className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden"
           >
             <X size={18} />
@@ -229,6 +230,7 @@ const ReactivationLayout: React.FC<ReactivationLayoutProps> = ({ children }) => 
             {/* Hamburger button */}
             <button
               onClick={() => setIsSidebarOpen(true)}
+              aria-label="Open Sidebar"
               className="p-1 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 lg:hidden"
             >
               <Menu size={20} />
