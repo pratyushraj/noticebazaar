@@ -1306,7 +1306,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {activeTab === 'general' && (
                   <div className="px-4 sm:px-6 py-5 space-y-4 max-h-[60vh] overflow-y-auto">
                     {/* Name + Phone row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Full Name <span className="text-red-400">*</span>
@@ -1334,7 +1334,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Last Visit + Service */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Visit Date
@@ -1369,7 +1369,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
 
                     {/* Spend + Status */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] text-slate-500 font-medium mb-1.5 uppercase tracking-wider">
                           Advance / Paid (₹)
