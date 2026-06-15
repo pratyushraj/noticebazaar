@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { useDealAlertNotifications } from '@/hooks/useDealAlertNotifications';
 import { jsPDF } from 'jspdf';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -528,6 +529,12 @@ const PROCEDURES_CATALOG: Procedure[] = [
 
 const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, onSave }) => {
   const { profile } = useSession();
+  const {
+    isSupported: isPushSupported,
+    isSubscribed: isPushSubscribed,
+    isBusy: isPushBusy,
+    enableNotifications: enablePushNotifications
+  } = useDealAlertNotifications();
   const isEdit = !!customer?.id;
   const [form, setForm] = useState<Customer>(() => getInitialForm(customer));
   const [activeTab, setActiveTab] = useState<'general' | 'medical' | 'estimates'>('general');
@@ -2480,6 +2487,42 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                     </div>
                   </div>
                 </div>
+
+                {isPushSupported && (
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h5 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Web Push Notifications</h5>
+                        <p className="text-[10px] text-slate-500 leading-normal mt-0.5">
+                          Enable push alerts on this device for upcoming clinic appointments & patient follow-ups.
+                        </p>
+                      </div>
+                      <div className="shrink-0">
+                        {isPushSubscribed ? (
+                          <span className="px-2 py-0.5 bg-emerald-100 border border-emerald-200 text-emerald-800 text-[9px] font-bold uppercase rounded">
+                            Active
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const res = await enablePushNotifications();
+                              if (res.success) {
+                                alert("Web Push notifications enabled successfully!");
+                              } else {
+                                alert(`Failed to enable: ${res.reason}`);
+                              }
+                            }}
+                            disabled={isPushBusy}
+                            className="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-[10px] font-bold uppercase text-indigo-600 rounded transition-colors"
+                          >
+                            {isPushBusy ? '...' : 'Enable'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Quick Fill presets inside the settings box */}
