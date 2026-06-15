@@ -8,6 +8,7 @@ import {
   Play,
   Trash2,
   ChevronRight,
+  ChevronDown,
   Clock,
   Calendar,
   MessageSquare,
@@ -524,27 +525,33 @@ const FlowDiagram: React.FC<{ selectedAutomation: Automation | null }> = ({ sele
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="mt-5 pt-5 border-t border-slate-200 grid grid-cols-5 gap-2 text-center"
+            className="mt-5 pt-5 border-t border-slate-200 grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-2 text-center"
           >
             <div>
               <p className="text-[10px] text-slate-400 mb-1">When</p>
-              <p className="text-[11px] font-medium text-amber-300 leading-tight">{selectedAutomation.trigger}</p>
+              <p className="text-[11px] font-medium text-amber-500 leading-tight">{selectedAutomation.trigger}</p>
             </div>
-            <div className="flex items-start justify-center pt-3">
+            <div className="hidden md:flex items-start justify-center pt-3">
               <ChevronRight size={12} className="text-slate-800/15" />
+            </div>
+            <div className="flex md:hidden items-center justify-center -my-1.5">
+              <ChevronDown size={14} className="text-slate-400" />
             </div>
             <div>
               <p className="text-[10px] text-slate-400 mb-1">AI checks</p>
-              <p className="text-[11px] font-medium text-violet-300 leading-tight">
+              <p className="text-[11px] font-medium text-indigo-600 leading-tight">
                 {selectedAutomation.conditions?.[0] ?? 'No additional conditions'}
               </p>
             </div>
-            <div className="flex items-start justify-center pt-3">
+            <div className="hidden md:flex items-start justify-center pt-3">
               <ChevronRight size={12} className="text-slate-800/15" />
+            </div>
+            <div className="flex md:hidden items-center justify-center -my-1.5">
+              <ChevronDown size={14} className="text-slate-400" />
             </div>
             <div>
               <p className="text-[10px] text-slate-400 mb-1">Then sends</p>
-              <p className="text-[11px] font-medium text-emerald-300 leading-tight">{selectedAutomation.action}</p>
+              <p className="text-[11px] font-medium text-emerald-600 leading-tight">{selectedAutomation.action}</p>
             </div>
           </motion.div>
         )}

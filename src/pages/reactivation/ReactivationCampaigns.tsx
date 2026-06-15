@@ -696,7 +696,7 @@ const ReactivationCampaigns: React.FC = () => {
 
   useEffect(() => {
     if (profile?.business_name) {
-      setForm(prev => ({ ...prev, businessName: profile.business_name }));
+      setForm(prev => ({ ...prev, businessName: profile.business_name || '' }));
     }
   }, [profile?.business_name]);
 
@@ -1017,7 +1017,7 @@ const ReactivationCampaigns: React.FC = () => {
                   <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
                     Campaign Type
                   </label>
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
                     {CAMPAIGN_TYPES.map((ct) => {
                       const isSelected = form.type === ct.id;
                       const Icon = ct.icon;
@@ -1073,7 +1073,7 @@ const ReactivationCampaigns: React.FC = () => {
                   <label className="block text-[11px] font-bold tracking-widest uppercase text-slate-500 mb-3">
                     Business Details
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* Business Name */}
                     <div>
                       <label className="text-[10px] text-slate-400 font-medium mb-1 block">

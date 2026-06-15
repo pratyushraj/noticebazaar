@@ -559,6 +559,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   // RVG slider state
   const [xraySliderPos, setXraySliderPos] = useState(50);
   const [teethPhotoSliderPos, setTeethPhotoSliderPos] = useState(50);
+  const [activeQuadrant, setActiveQuadrant] = useState<'all' | 'UR' | 'UL' | 'LL' | 'LR'>('all');
 
   // Estimate builder states
   const [estimateItems, setEstimateItems] = useState<Array<{ tooth?: number; procedure: string; cost: number; isCosmetic: boolean }>>([]);
@@ -570,14 +571,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const [builderProcedureIdx, setBuilderProcedureIdx] = useState<string>('0');
   const [builderCost, setBuilderCost] = useState<number>(3500);
   const [copiedEstimate, setCopiedEstimate] = useState(false);
-  const [showEstimateBuilder, setShowEstimateBuilder] = useState(false);
-
   React.useEffect(() => {
     setForm(getInitialForm(customer));
     setActiveTab('general');
     setShowAdvancedClinical(false);
     setCopiedEstimate(false);
-    setShowEstimateBuilder(false);
+    setActiveQuadrant('all');
     
     if (customer?.estimates && customer.estimates.length > 0) {
       const activeEst = customer.estimates[0];
@@ -603,13 +602,13 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     return estimateItems.reduce((taxSum, item) => {
       if (!item.isCosmetic) return taxSum;
       const discountedItemCost = item.cost - (item.cost * estimateDiscount) / 100;
-      return taxSum + Math.round(discountedItemCost * 0.18);
+      return taxSum + Math.round(discountedItemCost - (discountedItemCost / 1.18));
     }, 0);
   }, [estimateItems, estimateDiscount]);
 
   const calculatedGrandTotal = useMemo(() => {
-    return calculatedSubtotal - calculatedDiscountAmount + calculatedGST;
-  }, [calculatedSubtotal, calculatedDiscountAmount, calculatedGST]);
+    return calculatedSubtotal - calculatedDiscountAmount;
+  }, [calculatedSubtotal, calculatedDiscountAmount]);
 
   const toggleNotesVoice = async () => {
     if (notesRecording) {
@@ -1091,8 +1090,65 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     }, 1200);
   };
 
+  const compressImage = (file: File, callback: (base64: string) => void) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 1024;
+        const MAX_HEIGHT = 1024;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8);
+          callback(compressedBase64);
+        } else {
+          callback(event.target?.result as string);
+        }
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleChange = (field: keyof Customer, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+    
+    // Context-aware defaults when changing service
+    if (field === 'service' && value) {
+      const selectedProc = PROCEDURES_CATALOG.find(p => p.name === value);
+      if (selectedProc) {
+        // Pre-fill totalSpend
+        setForm((prev) => ({ ...prev, service: value, totalSpend: selectedProc.defaultCost }));
+        
+        // Auto-populate estimates builder list
+        setEstimateItems([{
+          procedure: selectedProc.name,
+          cost: selectedProc.defaultCost,
+          isCosmetic: selectedProc.category === 'Cosmetic'
+        }]);
+        
+        // Set the active tab to estimates/billing
+        setActiveTab('estimates');
+      }
+    }
   };
 
   const handleToothToggle = (toothNum: number) => {
@@ -1108,13 +1164,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     const files = e.target.files;
     if (!files) return;
     Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          handleChange('xrays', [...(form.xrays || []), reader.result]);
-        }
-      };
-      reader.readAsDataURL(file);
+      compressImage(file, (compressedBase64) => {
+        handleChange('xrays', [...(form.xrays || []), compressedBase64]);
+      });
     });
   };
 
@@ -1126,13 +1178,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
     const files = e.target.files;
     if (!files) return;
     Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          handleChange('beforeAfterPhotos', [...(form.beforeAfterPhotos || []), reader.result]);
-        }
-      };
-      reader.readAsDataURL(file);
+      compressImage(file, (compressedBase64) => {
+        handleChange('beforeAfterPhotos', [...(form.beforeAfterPhotos || []), compressedBase64]);
+      });
     });
   };
 
@@ -1143,13 +1191,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const handleBeforePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        handleChange('beforePhoto', reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    compressImage(file, (compressedBase64) => {
+      handleChange('beforePhoto', compressedBase64);
+    });
   };
 
   const handleRemoveBeforePhoto = () => {
@@ -1159,13 +1203,9 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
   const handleAfterPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === 'string') {
-        handleChange('afterPhoto', reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+    compressImage(file, (compressedBase64) => {
+      handleChange('afterPhoto', compressedBase64);
+    });
   };
 
   const handleRemoveAfterPhoto = () => {
@@ -1435,6 +1475,28 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         value={form.notes}
                         onChange={(e) => handleChange('notes', e.target.value)}
                       />
+                      {/* Diagnosis Suggestions Tag Pills */}
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {['Toothache', 'Sensitivity', 'Swelling', 'Bleeding Gums', 'Missing Tooth', 'Cosmetic Aligners'].map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => {
+                              const currentNotes = form.notes ? form.notes.trim() : '';
+                              if (currentNotes) {
+                                if (!currentNotes.toLowerCase().includes(tag.toLowerCase())) {
+                                  handleChange('notes', `${currentNotes}, ${tag}`);
+                                }
+                              } else {
+                                handleChange('notes', tag);
+                              }
+                            }}
+                            className="px-2 py-0.5 rounded-full bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-[10px] font-semibold text-slate-600 hover:text-indigo-600 transition-colors cursor-pointer select-none"
+                          >
+                            + {tag}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Before Photo Section (Optional) */}
@@ -1476,6 +1538,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                           <input
                             type="file"
                             accept="image/*"
+                            capture="environment"
                             onChange={handleBeforePhotoUpload}
                             className="hidden"
                           />
@@ -1590,134 +1653,196 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         )}
                       </div>
 
-                      {/* Tooth Chart Layout Grid */}
-                      <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
-                        <div className="min-w-[500px] sm:min-w-0 w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
-                          {/* Midline guides */}
-                          <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
-                          <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
-
-                        {/* UPPER ARCH */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
-                          {/* Upper Right Quadrant (UR: 18 -> 11) */}
-                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-end flex-1">
-                            {quad1.map((num) => {
-                              const isProblem = (form.problemTeeth || []).includes(num);
-                              return (
-                                <Tooltip key={num}>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleToothToggle(num)}
-                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
-                                        isProblem
-                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
-                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
-                                      }`}
-                                    >
-                                      {num}
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </div>
-
-                          {/* midline divider */}
-                          <div className="w-[1px] h-8 bg-indigo-500/20" />
-
-                          {/* Upper Left Quadrant (UL: 21 -> 28) */}
-                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-start flex-1">
-                            {quad2.map((num) => {
-                              const isProblem = (form.problemTeeth || []).includes(num);
-                              return (
-                                <Tooltip key={num}>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleToothToggle(num)}
-                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
-                                        isProblem
-                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
-                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
-                                      }`}
-                                    >
-                                      {num}
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* LOWER ARCH */}
-                        <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
-                          {/* Lower Right Quadrant (LR: 48 -> 41) */}
-                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-end flex-1">
-                            {quad4.map((num) => {
-                              const isProblem = (form.problemTeeth || []).includes(num);
-                              return (
-                                <Tooltip key={num}>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleToothToggle(num)}
-                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
-                                        isProblem
-                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
-                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
-                                      }`}
-                                    >
-                                      {num}
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </div>
-
-                          {/* midline divider */}
-                          <div className="w-[1px] h-8 bg-indigo-500/20" />
-
-                          {/* Lower Left Quadrant (LL: 31 -> 38) */}
-                          <div className="flex items-center gap-[1px] sm:gap-1.5 justify-start flex-1">
-                            {quad3.map((num) => {
-                              const isProblem = (form.problemTeeth || []).includes(num);
-                              return (
-                                <Tooltip key={num}>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleToothToggle(num)}
-                                      className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
-                                        isProblem
-                                          ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
-                                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
-                                      }`}
-                                    >
-                                      {num}
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                    <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })}
-                          </div>
-                        </div>
+                      {/* Quadrant filter controls */}
+                      <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200 gap-0.5 w-full overflow-x-auto scrollbar-none">
+                        {(['all', 'UR', 'UL', 'LL', 'LR'] as const).map((q) => (
+                          <button
+                            key={q}
+                            type="button"
+                            onClick={() => setActiveQuadrant(q)}
+                            className={`flex-1 min-w-[55px] py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-150 text-center ${
+                              activeQuadrant === q
+                                ? 'bg-white text-indigo-600 shadow-sm border border-indigo-100'
+                                : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                          >
+                            {q === 'all' ? 'Full Chart' : `${q} Quad`}
+                          </button>
+                        ))}
                       </div>
-                    </div>
+
+                      {/* Tooth Chart Layout Grid */}
+                      <div className="w-full pb-2">
+                        {activeQuadrant !== 'all' ? (
+                          <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-center gap-3">
+                            <div className="text-[11px] font-bold text-slate-700 tracking-wider uppercase">
+                              {activeQuadrant === 'UR' && 'Upper Right Quadrant (UR)'}
+                              {activeQuadrant === 'UL' && 'Upper Left Quadrant (UL)'}
+                              {activeQuadrant === 'LL' && 'Lower Left Quadrant (LL)'}
+                              {activeQuadrant === 'LR' && 'Lower Right Quadrant (LR)'}
+                            </div>
+                            <div className="flex flex-wrap gap-2.5 justify-center py-2">
+                              {(activeQuadrant === 'UR' ? quad1 : activeQuadrant === 'UL' ? quad2 : activeQuadrant === 'LL' ? quad3 : quad4).map((num) => {
+                                const isProblem = (form.problemTeeth || []).includes(num);
+                                return (
+                                  <Tooltip key={num}>
+                                    <TooltipTrigger asChild>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToothToggle(num)}
+                                        className={`w-14 h-14 rounded-xl flex flex-col items-center justify-center border transition-all duration-150 select-none shadow-sm ${
+                                          isProblem
+                                            ? 'bg-rose-50 border-rose-300 text-rose-600 ring-2 ring-rose-500/20'
+                                            : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
+                                        }`}
+                                      >
+                                        <span className="text-[15px] font-bold">{num}</span>
+                                        <span className="text-[8px] opacity-75 mt-0.5 max-w-[50px] text-center truncate">
+                                          {getToothName(num).split(' ').pop()}
+                                        </span>
+                                      </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                      <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                );
+                              })}
+                            </div>
+                            <div className="text-[9px] text-slate-400 font-medium italic">
+                              Enlarged touch targets active. Double tap or click to toggle teeth.
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
+                            <div className="min-w-[500px] sm:min-w-0 w-full bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 justify-center items-center relative">
+                              {/* Midline guides */}
+                              <div className="absolute top-0 bottom-0 left-1/2 w-px bg-slate-200 pointer-events-none" />
+                              <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-200 pointer-events-none" />
+
+                              {/* UPPER ARCH */}
+                              <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
+                                {/* Upper Right Quadrant (UR: 18 -> 11) */}
+                                <div className="flex items-center gap-[1px] sm:gap-1.5 justify-end flex-1">
+                                  {quad1.map((num) => {
+                                    const isProblem = (form.problemTeeth || []).includes(num);
+                                    return (
+                                      <Tooltip key={num}>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleToothToggle(num)}
+                                            className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                              isProblem
+                                                ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
+                                            }`}
+                                          >
+                                            {num}
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                          <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* midline divider */}
+                                <div className="w-[1px] h-8 bg-indigo-500/20" />
+
+                                {/* Upper Left Quadrant (UL: 21 -> 28) */}
+                                <div className="flex items-center gap-[1px] sm:gap-1.5 justify-start flex-1">
+                                  {quad2.map((num) => {
+                                    const isProblem = (form.problemTeeth || []).includes(num);
+                                    return (
+                                      <Tooltip key={num}>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleToothToggle(num)}
+                                            className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                              isProblem
+                                                ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
+                                            }`}
+                                          >
+                                            {num}
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                          <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* LOWER ARCH */}
+                              <div className="flex items-center gap-1.5 sm:gap-2 justify-center w-full">
+                                {/* Lower Right Quadrant (LR: 48 -> 41) */}
+                                <div className="flex items-center gap-[1px] sm:gap-1.5 justify-end flex-1">
+                                  {quad4.map((num) => {
+                                    const isProblem = (form.problemTeeth || []).includes(num);
+                                    return (
+                                      <Tooltip key={num}>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleToothToggle(num)}
+                                            className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                              isProblem
+                                                ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
+                                            }`}
+                                          >
+                                            {num}
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                          <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* midline divider */}
+                                <div className="w-[1px] h-8 bg-indigo-500/20" />
+
+                                {/* Lower Left Quadrant (LL: 31 -> 38) */}
+                                <div className="flex items-center gap-[1px] sm:gap-1.5 justify-start flex-1">
+                                  {quad3.map((num) => {
+                                    const isProblem = (form.problemTeeth || []).includes(num);
+                                    return (
+                                      <Tooltip key={num}>
+                                        <TooltipTrigger asChild>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleToothToggle(num)}
+                                            className={`w-[22px] h-[22px] sm:w-8 sm:h-8 rounded flex items-center justify-center text-[9px] sm:text-[10px] font-bold border transition-all duration-150 select-none ${
+                                              isProblem
+                                                ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                                : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-600'
+                                            }`}
+                                          >
+                                            {num}
+                                          </button>
+                                        </TooltipTrigger>
+                                        <TooltipContent style={{ background: '#1a2035', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                          <p className="text-[11px] font-medium text-white">{getToothName(num)}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
                       {/* Selected teeth details */}
                       {form.problemTeeth && form.problemTeeth.length > 0 ? (
@@ -1843,6 +1968,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         <input
                           type="file"
                           accept="image/*"
+                          capture="environment"
                           multiple
                           onChange={handleXrayUpload}
                           className="hidden"
@@ -1983,6 +2109,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                               <input
                                 type="file"
                                 accept="image/*"
+                                capture="environment"
                                 onChange={handleAfterPhotoUpload}
                                 className="hidden"
                               />
@@ -2181,46 +2308,12 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                 {/* Body - Post Consultation tab */}
                 {activeTab === 'estimates' && (
                   <div className="px-4 sm:px-6 py-4 space-y-5 overflow-y-auto max-h-[60vh] max-sm:max-h-[calc(92vh-170px)] scrollbar-none flex-1">
-                    {!showEstimateBuilder ? (
-                      <div className="flex flex-col items-center justify-center py-10 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                        <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 mb-3">
-                          <StickyNote size={18} />
-                        </div>
-                        <h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider mb-1">Treatment Summary & Billing</h4>
-                        <p className="text-[11px] text-slate-500 text-center max-w-sm mb-4">
-                          Log completed procedures, teeth/areas, professional concessions, and preview patient records.
-                        </p>
-                        {estimateItems.length > 0 && (
-                          <div className="mb-4 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-                            Active: {estimateItems.length} item{estimateItems.length > 1 ? 's' : ''} logged · Final: ₹{calculatedGrandTotal.toLocaleString('en-IN')}
-                          </div>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => setShowEstimateBuilder(true)}
-                          className="px-5 py-2 rounded-lg text-xs font-bold text-white transition-all shadow-md shadow-indigo-500/20"
-                          style={{
-                            background: 'linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%)',
-                          }}
-                        >
-                          Show Summary
-                        </button>
+                    <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-indigo-500" />
+                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Treatment Summary Builder</span>
                       </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">Treatment Summary Builder</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setShowEstimateBuilder(false)}
-                            className="text-[10px] text-slate-400 hover:text-slate-600 font-semibold uppercase tracking-wider transition-colors"
-                          >
-                            Hide Summary
-                          </button>
-                        </div>
+                    </div>
 
                         {/* Add Item Builder */}
                         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
@@ -2366,19 +2459,24 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
 
                         {/* Discount row */}
                         <div className="flex items-center justify-between text-[11px] text-slate-600 gap-4">
-                          <span className="flex items-center gap-1.5 shrink-0">
+                          <span className="flex items-center gap-1.5 shrink-0 font-medium">
                             Discount / Concession
                           </span>
-                          <div className="flex items-center gap-2 justify-end w-full max-w-[180px]">
-                            <input
-                              type="range"
-                              min="0"
-                              max="30"
-                              value={estimateDiscount}
-                              onChange={(e) => setEstimateDiscount(Number(e.target.value))}
-                              className="w-full accent-indigo-500"
-                            />
-                            <span className="font-mono text-slate-800 text-[11.5px] font-bold shrink-0">{estimateDiscount}%</span>
+                          <div className="flex items-center gap-1 flex-wrap justify-end">
+                            {[0, 5, 10, 15, 20, 30].map((val) => (
+                              <button
+                                key={val}
+                                type="button"
+                                onClick={() => setEstimateDiscount(val)}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all border ${
+                                  estimateDiscount === val
+                                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                }`}
+                              >
+                                {val}%
+                              </button>
+                            ))}
                           </div>
                         </div>
 
@@ -2390,7 +2488,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         )}
 
                         <div className="flex justify-between text-[11px] text-slate-500">
-                          <span>GST <span className="text-[9px] text-slate-400">(Cosmetic only)</span></span>
+                          <span>GST <span className="text-[9px] text-slate-400">(Inclusive, Cosmetic)</span></span>
                           <span className="font-mono">₹{calculatedGST.toLocaleString('en-IN')}</span>
                         </div>
 
@@ -2402,10 +2500,6 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ open, onClose, customer, 
                         </div>
                       </div>
                     </div>
-
-
-                      </>
-                    )}
                   </div>
                 )}
 
