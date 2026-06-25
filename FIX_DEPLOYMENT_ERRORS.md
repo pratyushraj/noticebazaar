@@ -90,7 +90,7 @@ if (origin.includes('netlify.app')) {
 
 Test API from browser console:
 ```javascript
-fetch('https://creatorarmour-api.onrender.com/health', {
+fetch('https://creatorarmour-api-k86q.onrender.com/health', {
   method: 'GET',
   headers: {
     'Origin': 'https://creatorarmour-frontend.onrender.com'

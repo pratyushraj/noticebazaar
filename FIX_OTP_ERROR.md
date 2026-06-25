@@ -1,7 +1,7 @@
 # Fix OTP Email Error on Deployed Server
 
 ## Problem
-The error "Resend API key is not configured" appears when trying to send OTP emails on the deployed server (`creatorarmour-api.onrender.com`).
+The error "Resend API key is not configured" appears when trying to send OTP emails on the deployed server (`creatorarmour-api-k86q.onrender.com`).
 
 ## Solution: Add RESEND_API_KEY to Render
 

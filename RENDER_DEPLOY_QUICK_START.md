@@ -38,7 +38,7 @@
      ```
      VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
      VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-     VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+     VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
      NODE_ENV=production
      ```
 
@@ -57,7 +57,7 @@ See `DEPLOY_RENDER_NOW.md` for detailed step-by-step instructions.
    - Add: `https://creatorarmour-frontend.onrender.com/**`
 
 2. **Test:**
-   - Backend: `curl https://creatorarmour-api.onrender.com/health`
+   - Backend: `curl https://creatorarmour-api-k86q.onrender.com/health`
    - Frontend: Visit `https://creatorarmour-frontend.onrender.com`
 
 ---
@@ -85,7 +85,7 @@ See `DEPLOY_RENDER_NOW.md` for detailed step-by-step instructions.
 
 ## 🎯 URLs After Deployment
 
-- **Backend:** `https://creatorarmour-api.onrender.com`
+- **Backend:** `https://creatorarmour-api-k86q.onrender.com`
 - **Frontend:** `https://creatorarmour-frontend.onrender.com`
-- **Health Check:** `https://creatorarmour-api.onrender.com/health`
+- **Health Check:** `https://creatorarmour-api-k86q.onrender.com/health`
 

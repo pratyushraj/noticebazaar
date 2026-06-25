@@ -2107,7 +2107,7 @@ const CollabLinkLanding = () => {
       const fallbackApiBaseUrl = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(
         primaryApiBaseUrl
       )
-        ? 'https://creatorarmour-api.onrender.com'
+        ? 'https://creatorarmour-api-k86q.onrender.com'
         : null
       const candidateApiBaseUrls = [primaryApiBaseUrl, fallbackApiBaseUrl].filter(
         (value, index, all): value is string => Boolean(value) && all.indexOf(value) === index

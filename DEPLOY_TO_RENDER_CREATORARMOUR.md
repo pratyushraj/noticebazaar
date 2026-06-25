@@ -106,7 +106,7 @@ All changes have been committed and pushed to GitHub:
 
 ### Frontend - Update these:
 
-- `VITE_API_BASE_URL`: Update to your API URL (e.g., `https://creatorarmour-api.onrender.com`)
+- `VITE_API_BASE_URL`: Update to your API URL (e.g., `https://creatorarmour-api-k86q.onrender.com`)
 
 ---
 

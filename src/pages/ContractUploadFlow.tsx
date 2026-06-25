@@ -201,7 +201,7 @@ const ContractUploadFlow = () => {
           apiBaseUrl.includes('localhost')
         ) {
           console.warn('[ContractUploadFlow] Localhost API unavailable, trying production API...');
-          apiBaseUrl = 'https://creatorarmour-api.onrender.com';
+          apiBaseUrl = 'https://creatorarmour-api-k86q.onrender.com';
           try {
             response = await fetch(`${apiBaseUrl}/api/deal-details-tokens`, {
               method: 'POST',
@@ -1206,7 +1206,7 @@ ${creatorName}`;
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'https://creatorarmour-api.onrender.com');
+          : 'https://creatorarmour-api-k86q.onrender.com');
       const response = await fetch(`${apiBaseUrl}/api/protection/send-negotiation-email`, {
         method: 'POST',
         headers: {
@@ -1282,7 +1282,7 @@ ${creatorName}`;
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
         (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
           ? 'https://api.creatorarmour.com'
-          : 'https://creatorarmour-api.onrender.com');
+          : 'https://creatorarmour-api-k86q.onrender.com');
       const response = await fetch(`${apiBaseUrl}/api/protection/generate-fix`, {
         method: 'POST',
         headers: {
@@ -3463,7 +3463,7 @@ ${creatorName}`;
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                 (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                   ? 'https://api.creatorarmour.com'
-                                  : 'https://creatorarmour-api.onrender.com');
+                                  : 'https://creatorarmour-api-k86q.onrender.com');
                               const requestBody: any = { brandName: 'the Brand' };
                               if (reportId) {
                                 requestBody.reportId = reportId;
@@ -4335,7 +4335,7 @@ ${creatorName}`;
                                             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                               (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                                 ? 'https://api.creatorarmour.com'
-                                                : 'https://creatorarmour-api.onrender.com');
+                                                : 'https://creatorarmour-api-k86q.onrender.com');
 
                                             const requestBody: any = {
                                               brandName: 'the Brand'
@@ -4588,7 +4588,7 @@ ${creatorName}`;
                             const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                               (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                 ? 'https://api.creatorarmour.com'
-                                : 'https://creatorarmour-api.onrender.com');
+                                : 'https://creatorarmour-api-k86q.onrender.com');
 
                             const requestBody: any = {
                               brandName: 'the Brand'
@@ -5059,7 +5059,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                       (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                         ? 'https://api.creatorarmour.com'
-                                        : 'https://creatorarmour-api.onrender.com');
+                                        : 'https://creatorarmour-api-k86q.onrender.com');
 
                                     // Generate clauses for all unresolved issues
                                     const clausePromises = unresolvedIssues.slice(0, 5).map(async (issue) => {
@@ -5133,7 +5133,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                             ? 'https://api.creatorarmour.com'
-                                            : 'https://creatorarmour-api.onrender.com');
+                                            : 'https://creatorarmour-api-k86q.onrender.com');
                                         const response = await fetch(`${apiBaseUrl}/api/protection/generate-negotiation-message`, {
                                           method: 'POST',
                                           headers: {
@@ -5679,7 +5679,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                 (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                   ? 'https://api.creatorarmour.com'
-                                  : 'https://creatorarmour-api.onrender.com');
+                                  : 'https://creatorarmour-api-k86q.onrender.com');
 
                               const requestBody: any = {
                                 brandName: 'the Brand'
@@ -5774,7 +5774,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                 (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                   ? 'https://api.creatorarmour.com'
-                                  : 'https://creatorarmour-api.onrender.com');
+                                  : 'https://creatorarmour-api-k86q.onrender.com');
                               const response = await fetch(`${apiBaseUrl}/api/protection/send-for-legal-review`, {
                                 method: 'POST',
                                 headers: {
@@ -5848,7 +5848,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                 (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                   ? 'https://api.creatorarmour.com'
-                                  : 'https://creatorarmour-api.onrender.com');
+                                  : 'https://creatorarmour-api-k86q.onrender.com');
                               // Validate creator address and phone before generating contract
                               const validation = validateCreatorContactInfo();
                               if (!validation.isValid) {
@@ -6118,7 +6118,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                           (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                             ? 'https://api.creatorarmour.com'
-                            : 'https://creatorarmour-api.onrender.com');
+                            : 'https://creatorarmour-api-k86q.onrender.com');
 
                         // Prepare request body - send issues if reportId is not available
                         const requestBody: any = {
@@ -6339,7 +6339,7 @@ ${creatorName}${session?.user?.email ? `\n${session.user.email}` : ''}`;
                               const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
                                 (typeof window !== 'undefined' && window.location.origin.includes('creatorarmour.com')
                                   ? 'https://api.creatorarmour.com'
-                                  : 'https://creatorarmour-api.onrender.com');
+                                  : 'https://creatorarmour-api-k86q.onrender.com');
                               // Validate creator address and phone before generating contract
                               const validation = validateCreatorContactInfo();
                               if (!validation.isValid) {

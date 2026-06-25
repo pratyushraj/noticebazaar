@@ -480,7 +480,7 @@ function DealDetailPageContent() {
         });
       } catch (e) {
         console.warn('Local API failed, trying production...', e);
-        resp = await fetch(`https://creatorarmour-api.onrender.com/api/otp/send-creator`, {
+        resp = await fetch(`https://creatorarmour-api-k86q.onrender.com/api/otp/send-creator`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -541,7 +541,7 @@ function DealDetailPageContent() {
         });
       } catch (e) {
         console.warn('Local API failed, trying production...', e);
-        resp = await fetch(`https://creatorarmour-api.onrender.com/api/otp/verify-creator`, {
+        resp = await fetch(`https://creatorarmour-api-k86q.onrender.com/api/otp/verify-creator`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -626,17 +626,17 @@ function DealDetailPageContent() {
             } else {
               // If localhost returns an error, try production API
               console.warn('[DealDetailPage] Localhost API returned error, trying production API...');
-              apiBaseUrl = 'https://creatorarmour-api.onrender.com';
+              apiBaseUrl = 'https://creatorarmour-api-k86q.onrender.com';
             }
           } else {
             // If localhost returns non-ok status, try production API
             console.warn('[DealDetailPage] Localhost API unavailable (status:', resp.status, '), trying production API...');
-            apiBaseUrl = 'https://creatorarmour-api.onrender.com';
+            apiBaseUrl = 'https://creatorarmour-api-k86q.onrender.com';
           }
         } catch (localhostError) {
           console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
           // Fallback to production API
-          apiBaseUrl = 'https://creatorarmour-api.onrender.com';
+          apiBaseUrl = 'https://creatorarmour-api-k86q.onrender.com';
         }
       }
 
@@ -1786,7 +1786,7 @@ function DealDetailPageContent() {
           (typeof window !== 'undefined' &&
             window.location.origin.includes('creatorarmour.com')
             ? 'https://api.creatorarmour.com'
-            : 'https://creatorarmour-api.onrender.com');
+            : 'https://creatorarmour-api-k86q.onrender.com');
 
         const formData = new FormData();
         formData.append('file', file);
@@ -2051,7 +2051,7 @@ Best regards`;
             apiBaseUrl.includes('localhost')
           ) {
             console.warn('[DealDetailPage] Localhost API unavailable, trying production API...');
-            apiBaseUrl = 'https://creatorarmour-api.onrender.com';
+            apiBaseUrl = 'https://creatorarmour-api-k86q.onrender.com';
             response = await fetch(`${apiBaseUrl}/api/deal-details-tokens/deal/${deal.id}`, {
               headers: {
                 Authorization: `Bearer ${session.access_token}`,

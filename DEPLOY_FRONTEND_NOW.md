@@ -48,7 +48,7 @@ Since your API is already working, let's deploy the frontend separately as a Sta
    
    ```
    Key: VITE_API_BASE_URL
-   Value: https://creatorarmour-api.onrender.com
+   Value: https://creatorarmour-api-k86q.onrender.com
    ```
    
    ```
@@ -114,7 +114,7 @@ Should return your HTML page.
 
 ## What You'll Have
 
-✅ **API:** `https://creatorarmour-api.onrender.com` (already working)  
+✅ **API:** `https://creatorarmour-api-k86q.onrender.com` (already working)  
 ✅ **Frontend:** `https://creatorarmour-frontend.onrender.com` (newly deployed)  
 ✅ **Both services auto-deploy on git push**  
 ✅ **Free tier for both**  

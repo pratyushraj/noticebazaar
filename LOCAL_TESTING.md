@@ -68,11 +68,11 @@ Browsers block `creatorarmour.com` → `localhost:3001` due to CORS.
 ### Option 3: Use Render API (Production)
 
 The Render API is already deployed at:
-- `https://creatorarmour-api.onrender.com`
+- `https://creatorarmour-api-k86q.onrender.com`
 
 Just update your frontend environment variable:
 ```env
-VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
 ```
 
 ## Quick Test Commands

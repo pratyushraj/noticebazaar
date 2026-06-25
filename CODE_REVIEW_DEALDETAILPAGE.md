@@ -219,7 +219,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ||
     ? 'https://api.creatorarmour.com'
     : typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:3001'
-    : 'https://creatorarmour-api.onrender.com');
+    : 'https://creatorarmour-api-k86q.onrender.com');
 
 // Suggested: Extract to utility
 export const getApiBaseUrl = (): string => {
@@ -228,7 +228,7 @@ export const getApiBaseUrl = (): string => {
   }
   
   if (typeof window === 'undefined') {
-    return 'https://creatorarmour-api.onrender.com';
+    return 'https://creatorarmour-api-k86q.onrender.com';
   }
   
   const { hostname, origin } = window.location;
@@ -241,7 +241,7 @@ export const getApiBaseUrl = (): string => {
     return 'http://localhost:3001';
   }
   
-  return 'https://creatorarmour-api.onrender.com';
+  return 'https://creatorarmour-api-k86q.onrender.com';
 };
 ```
 

@@ -39,11 +39,11 @@ PORT=10000
 ### Step 4: Deploy
 - Click **"Create Web Service"**
 - Render will build and deploy automatically
-- You'll get a URL like: `https://creatorarmour-api.onrender.com`
+- You'll get a URL like: `https://creatorarmour-api-k86q.onrender.com`
 
 ### Step 5: Test
 ```bash
-curl https://creatorarmour-api.onrender.com/health
+curl https://creatorarmour-api-k86q.onrender.com/health
 ```
 
 Should return:
@@ -103,7 +103,7 @@ However, the dashboard method is much easier and recommended.
 Once deployed, update your frontend environment variable:
 
 ```env
-VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
 ```
 
 Or if using custom domain:

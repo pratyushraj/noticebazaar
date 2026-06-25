@@ -100,7 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               if (sub) {
                 const host = window.location.hostname.toLowerCase();
                 const isPublicHost = host.endsWith('creatorarmour.com') || host.endsWith('vercel.app');
-                const pushApiBase = isPublicHost ? '' : 'https://creatorarmour-api.onrender.com';
+                const pushApiBase = isPublicHost ? '' : 'https://creatorarmour-api-k86q.onrender.com';
                 await fetch(`${pushApiBase}/api/push/subscribe`, {
                   method: 'POST',
                   headers: {

@@ -36,7 +36,7 @@ Render's free tier supports web services, making it a perfect alternative to Rai
 5. **Deploy:**
    - Click "Create Web Service"
    - Render will automatically build and deploy
-   - You'll get a URL like: `https://creatorarmour-api.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-api-k86q.onrender.com`
 
 6. **Configure Custom Domain (Optional):**
    - Go to Settings → Custom Domains
@@ -58,7 +58,7 @@ Render's free tier supports web services, making it a perfect alternative to Rai
 
 ### Test Your API:
 ```bash
-curl https://creatorarmour-api.onrender.com/health
+curl https://creatorarmour-api-k86q.onrender.com/health
 ```
 
 Should return:
@@ -74,7 +74,7 @@ Should return:
 ### Update Frontend:
 Once your API is deployed, update your frontend environment variable:
 ```
-VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
 ```
 Or if you set up custom domain:
 ```

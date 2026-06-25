@@ -51,13 +51,13 @@ FRONTEND_URL=https://creatorarmour.com
 ### 7. Wait for Deployment
 - Build takes ~2-5 minutes
 - Watch the logs in real-time
-- You'll see: "Your service is live at https://creatorarmour-api.onrender.com"
+- You'll see: "Your service is live at https://creatorarmour-api-k86q.onrender.com"
 
 ## After Deployment
 
 ### Test Your API:
 ```bash
-curl https://creatorarmour-api.onrender.com/health
+curl https://creatorarmour-api-k86q.onrender.com/health
 ```
 
 Expected response:
@@ -73,7 +73,7 @@ Expected response:
 ### Update Frontend:
 Add to your frontend environment variables:
 ```env
-VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
 ```
 
 Or if you set up a custom domain:

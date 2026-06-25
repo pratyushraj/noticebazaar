@@ -50,7 +50,7 @@ Complete guide to deploy both frontend and backend to Render.
 5. **Deploy:**
    - Click "Create Web Service"
    - Render will build and deploy
-   - You'll get a URL like: `https://creatorarmour-api.onrender.com`
+   - You'll get a URL like: `https://creatorarmour-api-k86q.onrender.com`
 
 6. **Set Health Check:**
    - Go to Settings → Health Check Path
@@ -78,7 +78,7 @@ Complete guide to deploy both frontend and backend to Render.
    ```
    VITE_SUPABASE_URL=https://ooaxtwmqrvfzdqzoijcj.supabase.co
    VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-   VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+   VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
    NODE_ENV=production
    ```
 
@@ -117,7 +117,7 @@ Complete guide to deploy both frontend and backend to Render.
 
 ### Test Backend:
 ```bash
-curl https://creatorarmour-api.onrender.com/health
+curl https://creatorarmour-api-k86q.onrender.com/health
 ```
 Should return: `{"status":"ok",...}`
 

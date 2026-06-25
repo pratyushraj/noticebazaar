@@ -86,7 +86,7 @@ This guide will help you deploy both backend and frontend to Render so creatorar
      - Clone your repo
      - Install dependencies
      - Build your backend
-     - Deploy to a URL like: `https://creatorarmour-api.onrender.com`
+     - Deploy to a URL like: `https://creatorarmour-api-k86q.onrender.com`
 
 7. **Wait for Build (2-5 minutes):**
    - Watch the build logs in real-time
@@ -125,7 +125,7 @@ This guide will help you deploy both backend and frontend to Render so creatorar
    ```
    
    ```
-   VITE_API_BASE_URL=https://creatorarmour-api.onrender.com
+   VITE_API_BASE_URL=https://creatorarmour-api-k86q.onrender.com
    ```
    
    ```
@@ -166,7 +166,7 @@ This guide will help you deploy both backend and frontend to Render so creatorar
 
 ### Test Backend:
 ```bash
-curl https://creatorarmour-api.onrender.com/health
+curl https://creatorarmour-api-k86q.onrender.com/health
 ```
 
 Should return:
@@ -271,7 +271,7 @@ Should return:
 ## 🎉 Success!
 
 Once all steps are complete:
-- ✅ Backend: `https://creatorarmour-api.onrender.com`
+- ✅ Backend: `https://creatorarmour-api-k86q.onrender.com`
 - ✅ Frontend: `https://creatorarmour-frontend.onrender.com`
 - ✅ Both services auto-deploy on git push
 - ✅ Free tier available for both
